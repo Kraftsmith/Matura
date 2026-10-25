@@ -53,6 +53,8 @@ export const InteractiveTestView: React.FC<InteractiveTestViewProps> = ({ questi
   };
 
   const checkAllQuestions = () => {
+    // Pressing the button again on an already finished test must not count as another attempt.
+    if (questions.every((q) => checkedIds[q.id])) return;
     const allChecked: Record<string, boolean> = {};
     questions.forEach((q) => {
       allChecked[q.id] = true;

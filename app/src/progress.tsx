@@ -8,7 +8,6 @@ import {
   type ProgressState,
   type ProgressValue,
 } from './progress-context';
-import { buildDemoProgress } from './data/demoProgress';
 import { useUser } from './useUser';
 
 const STORAGE_KEY = 'matura.progress.v2';
@@ -21,18 +20,18 @@ interface StoredProgress {
 const isProgressState = (v: unknown): v is ProgressState =>
   !!v && typeof v === 'object' && (v as ProgressState).version === 1 && typeof (v as ProgressState).modules === 'object';
 
-/** Reads every user's progress. On the very first run the roster gets demo progress so the teacher view has data. */
+/** Reads every user's progress. Nothing saved yet (or unreadable data) means everyone starts from zero. */
 const readStored = (): Record<string, ProgressState> => {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return buildDemoProgress();
+    if (!raw) return {};
     const parsed = JSON.parse(raw) as Partial<StoredProgress>;
-    if (parsed.version !== 2 || !parsed.users || typeof parsed.users !== 'object') return buildDemoProgress();
+    if (parsed.version !== 2 || !parsed.users || typeof parsed.users !== 'object') return {};
     const users: Record<string, ProgressState> = {};
     for (const [id, st] of Object.entries(parsed.users)) if (isProgressState(st)) users[id] = st;
     return users;
   } catch {
-    return buildDemoProgress();
+    return {};
   }
 };
 

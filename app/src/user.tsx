@@ -4,9 +4,19 @@ import { DEFAULT_USER_ID, findUser, users } from './users';
 
 const STORAGE_KEY = 'matura.currentUser';
 
-/** `?user=<id>` in the address picks a profile (bookmarkable), otherwise the last chosen one. */
+/**
+ * `?user=<id>` in the address picks a profile (bookmarkable), otherwise the last chosen one.
+ * The parameter is consumed: it is removed from the address so that a later switch in the menu
+ * is what survives a reload, not the id baked into the link.
+ */
 const readStored = (): string => {
-  const fromUrl = new URLSearchParams(window.location.search).get('user');
+  const params = new URLSearchParams(window.location.search);
+  const fromUrl = params.get('user');
+  if (fromUrl !== null) {
+    params.delete('user');
+    const search = params.toString();
+    window.history.replaceState(null, '', `${window.location.pathname}${search ? `?${search}` : ''}${window.location.hash}`);
+  }
   if (findUser(fromUrl)) return fromUrl as string;
   try {
     const v = window.localStorage.getItem(STORAGE_KEY);
