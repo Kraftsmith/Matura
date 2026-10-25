@@ -20,7 +20,9 @@ import { useUser } from './useUser';
 import { useSettings } from './useSettings';
 import { findUser, students } from './users';
 
-const moduleSections: SectionType[] = ['fiszki', 'opis-foto', 'gramatyka', 'slownictwo', 'pisanie'];
+const moduleSections: SectionType[] = ['opis-foto', 'gramatyka', 'slownictwo', 'pisanie', 'fiszki'];
+/** Section shown when a module is opened without an explicit section (the first tab). */
+const DEFAULT_SECTION: SectionType = moduleSections[0];
 const standaloneSections: SectionType[] = ['dashboard', 'design-system'];
 const validSections: SectionType[] = [...moduleSections, ...standaloneSections];
 const DEFAULT_MODULE = allModules[0].id;
@@ -55,7 +57,7 @@ const parseHash = (hash: string): Route => {
     return { moduleId: DEFAULT_MODULE, section: 'dashboard', viewUserId: student };
   }
   if (a === 'design-system') return { moduleId: DEFAULT_MODULE, section: 'design-system' };
-  if (isModule(a)) return { moduleId: a, section: b && isSection(b) && !isStandalone(b) ? b : 'fiszki' };
+  if (isModule(a)) return { moduleId: a, section: b && isSection(b) && !isStandalone(b) ? b : DEFAULT_SECTION };
   const a2 = legacySections[a] ?? a;
   if (isSection(a2)) return { moduleId: DEFAULT_MODULE, section: a2 };
   return { moduleId: DEFAULT_MODULE, section: 'dashboard' };
@@ -108,7 +110,7 @@ export function App() {
   }
 
   const handleSectionChange = (section: SectionType) => navigate({ moduleId: currentModuleId, section });
-  const handleModuleChange = (moduleId: string) => navigate({ moduleId, section: 'fiszki' });
+  const handleModuleChange = (moduleId: string) => navigate({ moduleId, section: DEFAULT_SECTION });
   const handleOpenFromDashboard = (moduleId: string, section: SectionType) => navigate({ moduleId, section });
   const handleOpenStudent = (userId: string) => navigate({ moduleId: DEFAULT_MODULE, section: 'dashboard', viewUserId: userId });
   const handleBackToClass = () => navigate({ moduleId: DEFAULT_MODULE, section: 'dashboard' });

@@ -16,11 +16,11 @@ export const ModuleHeader: React.FC<ModuleHeaderProps> = ({ module, activeSectio
   const { t } = useSettings();
 
   const tabs: { id: SectionType; label: string; count?: number }[] = [
-    { id: 'fiszki', label: t('tab.flashcards'), count: module.flashcards.length },
     { id: 'opis-foto', label: t('tab.picture') },
     { id: 'gramatyka', label: t('tab.grammar'), count: module.testQuestions.length },
     { id: 'slownictwo', label: t('tab.vocabulary') },
     { id: 'pisanie', label: t('tab.writing') },
+    { id: 'fiszki', label: t('tab.flashcards'), count: module.flashcards.length },
   ];
 
   const levelName = module.badge === 'B1+' ? t('hdr.levelBasic') : t('hdr.levelExtended');
