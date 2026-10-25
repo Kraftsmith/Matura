@@ -72,24 +72,24 @@ export const allModules: MaturaModule[] = [
       }
     ],
     pictureDescription: {
-      imageSrc: '/images/matura_04_family.jpg',
-      imageAlt: 'Bright modern home kitchen',
-      title: 'Nowoczesne wnętrze i życie domowe (Modern Home & Kitchen)',
-      situation: 'Mieszkańcy spędzają czas w przestronnej, zmodernizowanej kuchni połączonej z jadalnią.',
+      imageSrc: '/images/matura_12_home.jpg',
+      imageAlt: 'Bright modern open-plan living room with a dining area',
+      title: 'Nowoczesne wnętrze i życie domowe (Modern Home & Living Room)',
+      situation: 'Mieszkańcy spędzają czas w przestronnym, zmodernizowanym salonie połączonym z jadalnią.',
       steps: [
         {
           stepName: 'Introduction',
           stepNamePl: 'Wprowadzenie', stepNameRu: 'Вступление',
           description: 'Określenie typu pomieszczenia i ogólnego wystroju.',
-          recommendedPhrases: ['In the photograph, I can see a bright, well-furnished kitchen...'],
-          modelExample: 'In the photograph, I can see a spacious modern kitchen decorated with stylish wooden furniture and shelves.'
+          recommendedPhrases: ['In the photograph, I can see a bright, well-furnished living room...'],
+          modelExample: 'In the photograph, I can see a spacious modern living room decorated with stylish wooden furniture, bookshelves and houseplants.'
         },
         {
           stepName: 'Where & Details',
           stepNamePl: 'Miejsce i szczegóły wyposażenia', stepNameRu: 'Место и детали обстановки',
           description: 'Wskazanie elementów wyposażenia wnętrza i aranżacji.',
-          recommendedPhrases: ['In the foreground, there is an open kitchen island...'],
-          modelExample: 'In the foreground, there is a large wooden island with modern cookware, while open shelves and subway tiles decorate the wall in the background.'
+          recommendedPhrases: ['In the foreground, there is a large wooden dining table...'],
+          modelExample: 'In the foreground, there is a large wooden dining table being laid for a meal, while a grey sofa, tall bookshelves and floor-to-ceiling windows can be seen in the background.'
         },
         {
           stepName: 'Atmosphere',
@@ -125,7 +125,7 @@ export const allModules: MaturaModule[] = [
           modelAnswer: 'The primary reason is undoubtedly financial. Sharing a flat allows young people to split steep monthly rents, internet bills, and utilities. In addition, living with peers prevents loneliness when moving away from home.'
         }
       ],
-      fullModelAnswer: 'The photograph presents a spacious and beautifully designed home kitchen. In the center, there is a solid timber island where people are preparing food together. The natural light and open shelving create an inviting and comfortable living space. Personally, I would love to have a kitchen like this because it serves as the beating heart of a home.'
+      fullModelAnswer: 'The photograph presents a spacious and beautifully designed open-plan living room. In the foreground, a young woman is laying a solid timber dining table, while a young man is watering the plants by the window. The natural light, wooden floor and bookshelves create an inviting and comfortable living space. Personally, I would love to live in a flat like this because it feels like the beating heart of a home.'
     },
     testQuestions: [
       {
@@ -566,16 +566,16 @@ export const allModules: MaturaModule[] = [
     ],
     pictureDescription: {
       imageSrc: '/images/matura_06_shopping.jpg',
-      imageAlt: 'People choosing fresh groceries',
-      title: 'Wybór świeżych produktów (Grocery Shopping)',
-      situation: 'Klienci wybierają świeże owoce i warzywa na dziale ze zdrową żywnością.',
+      imageAlt: 'People choosing fresh fruit at an open-air market',
+      title: 'Wybór świeżych produktów (Fresh Produce Market)',
+      situation: 'Klienci wybierają świeże owoce i warzywa na straganach targu miejskiego.',
       steps: [
         {
           stepName: 'Introduction',
           stepNamePl: 'Wstęp', stepNameRu: 'Вступление',
           description: 'Opis zakupów spożywczych.',
-          recommendedPhrases: ['In the picture, customers are browsing fresh organic produce...'],
-          modelExample: 'In the picture, shoppers are selecting fresh fruit and vegetables in a supermarket aisle.'
+          recommendedPhrases: ['In the picture, customers are browsing fresh seasonal produce...'],
+          modelExample: 'In the picture, shoppers are selecting fresh fruit and vegetables at the stalls of an open-air market.'
         }
       ],
       examQuestions: [
@@ -669,7 +669,7 @@ export const allModules: MaturaModule[] = [
       }
     ],
     pictureDescription: {
-      imageSrc: '/images/matura_06_shopping.jpg',
+      imageSrc: '/images/matura_11_supermarket.jpg',
       imageAlt: 'Woman shopping with a cart in supermarket',
       title: 'Zakupy w supermarkecie (Supermarket Shopping)',
       situation: 'Klientka robi codzienne zakupy w dziale ze świeżymi artykułami.',
