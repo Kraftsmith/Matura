@@ -37,7 +37,7 @@ for (const name of expected) {
   else ok.push(name);
 }
 
-const extra = fs.existsSync(imagesDir) ? fs.readdirSync(imagesDir).filter((f) => !expected.includes(f)) : [];
+const extra = fs.existsSync(imagesDir) ? fs.readdirSync(imagesDir).filter((f) => !f.startsWith('.') && !expected.includes(f)) : [];
 
 console.log(`Illustrations: ${ok.length}/${expected.length} ready`);
 if (wrong.length) console.log(`\nWrong format (${wrong.length}):\n  ${wrong.join('\n  ')}`);
