@@ -194,10 +194,10 @@ const pl = {
   'misc.close': 'Zamknij',
   'misc.closePreview': 'Zamknij podgląd',
 
-  // Share links (teacher)
+  // Share links
   'link.copy': 'Kopiuj link',
   'link.copied': 'Skopiowano',
-  'link.copyHint': 'Link do wysłania uczniowi jako zadanie domowe',
+  'link.copyHint': 'Link do tego miejsca, np. jako zadanie domowe',
   'vocab.allTexts': 'Wszystkie teksty modułu',
 };
 
@@ -388,7 +388,7 @@ const en: Record<I18nKey, string> = {
 
   'link.copy': 'Copy link',
   'link.copied': 'Copied',
-  'link.copyHint': 'Link to send to a student as homework',
+  'link.copyHint': 'Link to this place, e.g. as homework',
   'vocab.allTexts': 'All texts in this module',
 };
 

@@ -9,7 +9,7 @@ interface ModuleHeaderProps {
   module: MaturaModule;
   activeSection: SectionType;
   onSectionChange: (section: SectionType) => void;
-  /** Route of the open section without the profile, for the teacher's "Copy link". */
+  /** Route of the open section without the profile, for "Copy link". */
   shareRest: string;
   masteredCardsCount: number;
   testScore: number | null;

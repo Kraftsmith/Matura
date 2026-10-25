@@ -28,7 +28,7 @@ Every text and exercise has its own link, for homework:
 - `/#czlowiek/gramatyka/gram-2` — opens the grammar section at that rule; `/#czlowiek/gramatyka/test` — at the test
 - `/#czlowiek/opis-foto`, `/#czlowiek/pisanie`, `/#czlowiek/fiszki` — the one exercise of each of these sections
 
-In the teacher profile every text, rule, test and section has a "Kopiuj link" button that copies such a link without the profile, so the student opens it in their own.
+Every text, rule, test and section has a "Kopiuj link" button. It copies the link without the profile, so whoever opens it lands in their own profile, right at that text or exercise.
 
 ## Layout
 
