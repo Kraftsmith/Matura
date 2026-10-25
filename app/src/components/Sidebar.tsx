@@ -79,9 +79,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             const active = mod.id === currentModuleId;
             const mastered = masteredCardsMap[mod.id] ?? 0;
             const score = testScoresMap[mod.id];
-            const parts = showProgress
-              ? [`${mastered}/${mod.flashcards.length} ${t('side.words')}`]
-              : [`${mod.flashcards.length} ${t('side.cards')}`];
+            // Only real progress earns a second line; deck sizes alone are noise here.
+            const parts: string[] = [];
+            if (showProgress && mastered > 0) parts.push(`${mastered}/${mod.flashcards.length} ${t('side.words')}`);
             if (showProgress && score !== undefined) parts.push(`${t('side.test')} ${score}%`);
             return (
               <ListRow
@@ -97,7 +97,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <span className="block truncate">
                     {mod.number}. {mod.titlePl}
                   </span>
-                  <span className="block truncate text-sm font-normal text-ink-2">{parts.join(' · ')}</span>
+                  {parts.length > 0 && (
+                    <span className="block truncate text-sm font-normal text-ink-2">{parts.join(' · ')}</span>
+                  )}
                 </span>
                 <span className="shrink-0 text-sm font-normal text-ink-2">{mod.badge}</span>
               </ListRow>

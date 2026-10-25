@@ -27,7 +27,6 @@ const pl = {
   'side.myProgress': 'Twoje postępy',
   'side.teacherPanel': 'Panel nauczyciela',
   'side.words': 'słówek',
-  'side.cards': 'fiszek',
   'side.test': 'test',
 
   // Module header & tabs
@@ -222,7 +221,6 @@ const en: Record<I18nKey, string> = {
   'side.myProgress': 'Your progress',
   'side.teacherPanel': 'Teacher panel',
   'side.words': 'words',
-  'side.cards': 'cards',
   'side.test': 'test',
 
   'hdr.modules': 'Modules',
