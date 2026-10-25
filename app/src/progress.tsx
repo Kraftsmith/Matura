@@ -10,7 +10,9 @@ import {
 } from './progress-context';
 import { useUser } from './useUser';
 
-const STORAGE_KEY = 'matura.progress.v2';
+const STORAGE_KEY = 'matura.progress.v3';
+/** Older keys hold the seeded demo progress mixed with real answers, so they are dropped rather than migrated. */
+const LEGACY_KEYS = ['matura.progress.v2'];
 
 interface StoredProgress {
   version: 2;
@@ -23,6 +25,7 @@ const isProgressState = (v: unknown): v is ProgressState =>
 /** Reads every user's progress. Nothing saved yet (or unreadable data) means everyone starts from zero. */
 const readStored = (): Record<string, ProgressState> => {
   try {
+    for (const key of LEGACY_KEYS) window.localStorage.removeItem(key);
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return {};
     const parsed = JSON.parse(raw) as Partial<StoredProgress>;
