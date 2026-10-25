@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { GapFillItem, VocabularyItem, VocabularyText } from '../types';
-import { Volume2, ImageIcon, MessageCircle, Languages, Maximize2, ChevronDown, ChevronUp, PenLine, RotateCcw, Eye, CheckCircle2 } from 'lucide-react';
+import { Volume2, ImageIcon, MessageCircle, Languages, Maximize2, ChevronDown, ChevronUp, PenLine, RotateCcw, Eye, CheckCircle2, ArrowLeft } from 'lucide-react';
 import { Button, Chip, InlineInput, SectionTitle } from './ui';
 import { ImageLightbox } from './ImageLightbox';
 import { useSettings } from '../useSettings';
 import { vocabularyExercisesByText } from '../data/vocabularyExercises';
+import { useUser } from '../useUser';
+import { buildHash } from '../userRoute';
+import { CopyLinkButton } from './CopyLinkButton';
 
 /** Lower-case, single-spaced, hyphens treated as spaces, so "rip-off" and "Rip off" both match. */
 const normalise = (s: string) => s.toLowerCase().replace(/[-‐-―]/g, ' ').replace(/[’‘]/g, "'").replace(/\s+/g, ' ').trim();
@@ -115,7 +118,10 @@ const GapFillExercise: React.FC<{ textId: string; items: GapFillItem[] }> = ({ t
 };
 
 interface VocabularyViewProps {
+  moduleId: string;
   texts: VocabularyText[];
+  /** When set, only this text is shown: its own page, the one to send as homework. */
+  textId?: string;
   vocabulary: VocabularyItem[];
   moduleTitle: string;
 }
@@ -177,8 +183,9 @@ const Illustration: React.FC<{ src: string; alt: string; onOpen: () => void }> =
   );
 };
 
-const TextCard: React.FC<{ text: VocabularyText; showTranslations: boolean }> = ({ text, showTranslations }) => {
+const TextCard: React.FC<{ text: VocabularyText; route: string; showTranslations: boolean }> = ({ text, route, showTranslations }) => {
   const { tr } = useSettings();
+  const { user } = useUser();
   const [lightbox, setLightbox] = useState(false);
 
   return (
@@ -193,11 +200,18 @@ const TextCard: React.FC<{ text: VocabularyText; showTranslations: boolean }> = 
             <span>Level {text.level === 'R' ? 'B2 (rozszerzony)' : 'B1+ (podstawowy)'}</span>
           </div>
           <div className="flex items-start justify-between gap-3">
-            <h3 className="text-2xl leading-8 font-semibold">{text.title}</h3>
-            <Button variant="secondary" size="sm" onClick={() => speak(text.paragraphs.join(' '))} title="Listen to the text">
-              <Volume2 className="h-4 w-4" />
-              Listen
-            </Button>
+            <h3 className="text-2xl leading-8 font-semibold">
+              <a href={`#${buildHash(user.id, route)}`} className="hover:text-primary hover:underline">
+                {text.title}
+              </a>
+            </h3>
+            <div className="flex flex-wrap justify-end gap-2">
+              <CopyLinkButton rest={route} />
+              <Button variant="secondary" size="sm" onClick={() => speak(text.paragraphs.join(' '))} title="Listen to the text">
+                <Volume2 className="h-4 w-4" />
+                Listen
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -253,8 +267,16 @@ const TextCard: React.FC<{ text: VocabularyText; showTranslations: boolean }> = 
   );
 };
 
-export const VocabularyView: React.FC<VocabularyViewProps> = ({ texts, vocabulary, moduleTitle }) => {
+export const VocabularyView: React.FC<VocabularyViewProps> = ({ moduleId, texts, textId, vocabulary, moduleTitle }) => {
   const { tr, t } = useSettings();
+  const { user } = useUser();
+  const sectionRoute = `${moduleId}/slownictwo`;
+  const focused = textId ? texts.find((x) => x.id === textId) : undefined;
+
+  // Opening a single text (or going back to all of them) starts at the top of the page.
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [textId]);
   const [showTranslations, setShowTranslations] = useState(false);
   const [listOpen, setListOpen] = useState(false);
 
@@ -279,7 +301,15 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({ texts, vocabular
         }
       />
 
-      {texts.length === 0 ? (
+      {focused ? (
+        <div className="grid gap-4">
+          <a href={`#${buildHash(user.id, sectionRoute)}`} className="inline-flex items-center gap-1.5 justify-self-start text-sm font-semibold text-primary hover:underline">
+            <ArrowLeft className="h-4 w-4" />
+            {t('vocab.allTexts')} ({texts.length})
+          </a>
+          <TextCard text={focused} route={`${sectionRoute}/${focused.id}`} showTranslations={showTranslations} />
+        </div>
+      ) : texts.length === 0 ? (
         <div className="rounded-2xl border border-line bg-surface p-10 text-center">
           <p className="text-base leading-6 font-semibold text-ink">Texts for this module are coming soon.</p>
           <p className="mt-1 text-sm leading-5 text-ink-2">Use the flashcards and the word list below in the meantime.</p>
@@ -287,12 +317,12 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({ texts, vocabular
       ) : (
         <div className="grid gap-8">
           {texts.map((t) => (
-            <TextCard key={t.id} text={t} showTranslations={showTranslations} />
+            <TextCard key={t.id} text={t} route={`${sectionRoute}/${t.id}`} showTranslations={showTranslations} />
           ))}
         </div>
       )}
 
-      {sortedList.length > 0 && (
+      {!focused && sortedList.length > 0 && (
         <section className="overflow-hidden rounded-2xl border border-line bg-surface">
           <button
             type="button"

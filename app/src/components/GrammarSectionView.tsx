@@ -1,12 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import type { GrammarRule, TestQuestion } from '../types';
 import { AlertTriangle, ArrowDown, ArrowUp } from 'lucide-react';
 import { Button, Chip } from './ui';
 import { InteractiveTestView } from './InteractiveTestView';
 import { useSettings } from '../useSettings';
 import { pluralForm } from '../i18n';
+import { useUser } from '../useUser';
+import { buildHash } from '../userRoute';
+import { CopyLinkButton } from './CopyLinkButton';
 
 interface GrammarSectionViewProps {
+  moduleId: string;
+  /** A rule id or "test" from the address: the page opens scrolled to it. */
+  focusId?: string;
   rules: GrammarRule[];
   questions: TestQuestion[];
   moduleTitle: string;
@@ -22,8 +28,15 @@ const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ b
  * One section for grammar: the rules of the module first, then the test that checks them.
  * Rules and tasks are linked both ways through grammarRef.ruleId.
  */
-export const GrammarSectionView: React.FC<GrammarSectionViewProps> = ({ rules, questions, moduleTitle, onScoreSave }) => {
+export const GrammarSectionView: React.FC<GrammarSectionViewProps> = ({ moduleId, focusId, rules, questions, moduleTitle, onScoreSave }) => {
   const { tr, t } = useSettings();
+  const { user } = useUser();
+  const sectionRoute = `${moduleId}/gramatyka`;
+
+  // Every rule and the test have their own address (…/gramatyka/gram-2, …/gramatyka/test).
+  useEffect(() => {
+    if (focusId) document.getElementById(focusId === 'test' ? TEST_ANCHOR : ruleAnchor(focusId))?.scrollIntoView({ block: 'start' });
+  }, [focusId]);
 
   const tasksPerRule = rules.reduce<Record<string, number>>((acc, r) => {
     acc[r.id] = questions.filter((q) => q.grammarRef?.ruleId === r.id).length;
@@ -62,21 +75,28 @@ export const GrammarSectionView: React.FC<GrammarSectionViewProps> = ({ rules, q
                     <span className="text-sm text-ink-2">
                       {t('gram.level')}: {levelLabel(rule.level)}
                     </span>
-                    <h3 className="text-lg font-semibold text-ink">{rule.title}</h3>
+                    <h3 className="text-lg font-semibold text-ink">
+                      <a href={`#${buildHash(user.id, `${sectionRoute}/${rule.id}`)}`} className="hover:text-primary hover:underline">
+                        {rule.title}
+                      </a>
+                    </h3>
                   </div>
-                  {n > 0 ? (
-                    <button
-                      type="button"
-                      onClick={() => scrollTo(`task-group-${rule.id}`)}
-                      className="cursor-pointer"
-                      title={t('gram.showTasks')}
-                    >
-                      <Chip tone="primary" size="sm">
-                        {n} {t(`plural.task${pluralForm(n)}`)} {t('gram.inTest')}
-                        <ArrowDown className="h-3.5 w-3.5" />
-                      </Chip>
-                    </button>
-                  ) : null}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <CopyLinkButton rest={`${sectionRoute}/${rule.id}`} />
+                    {n > 0 ? (
+                      <button
+                        type="button"
+                        onClick={() => scrollTo(`task-group-${rule.id}`)}
+                        className="cursor-pointer"
+                        title={t('gram.showTasks')}
+                      >
+                        <Chip tone="primary" size="sm">
+                          {n} {t(`plural.task${pluralForm(n)}`)} {t('gram.inTest')}
+                          <ArrowDown className="h-3.5 w-3.5" />
+                        </Chip>
+                      </button>
+                    ) : null}
+                  </div>
                 </div>
 
                 {rule.formula && (
@@ -126,10 +146,13 @@ export const GrammarSectionView: React.FC<GrammarSectionViewProps> = ({ rules, q
               <h2 className="mt-1 text-2xl font-semibold text-ink">{t('gram.testTitle')}</h2>
               <p className="mt-1 max-w-[72ch] text-sm text-ink-2">{t('gram.testDesc')}</p>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-              <ArrowUp className="h-4 w-4" />
-              {t('gram.backToRules')}
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <CopyLinkButton rest={`${sectionRoute}/test`} variant="secondary" />
+              <Button variant="ghost" size="sm" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                <ArrowUp className="h-4 w-4" />
+                {t('gram.backToRules')}
+              </Button>
+            </div>
           </div>
           <InteractiveTestView questions={questions} rules={rules} moduleTitle={moduleTitle} onScoreSave={onScoreSave} embedded />
         </section>

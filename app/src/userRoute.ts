@@ -19,3 +19,9 @@ export const splitUserHash = (hash: string): UserHash => {
 };
 
 export const buildHash = (userId: string, rest: string): string => (rest ? `${userId}/${rest}` : userId);
+
+/**
+ * Full link to a page without the profile segment, for homework: whoever opens it lands on that page
+ * in their own profile (the last one used in their browser), not in the profile of the person who shared it.
+ */
+export const shareLink = (rest: string): string => `${window.location.origin}${window.location.pathname}#${rest}`;

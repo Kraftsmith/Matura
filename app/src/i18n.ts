@@ -193,6 +193,12 @@ const pl = {
   'misc.settings': 'Ustawienia',
   'misc.close': 'Zamknij',
   'misc.closePreview': 'Zamknij podgląd',
+
+  // Share links (teacher)
+  'link.copy': 'Kopiuj link',
+  'link.copied': 'Skopiowano',
+  'link.copyHint': 'Link do wysłania uczniowi jako zadanie domowe',
+  'vocab.allTexts': 'Wszystkie teksty modułu',
 };
 
 export type I18nKey = keyof typeof pl;
@@ -379,6 +385,11 @@ const en: Record<I18nKey, string> = {
   'misc.settings': 'Settings',
   'misc.close': 'Close',
   'misc.closePreview': 'Close preview',
+
+  'link.copy': 'Copy link',
+  'link.copied': 'Copied',
+  'link.copyHint': 'Link to send to a student as homework',
+  'vocab.allTexts': 'All texts in this module',
 };
 
 export const dictionaries: Record<UiLang, Record<I18nKey, string>> = { pl, en };

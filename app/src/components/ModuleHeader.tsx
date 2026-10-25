@@ -2,17 +2,20 @@ import React from 'react';
 import { ChevronRight } from 'lucide-react';
 import type { MaturaModule, SectionType } from '../types';
 import { Tabs } from './ui';
+import { CopyLinkButton } from './CopyLinkButton';
 import { useSettings } from '../useSettings';
 
 interface ModuleHeaderProps {
   module: MaturaModule;
   activeSection: SectionType;
   onSectionChange: (section: SectionType) => void;
+  /** Route of the open section without the profile, for the teacher's "Copy link". */
+  shareRest: string;
   masteredCardsCount: number;
   testScore: number | null;
 }
 
-export const ModuleHeader: React.FC<ModuleHeaderProps> = ({ module, activeSection, onSectionChange, masteredCardsCount, testScore }) => {
+export const ModuleHeader: React.FC<ModuleHeaderProps> = ({ module, activeSection, onSectionChange, shareRest, masteredCardsCount, testScore }) => {
   const { t } = useSettings();
 
   const tabs: { id: SectionType; label: string; count?: number }[] = [
@@ -56,9 +59,12 @@ export const ModuleHeader: React.FC<ModuleHeaderProps> = ({ module, activeSectio
             {t('hdr.module')} {module.number}
           </span>
         </nav>
-        <h1 className="text-3xl leading-10 font-semibold sm:text-4xl sm:leading-12">
-          {module.titlePl} <span className="font-normal text-ink-2">({module.titleEn})</span>
-        </h1>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <h1 className="text-3xl leading-10 font-semibold sm:text-4xl sm:leading-12">
+            {module.titlePl} <span className="font-normal text-ink-2">({module.titleEn})</span>
+          </h1>
+          <CopyLinkButton rest={shareRest} variant="secondary" />
+        </div>
         <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-2">{meta}</p>
       </div>
       <div className="px-4 sm:px-6 lg:px-8">

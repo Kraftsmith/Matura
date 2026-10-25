@@ -22,6 +22,14 @@ Every profile has its own link; the first segment of the hash is the user id:
 
 A link without a profile (`/#czlowiek/gramatyka`) opens with the profile last used in that browser.
 
+Every text and exercise has its own link, for homework:
+
+- `/#czlowiek/slownictwo/czl-txt-2` — one vocabulary text with its gap-fill, on its own page
+- `/#czlowiek/gramatyka/gram-2` — opens the grammar section at that rule; `/#czlowiek/gramatyka/test` — at the test
+- `/#czlowiek/opis-foto`, `/#czlowiek/pisanie`, `/#czlowiek/fiszki` — the one exercise of each of these sections
+
+In the teacher profile every text, rule, test and section has a "Kopiuj link" button that copies such a link without the profile, so the student opens it in their own.
+
 ## Layout
 
 - `app/` — the web app (React 19, TypeScript, Vite, Tailwind 4).

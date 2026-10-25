@@ -36,20 +36,34 @@ interface Route {
   section: SectionType;
   /** Dashboard only: a learner's id when the teacher opens that learner's page. */
   viewUserId?: string;
+  /** One item inside the section: a vocabulary text id, a grammar rule id or "test". */
+  item?: string;
 }
 
 const isStandalone = (s: SectionType) => standaloneSections.includes(s);
 
 /**
- * URL scheme: #<userId>/<moduleId>/<section>, e.g. #maria/praca/opis-foto.
+ * URL scheme: #<userId>/<moduleId>/<section>[/<item>], e.g. #maria/praca/opis-foto,
+ * #maria/czlowiek/slownictwo/czl-txt-2 (one text), #maria/czlowiek/gramatyka/test.
  * The profile segment is handled by UserProvider; here we parse what follows it.
  * Also accepted: #<section> (default module), #<moduleId> (first tab), #design-system,
  * #dashboard/<studentId> (teacher looking at one learner).
  * A bare #<userId> or an empty hash opens the dashboard.
  */
+/** Keeps the item only if it exists in that module's section; unknown items fall back to the whole section. */
+const validItem = (moduleId: string, section: SectionType, item?: string): string | undefined => {
+  if (!item) return undefined;
+  if (section === 'slownictwo') return (vocabularyTextsByModule[moduleId] ?? []).some((t) => t.id === item) ? item : undefined;
+  if (section === 'gramatyka') {
+    const module = allModules.find((m) => m.id === moduleId);
+    return item === 'test' || module?.grammarRules.some((r) => r.id === item) ? item : undefined;
+  }
+  return undefined;
+};
+
 const parseHash = (hash: string): Route => {
   const raw = splitUserHash(hash).rest;
-  const [a, rawB] = raw.split('/');
+  const [a, rawB, c] = raw.split('/');
   const b = rawB && legacySections[rawB] ? legacySections[rawB] : rawB;
   const isModule = (id: string) => allModules.some((m) => m.id === id);
   const isSection = (s: string): s is SectionType => validSections.includes(s as SectionType);
@@ -59,7 +73,10 @@ const parseHash = (hash: string): Route => {
     return { moduleId: DEFAULT_MODULE, section: 'dashboard', viewUserId: student };
   }
   if (a === 'design-system') return { moduleId: DEFAULT_MODULE, section: 'design-system' };
-  if (isModule(a)) return { moduleId: a, section: b && isSection(b) && !isStandalone(b) ? b : DEFAULT_SECTION };
+  if (isModule(a)) {
+    const section = b && isSection(b) && !isStandalone(b) ? b : DEFAULT_SECTION;
+    return { moduleId: a, section, item: validItem(a, section, c) };
+  }
   const a2 = legacySections[a] ?? a;
   if (isSection(a2)) return { moduleId: DEFAULT_MODULE, section: a2 };
   return { moduleId: DEFAULT_MODULE, section: 'dashboard' };
@@ -68,7 +85,7 @@ const parseHash = (hash: string): Route => {
 const toHash = (r: Route): string => {
   if (r.section === 'dashboard') return r.viewUserId ? `dashboard/${r.viewUserId}` : 'dashboard';
   if (isStandalone(r.section)) return r.section;
-  return `${r.moduleId}/${r.section}`;
+  return r.item ? `${r.moduleId}/${r.section}/${r.item}` : `${r.moduleId}/${r.section}`;
 };
 
 export function App() {
@@ -197,6 +214,7 @@ export function App() {
               module={currentModule}
               activeSection={activeSection}
               onSectionChange={handleSectionChange}
+              shareRest={toHash({ moduleId: currentModule.id, section: activeSection })}
               masteredCardsCount={masteredCardsMap[currentModule.id] || 0}
               testScore={testScoresMap[currentModule.id] ?? null}
             />
@@ -222,6 +240,8 @@ export function App() {
           {activeSection === 'gramatyka' && (
             <GrammarSectionView
               key={currentModule.id}
+              moduleId={currentModule.id}
+              focusId={route.item}
               rules={currentModule.grammarRules}
               questions={currentModule.testQuestions}
               moduleTitle={currentModule.titlePl}
@@ -232,6 +252,8 @@ export function App() {
           {activeSection === 'slownictwo' && (
             <VocabularyView
               key={currentModule.id}
+              moduleId={currentModule.id}
+              textId={route.item}
               texts={vocabularyTextsByModule[currentModule.id] ?? []}
               vocabulary={currentModule.vocabularyList}
               moduleTitle={currentModule.titlePl}
