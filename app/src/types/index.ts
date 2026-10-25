@@ -142,6 +142,8 @@ export interface MaturaModule {
 /** One key word or phrase from a topic text, explained in English; translations are optional extras. */
 export interface GlossaryEntry {
   term: string;
+  /** Used when the entry becomes a flashcard in the module deck. */
+  pos: Flashcard['partOfSpeech'];
   definition: string;
   polish?: string;
   russian?: string;

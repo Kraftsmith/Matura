@@ -1,7 +1,9 @@
 import type { MaturaModule } from '../types';
 import { module1Czlowiek } from './modules/module1_czlowiek';
+import { withGlossaryFlashcards } from './glossaryFlashcards';
 
-export const allModules: MaturaModule[] = [
+/** Hand-written module content; the exported list below adds the key words of the topic texts to every deck. */
+const baseModules: MaturaModule[] = [
   module1Czlowiek,
   {
     id: 'miejsce-zamieszkania',
@@ -1479,3 +1481,5 @@ export const allModules: MaturaModule[] = [
     }
   }
 ];
+
+export const allModules: MaturaModule[] = baseModules.map(withGlossaryFlashcards);
