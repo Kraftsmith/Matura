@@ -164,3 +164,16 @@ export interface VocabularyText {
   /** Speaking prompts in English, to practise the vocabulary. */
   talkAbout: string[];
 }
+
+/** One gap-fill sentence; the gap is written as ___ and takes a word or phrase from the text. */
+export interface GapFillItem {
+  sentence: string;
+  answer: string;
+  /** Other spellings or forms that also count as correct. */
+  alternatives?: string[];
+}
+
+/** The practice exercise under a topic text: sentences to complete with the key vocabulary. */
+export interface VocabularyExercise {
+  items: GapFillItem[];
+}

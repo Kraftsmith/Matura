@@ -1,9 +1,118 @@
 import React, { useState } from 'react';
-import type { VocabularyItem, VocabularyText } from '../types';
-import { Volume2, ImageIcon, MessageCircle, Languages, Maximize2, ChevronDown, ChevronUp } from 'lucide-react';
-import { Button, Chip, SectionTitle } from './ui';
+import type { GapFillItem, VocabularyItem, VocabularyText } from '../types';
+import { Volume2, ImageIcon, MessageCircle, Languages, Maximize2, ChevronDown, ChevronUp, PenLine, RotateCcw, Eye, CheckCircle2 } from 'lucide-react';
+import { Button, Chip, InlineInput, SectionTitle } from './ui';
 import { ImageLightbox } from './ImageLightbox';
 import { useSettings } from '../useSettings';
+import { vocabularyExercisesByText } from '../data/vocabularyExercises';
+
+/** Lower-case, single-spaced, hyphens treated as spaces, so "rip-off" and "Rip off" both match. */
+const normalise = (s: string) => s.toLowerCase().replace(/[-‐-―]/g, ' ').replace(/[’‘]/g, "'").replace(/\s+/g, ' ').trim();
+
+const isGapCorrect = (item: GapFillItem, value: string) => {
+  const v = normalise(value);
+  return v.length > 0 && [item.answer, ...(item.alternatives ?? [])].some((a) => normalise(a) === v);
+};
+
+/** Gap-fill sentences under a text: type the key word, check, see the answers, try again. */
+const GapFillExercise: React.FC<{ textId: string; items: GapFillItem[] }> = ({ textId, items }) => {
+  const { t } = useSettings();
+  const [values, setValues] = useState<string[]>(() => items.map(() => ''));
+  const [checked, setChecked] = useState(false);
+  const [bankOpen, setBankOpen] = useState(false);
+
+  const correctCount = items.filter((item, i) => isGapCorrect(item, values[i])).length;
+  const wordBank = [...new Set(items.map((item) => item.answer))].sort((a, b) => a.localeCompare(b));
+
+  const check = () => setChecked(true);
+  const reset = () => {
+    setValues(items.map(() => ''));
+    setChecked(false);
+  };
+  const reveal = () => {
+    setValues(items.map((item) => item.answer));
+    setChecked(true);
+  };
+
+  return (
+    <section className="grid gap-3 border-t border-line-soft pt-5" aria-labelledby={`${textId}-practice`}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h4 id={`${textId}-practice`} className="flex items-center gap-2 text-base leading-6 font-semibold">
+          <PenLine className="h-5 w-5 text-primary" />
+          {t('vocab.practice')}
+        </h4>
+        {checked && (
+          <Chip tone={correctCount === items.length ? 'success' : 'primary'}>
+            {correctCount === items.length && <CheckCircle2 className="h-4 w-4" />}
+            {correctCount} / {items.length}
+          </Chip>
+        )}
+      </div>
+      <p className="text-sm leading-5 text-ink-2">{t('vocab.practiceHint')}</p>
+
+      <ol className="grid gap-3">
+        {items.map((item, i) => {
+          const [before, after] = item.sentence.split('___');
+          const correct = isGapCorrect(item, values[i]);
+          const state = !checked ? 'idle' : correct ? 'correct' : 'wrong';
+          return (
+            <li key={item.sentence} className="text-base leading-7 text-ink">
+              <span className="mr-1.5 tabular-nums text-ink-3">{i + 1}.</span>
+              {before}
+              <InlineInput
+                value={values[i]}
+                state={state}
+                disabled={checked}
+                aria-label={`${t('vocab.gapLabel')} ${i + 1}`}
+                autoComplete="off"
+                spellCheck={false}
+                className="mx-1 my-0.5 align-baseline"
+                onChange={(e) => setValues((prev) => prev.map((v, j) => (j === i ? e.target.value : v)))}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') check();
+                }}
+              />
+              {after}
+              {checked && !correct && (
+                <span className="ml-2 text-sm font-semibold text-success">
+                  {t('vocab.answer')}: {item.answer}
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+
+      <div className="flex flex-wrap items-center gap-2">
+        {checked ? (
+          <Button size="sm" variant="secondary" onClick={reset}>
+            <RotateCcw className="h-4 w-4" />
+            {t('vocab.tryAgain')}
+          </Button>
+        ) : (
+          <Button size="sm" onClick={check}>
+            {t('vocab.check')}
+          </Button>
+        )}
+        <Button size="sm" variant="ghost" onClick={reveal} disabled={checked && correctCount === items.length}>
+          <Eye className="h-4 w-4" />
+          {t('vocab.showAnswers')}
+        </Button>
+        <Button size="sm" variant={bankOpen ? 'secondary' : 'ghost'} onClick={() => setBankOpen((o) => !o)} aria-pressed={bankOpen}>
+          {t('vocab.wordBank')}
+        </Button>
+      </div>
+
+      {bankOpen && (
+        <div className="flex flex-wrap gap-1.5">
+          {wordBank.map((w) => (
+            <Chip key={w} size="sm">{w}</Chip>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+};
 
 interface VocabularyViewProps {
   texts: VocabularyText[];
@@ -123,6 +232,10 @@ const TextCard: React.FC<{ text: VocabularyText; showTranslations: boolean }> = 
             ))}
           </dl>
         </section>
+
+        {vocabularyExercisesByText[text.id] && (
+          <GapFillExercise textId={text.id} items={vocabularyExercisesByText[text.id].items} />
+        )}
 
         <section className="grid gap-2 rounded-lg border border-line border-l-4 border-l-primary bg-surface px-5 py-4">
           <h4 className="flex items-center gap-2 text-base leading-6 font-semibold">

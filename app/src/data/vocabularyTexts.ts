@@ -166,6 +166,41 @@ export const vocabularyTextsByModule: Record<string, VocabularyText[]> = {
         'Do celebrities make good role models for teenagers? Give arguments for and against.',
       ],
     },
+    {
+      id: 'czl-txt-6',
+      title: 'Unusual beliefs',
+      subtopic: 'Appearance, character and beliefs',
+      level: 'R',
+      image: {
+        src: '/images/vocab/czlowiek-6-beliefs.png',
+        alt: 'Two passengers on a city bus deep in conversation: a woman in her mid-fifties with a pearl necklace and a teenage boy in an orange hoodie, with a thought bubble showing a ladder and a crystal ball.',
+      },
+      paragraphs: [
+        'Two people were sitting in front of me on the bus. One was a slightly **overweight** woman **in her mid-fifties**, wearing a long skirt, **sensible** flat shoes and a pearl necklace. The other was a muscular **adolescent** with a piercing in one lip and an orange hoodie pulled up over his black curly hair. She seemed gentle, **kind-hearted** and sensitive. He was **lively** and cheerful.',
+        'Although they looked completely different, as I listened to their conversation I realised they **had something in common**: they both believed some rather surprising things. "There are aliens everywhere. They\'re **disguised** as humans," said the boy. "Yes, I know," the woman agreed. "I think my next-door neighbour is one."',
+        'At first I thought they were joking, but it soon became clear they were serious. As they talked, they discovered more beliefs they shared. Both of them were **superstitious**: he never walked under ladders, and she never left the house without checking her horoscope. They agreed that **fortune tellers** can predict your future and that some people can talk to the dead.',
+        'I like to think I\'m **open-minded**, but I must admit I felt more than a bit **puzzled**. Why do ordinary people hold such unusual beliefs? There is little or no **scientific evidence** to support what they think, so I simply don\'t understand it. It\'s a complete mystery to me.',
+      ],
+      glossary: [
+        { term: 'overweight', definition: 'weighing more than is healthy or normal', polish: 'z nadwagą', russian: 'с лишним весом' },
+        { term: 'in her mid-fifties', definition: 'about 54 to 56 years old', polish: 'około 55 lat', russian: 'около пятидесяти пяти' },
+        { term: 'sensible', definition: 'practical and suitable rather than fashionable (of clothes, shoes)', polish: 'praktyczny, rozsądny', russian: 'практичный, удобный' },
+        { term: 'adolescent', definition: 'a young person who is developing into an adult; a teenager', polish: 'nastolatek, młodzieniec', russian: 'подросток' },
+        { term: 'kind-hearted', definition: 'kind and generous by nature', polish: 'dobroduszny, o dobrym sercu', russian: 'добросердечный' },
+        { term: 'lively', definition: 'full of energy and interest', polish: 'pełen życia, żywy', russian: 'живой, энергичный' },
+        { term: 'have something in common', definition: 'to share an interest, belief or feature with someone', polish: 'mieć coś wspólnego', russian: 'иметь что-то общее' },
+        { term: 'disguised', definition: 'wearing a different appearance so that nobody recognises you', polish: 'przebrany, zamaskowany', russian: 'замаскированный, переодетый' },
+        { term: 'superstitious', definition: 'believing that certain things bring good or bad luck', polish: 'przesądny', russian: 'суеверный' },
+        { term: 'fortune teller', definition: 'a person who claims to be able to predict the future', polish: 'wróżka, wróżbita', russian: 'гадалка' },
+        { term: 'open-minded', definition: 'willing to consider new ideas and other people\'s opinions', polish: 'otwarty (na nowe idee)', russian: 'непредвзятый, открытый' },
+        { term: 'puzzled', definition: 'confused because you cannot understand something', polish: 'zdziwiony, zakłopotany', russian: 'озадаченный' },
+        { term: 'scientific evidence', definition: 'facts or results from research that prove something is true', polish: 'dowody naukowe', russian: 'научные доказательства' },
+      ],
+      talkAbout: [
+        'Are you superstitious? Describe a superstition that people in your country believe in.',
+        'Should we respect beliefs that have no scientific evidence to support them? Give arguments for and against.',
+      ],
+    },
   ],
 
   'miejsce-zamieszkania': [
