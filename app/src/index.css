@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+/*
+  Design tokens. Reference: Coursera (coursera.org) course page.
+  One accent (primary blue), one cool neutral scale, three semantic colors
+  used only for real learner status, never for decoration.
+*/
+@theme {
+  --font-sans: "Source Sans 3", "Source Sans Pro", Arial, sans-serif;
+
+  --color-primary: #0056D2;
+  --color-primary-hover: #00419E;
+  --color-primary-tint: #EBF3FF;
+
+  --color-ink: #0D0F12;
+  --color-ink-2: #48546E;
+  --color-ink-3: #6B7589;
+
+  --color-line: #D9DEE6;
+  --color-line-soft: #E6E9EF;
+  --color-hero: #F0F6F9;
+  --color-chip: #DAE1ED;
+  --color-surface: #FFFFFF;
+
+  --color-success: #1E7F3C;
+  --color-success-tint: #E8F5EC;
+  --color-error: #C62828;
+  --color-error-tint: #FDECEC;
+  --color-warning: #8A5A00;
+  --color-warning-tint: #FFF6E0;
+
+  --radius-lg: 8px;   /* buttons, fields, option cards */
+  --radius-2xl: 16px; /* cards, panels */
+}
+
+@layer base {
+  body {
+    @apply bg-surface text-ink antialiased min-h-screen;
+    font-size: 16px;
+    line-height: 24px;
+  }
+  h1, h2, h3, h4 {
+    @apply font-semibold text-ink;
+    text-wrap: balance;
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
+.perspective-1000 { perspective: 1000px; }
+.transform-style-3d { transform-style: preserve-3d; }
+.backface-hidden { backface-visibility: hidden; }
+.rotate-y-180 { transform: rotateY(180deg); }
