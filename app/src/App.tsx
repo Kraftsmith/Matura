@@ -19,6 +19,7 @@ import { useProgress } from './useProgress';
 import { useUser } from './useUser';
 import { useSettings } from './useSettings';
 import { findUser, students } from './users';
+import { buildHash, splitUserHash } from './userRoute';
 
 const moduleSections: SectionType[] = ['opis-foto', 'gramatyka', 'slownictwo', 'pisanie', 'fiszki'];
 /** Section shown when a module is opened without an explicit section (the first tab). */
@@ -40,13 +41,14 @@ interface Route {
 const isStandalone = (s: SectionType) => standaloneSections.includes(s);
 
 /**
- * URL scheme: #<moduleId>/<section>, e.g. #praca/opis-foto.
- * Also accepted: #<section> (default module), #<moduleId> (flashcards), #design-system,
+ * URL scheme: #<userId>/<moduleId>/<section>, e.g. #maria/praca/opis-foto.
+ * The profile segment is handled by UserProvider; here we parse what follows it.
+ * Also accepted: #<section> (default module), #<moduleId> (first tab), #design-system,
  * #dashboard/<studentId> (teacher looking at one learner).
- * An empty hash (app start) opens the dashboard.
+ * A bare #<userId> or an empty hash opens the dashboard.
  */
 const parseHash = (hash: string): Route => {
-  const raw = decodeURIComponent(hash.replace(/^#\/?/, '')).replace(/\/$/, '');
+  const raw = splitUserHash(hash).rest;
   const [a, rawB] = raw.split('/');
   const b = rawB && legacySections[rawB] ? legacySections[rawB] : rawB;
   const isModule = (id: string) => allModules.some((m) => m.id === id);
@@ -81,33 +83,32 @@ export function App() {
   const { moduleId: currentModuleId, section: activeSection } = route;
 
   useEffect(() => {
-    const onHashChange = () => setRoute(parseHash(window.location.hash));
+    const onHashChange = (e: HashChangeEvent) => setRoute(parseHash(new URL(e.newURL).hash));
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
-  // Keep the address bar canonical (e.g. "#test" becomes "#czlowiek/gramatyka") so every page has a shareable link.
+  // Keep the address bar canonical (e.g. "#test" becomes "#maria/czlowiek/gramatyka"): every page of every
+  // profile has its own shareable link.
   useEffect(() => {
-    const canonical = '#' + toHash(route);
+    // Only the teacher can look at another learner's page; for a student the extra segment is dropped.
+    const shown = isTeacher ? route : { ...route, viewUserId: undefined };
+    const canonical = '#' + buildHash(user.id, toHash(shown));
     if (window.location.hash !== canonical) window.history.replaceState(null, '', canonical);
-  }, [route]);
+  }, [route, user.id, isTeacher]);
 
   // Remember the module the learner worked in last, so the dashboard can offer "Kontynuuj".
   useEffect(() => {
     if (!isStandalone(activeSection) && !isTeacher) touchModule(currentModuleId);
   }, [activeSection, currentModuleId, touchModule, isTeacher]);
 
-  const navigate = useCallback((next: Route) => {
-    setRoute(next);
-    window.location.hash = toHash(next);
-  }, []);
-
-  // Switching the signed-in user always lands on that user's dashboard.
-  const [prevUserId, setPrevUserId] = useState(user.id);
-  if (prevUserId !== user.id) {
-    setPrevUserId(user.id);
-    navigate({ moduleId: DEFAULT_MODULE, section: 'dashboard' });
-  }
+  const navigate = useCallback(
+    (next: Route) => {
+      setRoute(next);
+      window.location.hash = buildHash(user.id, toHash(next));
+    },
+    [user.id],
+  );
 
   const handleSectionChange = (section: SectionType) => navigate({ moduleId: currentModuleId, section });
   const handleModuleChange = (moduleId: string) => navigate({ moduleId, section: DEFAULT_SECTION });
@@ -181,7 +182,7 @@ export function App() {
         <main className="w-full min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
           {activeSection === 'design-system' && (
             <nav className="mb-6 flex items-center gap-1.5 text-sm text-ink-2" aria-label={t('misc.path')}>
-              <a href="#dashboard" className="hover:text-primary hover:underline">
+              <a href={`#${buildHash(user.id, 'dashboard')}`} className="hover:text-primary hover:underline">
                 {isTeacher ? t('side.teacherPanel') : t('nav.progress')}
               </a>
               <ChevronRight className="h-3.5 w-3.5" />

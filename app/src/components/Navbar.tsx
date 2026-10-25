@@ -98,7 +98,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onOpenHandbook, o
           >
             <Menu className="h-6 w-6" />
           </button>
-          <a href="#dashboard" className="text-[22px] leading-none font-bold tracking-tight text-primary" aria-label={t('nav.home')}>
+          <a href={`#${user.id}/dashboard`} className="text-[22px] leading-none font-bold tracking-tight text-primary" aria-label={t('nav.home')}>
             matura<span className="text-ink">english</span>
           </a>
           <span className="ml-2 hidden text-sm text-ink-2 sm:inline">{t('dash.subtitle')}</span>

@@ -12,6 +12,16 @@ npm run dev
 
 Opens on http://localhost:5173 (or the next free port).
 
+## Addresses
+
+Every profile has its own link; the first segment of the hash is the user id:
+
+- `/#maria` or `/#maria/dashboard` — Maria's progress dashboard
+- `/#evgeny/czlowiek/slownictwo` — Evgeny, module "Człowiek", vocabulary tab
+- `/#teacher` — teacher panel; `/#teacher/dashboard/maria` — the teacher looking at Maria
+
+A link without a profile (`/#czlowiek/gramatyka`) opens with the profile last used in that browser.
+
 ## Layout
 
 - `app/` — the web app (React 19, TypeScript, Vite, Tailwind 4).

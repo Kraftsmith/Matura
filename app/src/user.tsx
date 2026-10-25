@@ -1,23 +1,27 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { UserContext, type UserValue } from './user-context';
 import { DEFAULT_USER_ID, findUser, users } from './users';
+import { buildHash, splitUserHash } from './userRoute';
 
 const STORAGE_KEY = 'matura.currentUser';
 
 /**
- * `?user=<id>` in the address picks a profile (bookmarkable), otherwise the last chosen one.
- * The parameter is consumed: it is removed from the address so that a later switch in the menu
- * is what survives a reload, not the id baked into the link.
+ * The profile comes from the address first (#maria/..., #teacher/...), so every user has their own
+ * bookmarkable link. A legacy `?user=<id>` query is still accepted and folded into the hash.
+ * Without either, the last chosen profile from this browser is used, then the default one.
  */
-const readStored = (): string => {
+const readInitial = (): string => {
+  const fromHash = splitUserHash(window.location.hash).userId;
+  if (fromHash) return fromHash;
+
   const params = new URLSearchParams(window.location.search);
-  const fromUrl = params.get('user');
-  if (fromUrl !== null) {
+  const fromQuery = params.get('user');
+  if (fromQuery !== null) {
     params.delete('user');
     const search = params.toString();
     window.history.replaceState(null, '', `${window.location.pathname}${search ? `?${search}` : ''}${window.location.hash}`);
+    if (findUser(fromQuery)) return fromQuery;
   }
-  if (findUser(fromUrl)) return fromUrl as string;
   try {
     const v = window.localStorage.getItem(STORAGE_KEY);
     return findUser(v) ? (v as string) : DEFAULT_USER_ID;
@@ -27,7 +31,19 @@ const readStored = (): string => {
 };
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [userId, setUserIdState] = useState<string>(readStored);
+  const [userId, setUserIdState] = useState<string>(readInitial);
+
+  // The address is the source of truth: typing or following #evgeny/... switches the profile.
+  // Read the target from the event, not from window.location: another listener (App) may already have
+  // re-rendered and rewritten the hash with the previous profile before this one runs.
+  useEffect(() => {
+    const onHashChange = (e: HashChangeEvent) => {
+      const fromHash = splitUserHash(new URL(e.newURL).hash).userId;
+      if (fromHash) setUserIdState(fromHash);
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
 
   useEffect(() => {
     try {
@@ -37,14 +53,14 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [userId]);
 
+  /** Switching from the menu lands on that profile's dashboard, at its own address. */
   const setUserId = useCallback((id: string) => {
-    if (findUser(id)) setUserIdState(id);
+    if (!findUser(id)) return;
+    setUserIdState(id);
+    window.location.hash = buildHash(id, 'dashboard');
   }, []);
 
-  const value = useMemo<UserValue>(
-    () => ({ user: findUser(userId) ?? users[0], users, setUserId }),
-    [userId, setUserId],
-  );
+  const value = useMemo<UserValue>(() => ({ user: findUser(userId) ?? users[0], users, setUserId }), [userId, setUserId]);
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };
