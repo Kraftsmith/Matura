@@ -1,8 +1,6 @@
 import type { Flashcard, GlossaryEntry, MaturaModule, VocabularyText } from '../types';
 import { vocabularyTextsByModule } from './vocabularyTexts';
-
-/** Lower-case, hyphens as spaces, single spaces: "screen-time" and "Screen time" compare equal. */
-const normalise = (s: string) => s.toLowerCase().replace(/[-‐-―]/g, ' ').replace(/\s+/g, ' ').trim();
+import { normalise, splitSentences } from '../text';
 
 const STOP_WORDS = new Set(['a', 'an', 'the', 'your', 'his', 'her', 'be', 'in', 'of', 'to', 'on', 'some', 'something']);
 
@@ -23,8 +21,7 @@ const matchScore = (term: string, bold: string) => {
 const exampleFor = (term: string, text: VocabularyText): string => {
   let best: { score: number; sentence: string } | null = null;
   for (const paragraph of text.paragraphs) {
-    const sentences = paragraph.split(/(?<=[.!?]["”']?)\s+(?=["“']?(?:\*\*)?[A-Z])/);
-    for (const sentence of sentences) {
+    for (const sentence of splitSentences(paragraph)) {
       for (const m of sentence.matchAll(/\*\*([^*]+)\*\*/g)) {
         const score = matchScore(term, m[1]);
         if (score > 0 && (!best || score > best.score)) best = { score, sentence };

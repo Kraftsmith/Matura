@@ -98,7 +98,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onOpenHandbook, o
           >
             <Menu className="h-6 w-6" />
           </button>
-          <a href={`#${user.id}/dashboard`} className="text-[22px] leading-none font-bold tracking-tight text-primary" aria-label={t('nav.home')}>
+          <a href={`#${user.id}/dashboard`} className="text-lg leading-none font-bold tracking-tight text-primary sm:text-[22px]" aria-label={t('nav.home')}>
             matura<span className="text-ink">english</span>
           </a>
           <span className="ml-2 hidden text-sm text-ink-2 sm:inline">{t('dash.subtitle')}</span>
@@ -110,7 +110,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onOpenHandbook, o
             size="sm"
             onClick={() => onSectionChange('dashboard')}
             title={dashboardLabel}
-            className="hidden sm:inline-flex"
+            className="max-sm:!hidden"
           >
             <LayoutDashboard className="h-4 w-4" />
             {dashboardLabel}
@@ -119,7 +119,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onOpenHandbook, o
           <Button variant="secondary" size="sm" onClick={onOpenHandbook} title={t('nav.handbook')}>
             <BookOpen className="h-4 w-4" />
             <span className="hidden sm:inline">{t('nav.handbook')}</span>
-            <span className="sm:hidden">{t('nav.handbookShort')}</span>
+            <span className="sr-only sm:hidden">{t('nav.handbookShort')}</span>
           </Button>
 
           <div className="relative" ref={userMenuRef}>

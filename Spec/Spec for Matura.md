@@ -20,7 +20,9 @@
   * Списки слов (*Lista słownictwa*), коллокации, фразовые глаголы, идиомы и словообразование (*Słowotwórstwo*).
 * **Грамматический фокус и языковые средства (Gramatyka i środki językowe):**
   * Отработка грамматических правил модуля на базе [grammaticheskiy_spravochnik_rozszerzona.md](file:///c:/Users/User/Documents/Projects/Matura%20Angelski/%D0%93%D1%80%D0%B0%D0%BC%D0%BC%D0%B0%D1%82%D0%B8%D0%BA%D0%B0%20%D0%B8%20%D0%BB%D0%B5%D0%BA%D1%81%D0%B8%D0%BA%D0%B0%20(Znajomo%C5%9B%C4%87%20%C5%9Brodk%C3%B3w%20j%C4%99zykowych)/grammaticheskiy_spravochnik_rozszerzona.md).
-  * Практикум CKE: мини-диалоги, множественный выбор, словообразование, парафразы со словом-ключом, перевод фрагментов и Open Cloze.
+  * Практикум CKE: множественный выбор, словообразование, парафразы со словом-ключом, перевод фрагментов и Open Cloze.
+* **Функции языка (Środki językowe):**
+  * Отдельный раздел модуля: что сказать в ситуации. Упражнения Dopasowanie, Bank słów и Minidialogi, см. [Spec - Srodki jezykowe.md](Spec%20-%20Srodki%20jezykowe.md).
 * **Тренажер устной речи — Описание фотографии (Zadanie 2: Opis ilustracji):**
   * Профильная фотография высокого качества по теме модуля.
   * Пошаговый разбор по 6 обязательным ступеням CKE:

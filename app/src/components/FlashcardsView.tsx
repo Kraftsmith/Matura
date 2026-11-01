@@ -1,70 +1,111 @@
 import React, { useState, useEffect } from 'react';
 import type { Flashcard } from '../types';
-import { Volume2, RotateCw, Shuffle, ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
+import { Volume2, RotateCw, Shuffle, ArrowLeft, ArrowRight, Sparkles, Pencil, Trash2 } from 'lucide-react';
 import { Button, Chip } from './ui';
 import { SaveStatus } from './SaveStatus';
 import { useSettings } from '../useSettings';
+import { isOwnCard, isTeacherCard } from '../decks';
+import { useFlashcardDialog } from '../useAddFlashcard';
+import { speak } from '../speech';
 import confetti from 'canvas-confetti';
+
+export type DeckFilter = 'all' | 'review' | 'mastered' | 'mine' | 'teacher';
 
 interface FlashcardsViewProps {
   cards: Flashcard[];
+  /** The deck's topic; shown above the title. */
   moduleTitle: string;
+  moduleId?: string;
   /** Persisted learner status for this deck (owned by the progress store). */
   masteredIds: Set<string>;
   reviewIds: Set<string>;
   onCardStatus: (cardId: string, status: 'mastered' | 'review' | 'none') => void;
+  /** Opens the deck on this card. */
+  focusCardId?: string;
+  initialFilter?: DeckFilter;
+  /** The page has its own heading. */
+  hideTitle?: boolean;
+  /** Review across topics: names each card's home deck; a card leaves as soon as it is marked, and there are no filters. */
+  homeOf?: (card: Flashcard) => { id: string; title: string };
 }
 
-type Filter = 'all' | 'review' | 'mastered';
+/** Keeps the order the learner shuffled, the new cards go last and removed ones disappear. */
+const syncDeck = (deck: Flashcard[], cards: Flashcard[]) => {
+  const byId = new Map(cards.map((c) => [c.id, c]));
+  const known = new Set(deck.map((c) => c.id));
+  return [...deck.flatMap((c) => byId.get(c.id) ?? []), ...cards.filter((c) => !known.has(c.id))];
+};
 
-export const FlashcardsView: React.FC<FlashcardsViewProps> = ({ cards, moduleTitle, masteredIds, reviewIds, onCardStatus }) => {
+const isTyping = (target: EventTarget | null) => target instanceof Element && !!target.closest('input, textarea, select, [role="dialog"]');
+
+export const FlashcardsView: React.FC<FlashcardsViewProps> = ({ cards, moduleTitle, moduleId, masteredIds, reviewIds, onCardStatus, focusCardId, initialFilter, hideTitle, homeOf }) => {
   const { tr, t } = useSettings();
+  const { open, removeOwn } = useFlashcardDialog();
   const [deck, setDeck] = useState<Flashcard[]>(cards);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [filter, setFilter] = useState<Filter>('all');
+  const [filter, setFilter] = useState<DeckFilter>(initialFilter ?? 'all');
+  const [appliedFocus, setAppliedFocus] = useState<string>();
 
   const [prevCards, setPrevCards] = useState<Flashcard[]>(cards);
   if (cards !== prevCards) {
     setPrevCards(cards);
-    setDeck(cards);
-    setCurrentIndex(0);
-    setIsFlipped(false);
+    setDeck(syncDeck(deck, cards));
+  }
+
+  if (focusCardId && focusCardId !== appliedFocus) {
+    const index = deck.findIndex((c) => c.id === focusCardId);
+    if (index >= 0) {
+      setAppliedFocus(focusCardId);
+      setFilter('all');
+      setCurrentIndex(index);
+      setIsFlipped(false);
+    }
   }
 
   const filteredDeck = deck.filter((card) => {
     if (filter === 'mastered') return masteredIds.has(card.id);
     if (filter === 'review') return reviewIds.has(card.id);
+    if (filter === 'mine') return isOwnCard(card);
+    if (filter === 'teacher') return isTeacherCard(card);
     return true;
   });
 
-  const currentCard = filteredDeck[currentIndex] || filteredDeck[0];
+  const position = Math.min(currentIndex, Math.max(filteredDeck.length - 1, 0));
+  const currentCard = filteredDeck[position];
+
+  const masteredCount = cards.filter((c) => masteredIds.has(c.id)).length;
+  const reviewCount = cards.filter((c) => reviewIds.has(c.id)).length;
+  const ownCount = cards.filter(isOwnCard).length;
+  const teacherCount = cards.filter(isTeacherCard).length;
 
   const handleFlip = () => setIsFlipped(!isFlipped);
 
   const handleNext = () => {
     setIsFlipped(false);
-    setCurrentIndex(currentIndex < filteredDeck.length - 1 ? currentIndex + 1 : 0);
+    setCurrentIndex(position < filteredDeck.length - 1 ? position + 1 : 0);
   };
 
   const handlePrev = () => {
     setIsFlipped(false);
-    setCurrentIndex(currentIndex > 0 ? currentIndex - 1 : filteredDeck.length - 1);
+    setCurrentIndex(position > 0 ? position - 1 : filteredDeck.length - 1);
   };
 
   const markMastered = () => {
     if (!currentCard) return;
     const wasMastered = masteredIds.has(currentCard.id);
     onCardStatus(currentCard.id, 'mastered');
-    const masteredAfter = masteredIds.size + (wasMastered ? 0 : 1);
-    if (!wasMastered && masteredAfter === cards.length) confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-    handleNext();
+    if (!homeOf && !wasMastered && masteredCount + 1 === cards.length) confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+    // The card leaves this list by itself, and the next one takes its place.
+    if (homeOf || filter === 'review') setIsFlipped(false);
+    else handleNext();
   };
 
   const markForReview = () => {
     if (!currentCard) return;
     onCardStatus(currentCard.id, 'review');
-    handleNext();
+    if (filter === 'mastered') setIsFlipped(false);
+    else handleNext();
   };
 
   const handleShuffle = () => {
@@ -73,7 +114,7 @@ export const FlashcardsView: React.FC<FlashcardsViewProps> = ({ cards, moduleTit
     setIsFlipped(false);
   };
 
-  const selectFilter = (f: Filter) => {
+  const selectFilter = (f: DeckFilter) => {
     setFilter(f);
     setCurrentIndex(0);
     setIsFlipped(false);
@@ -81,17 +122,12 @@ export const FlashcardsView: React.FC<FlashcardsViewProps> = ({ cards, moduleTit
 
   const playPronunciation = (text: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'en-GB';
-      utterance.rate = 0.9;
-      window.speechSynthesis.speak(utterance);
-    }
+    speak(text);
   };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (isTyping(e.target)) return;
       if (e.code === 'Space') {
         e.preventDefault();
         setIsFlipped((f) => !f);
@@ -122,58 +158,105 @@ export const FlashcardsView: React.FC<FlashcardsViewProps> = ({ cards, moduleTit
     );
   }
 
-  const progressPercent = Math.round((masteredIds.size / cards.length) * 100);
+  const progressPercent = Math.round((masteredCount / cards.length) * 100);
 
-  const filters: { id: Filter; label: string; count: number }[] = [
+  const filters: { id: DeckFilter; label: string; count: number }[] = [
     { id: 'all', label: t('cards.all'), count: cards.length },
-    { id: 'review', label: t('cards.review'), count: reviewIds.size },
-    { id: 'mastered', label: t('cards.mastered'), count: masteredIds.size },
+    { id: 'review', label: t('cards.review'), count: reviewCount },
+    { id: 'mastered', label: t('cards.mastered'), count: masteredCount },
   ];
+  if (teacherCount > 0) filters.push({ id: 'teacher', label: t('cards.fromTeacher'), count: teacherCount });
+  if (ownCount > 0) filters.push({ id: 'mine', label: t('cards.mine'), count: ownCount });
+
+  const home = homeOf?.(currentCard);
+  const cardModuleId = home?.id ?? moduleId;
+  const ownCard = isOwnCard(currentCard) ? currentCard : undefined;
+  const meaning = tr(currentCard.backMeaningPl, currentCard.backMeaningRu) || currentCard.backMeaningPl || currentCard.backMeaningRu;
+  const exampleTranslation = tr(currentCard.exampleTranslation, currentCard.exampleTranslationRu);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-6">
-      <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-        <div>
-          <span className="text-xs font-semibold text-primary">{t('cards.kicker')}</span>
-          <h2 className="text-xl font-semibold text-ink">
-            {t('cards.title')}: {moduleTitle}
-          </h2>
-        </div>
+      {!homeOf && (
+        <div className={`flex flex-col items-center gap-4 sm:flex-row ${hideTitle ? 'justify-center sm:justify-end' : 'justify-between'}`}>
+          {!hideTitle && (
+            <div>
+              <span className="text-xs font-semibold text-primary">{moduleTitle}</span>
+              <h2 className="text-xl font-semibold text-ink">{t('cards.title')}</h2>
+            </div>
+          )}
 
-        <div className="flex items-center space-x-1.5 rounded-lg bg-line-soft p-1 text-xs font-semibold">
-          {filters.map((f) => (
-            <button
-              key={f.id}
-              type="button"
-              onClick={() => selectFilter(f.id)}
-              className={`cursor-pointer rounded-lg px-3 py-1.5 transition ${filter === f.id ? 'bg-surface text-ink' : 'text-ink-2 hover:text-ink'}`}
-            >
-              {f.label} ({f.count})
-            </button>
-          ))}
+          <div className="flex flex-wrap items-center justify-center gap-1.5 rounded-lg bg-line-soft p-1 text-xs font-semibold">
+            {filters.map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => selectFilter(f.id)}
+                className={`cursor-pointer rounded-lg px-3 py-1.5 transition ${filter === f.id ? 'bg-surface text-ink' : 'text-ink-2 hover:text-ink'}`}
+              >
+                {f.label} ({f.count})
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="space-y-1.5">
-        <div className="flex justify-between text-xs font-medium text-ink-2">
-          <span>
-            {t('cards.deckMastery')}: {progressPercent}%
-          </span>
-          <span>{t('cards.cardOf', { i: currentIndex + 1, n: filteredDeck.length })}</span>
+        <div className={`flex text-xs font-medium text-ink-2 ${homeOf ? 'justify-end' : 'justify-between'}`}>
+          {!homeOf && (
+            <span>
+              {t('cards.deckMastery')}: {progressPercent}%
+            </span>
+          )}
+          <span>{t('cards.cardOf', { i: position + 1, n: filteredDeck.length })}</span>
         </div>
-        <div className="h-2 w-full overflow-hidden rounded-full bg-line-soft">
-          <div className="h-full rounded-full bg-primary transition-all duration-300" style={{ width: `${progressPercent}%` }} />
-        </div>
-        <SaveStatus active={masteredIds.size + reviewIds.size > 0} />
+        {!homeOf && (
+          <div className="h-2 w-full overflow-hidden rounded-full bg-line-soft">
+            <div className="h-full rounded-full bg-primary transition-all duration-300" style={{ width: `${progressPercent}%` }} />
+          </div>
+        )}
+        <SaveStatus active={masteredCount + reviewCount > 0} />
       </div>
 
       <div className="perspective-1000 min-h-[360px] cursor-pointer" onClick={handleFlip}>
         <div className={`transform-style-3d relative min-h-[360px] w-full rounded-2xl border border-line/80 transition-transform duration-500 ${isFlipped ? 'rotate-y-180' : ''}`}>
           <div className="backface-hidden absolute inset-0 flex h-full w-full flex-col justify-between rounded-2xl bg-surface p-8">
-            <div className="flex items-center justify-between">
-              <span className="rounded-full border border-primary-tint bg-primary-tint px-3 py-1 text-xs font-semibold text-primary-hover">{currentCard.category}</span>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                {home && <Chip size="sm">{home.title}</Chip>}
+                <span className="rounded-full border border-primary-tint bg-primary-tint px-3 py-1 text-xs font-semibold text-primary-hover">{currentCard.category}</span>
+                {ownCard && <Chip size="sm">{t('cards.yourCard')}</Chip>}
+                {isTeacherCard(currentCard) && <Chip size="sm">{t('cards.fromTeacher')}</Chip>}
+              </div>
               <div className="flex items-center space-x-2">
                 <span className="text-xs font-medium text-ink-3 capitalize">{currentCard.partOfSpeech.replace('_', ' ')}</span>
+                {ownCard && cardModuleId && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        open({ editing: ownCard });
+                      }}
+                      className="cursor-pointer rounded-lg p-2 text-primary transition hover:bg-primary-tint"
+                      title={t('cards.edit')}
+                      aria-label={t('cards.edit')}
+                    >
+                      <Pencil className="h-5 w-5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeOwn(cardModuleId, ownCard);
+                      }}
+                      className="cursor-pointer rounded-lg p-2 text-primary transition hover:bg-primary-tint"
+                      title={t('cards.delete')}
+                      aria-label={t('cards.delete')}
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
+                  </>
+                )}
                 <button
                   type="button"
                   onClick={(e) => playPronunciation(currentCard.front, e)}
@@ -215,16 +298,16 @@ export const FlashcardsView: React.FC<FlashcardsViewProps> = ({ cards, moduleTit
               </div>
 
               <div className="mb-4 space-y-1">
-                <div className="text-2xl leading-8 font-semibold text-ink">{tr(currentCard.backMeaningPl, currentCard.backMeaningRu)}</div>
-                <div className="text-base leading-6 text-ink-2">{currentCard.backMeaningEn}</div>
+                {meaning && <div className="text-2xl leading-8 font-semibold text-ink">{meaning}</div>}
+                {currentCard.backMeaningEn && <div className="text-base leading-6 text-ink-2">{currentCard.backMeaningEn}</div>}
               </div>
 
-              <div className="mb-3 rounded-lg border border-line bg-surface p-3.5">
-                <div className="mb-1 text-base leading-6 text-ink italic">"{currentCard.exampleSentence}"</div>
-                {tr(currentCard.exampleTranslation, currentCard.exampleTranslationRu) && (
-                  <div className="text-sm leading-5 text-ink-2">{tr(currentCard.exampleTranslation, currentCard.exampleTranslationRu)}</div>
-                )}
-              </div>
+              {currentCard.exampleSentence && (
+                <div className="mb-3 rounded-lg border border-line bg-surface p-3.5">
+                  <div className="mb-1 text-base leading-6 text-ink italic">"{currentCard.exampleSentence}"</div>
+                  {exampleTranslation && <div className="text-sm leading-5 text-ink-2">{exampleTranslation}</div>}
+                </div>
+              )}
             </div>
 
             <div className="flex items-center justify-between border-t border-line pt-4 text-sm text-ink-2">
@@ -235,19 +318,19 @@ export const FlashcardsView: React.FC<FlashcardsViewProps> = ({ cards, moduleTit
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-3 pt-2">
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-2 sm:flex-nowrap">
         <Button variant="secondary" size="icon" onClick={handlePrev} title={`${t('cards.prev')} (←)`} aria-label={t('cards.prev')}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
 
-        <div className="flex w-full max-w-md items-center justify-center gap-3">
-          <Button variant="secondary" full onClick={markForReview}>
+        <div className="flex w-full max-w-md items-center justify-center gap-3 max-sm:order-first max-sm:max-w-none">
+          <Button variant="secondary" full onClick={markForReview} className="max-sm:!px-3">
             {t('cards.review')}
           </Button>
-          <Button variant="ghost" size="icon" onClick={handleFlip} title={`${t('cards.flip')} (Space)`} aria-label={t('cards.flip')}>
+          <Button variant="ghost" size="icon" onClick={handleFlip} title={`${t('cards.flip')} (Space)`} aria-label={t('cards.flip')} className="max-sm:!hidden">
             <RotateCw className="h-5 w-5" />
           </Button>
-          <Button full onClick={markMastered}>
+          <Button full onClick={markMastered} className="max-sm:!px-3">
             {t('cards.mastered')}
           </Button>
         </div>

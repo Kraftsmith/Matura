@@ -213,7 +213,7 @@ export const InteractiveTestView: React.FC<InteractiveTestViewProps> = ({ module
                     )}
 
                     <div className="mb-4 text-base leading-relaxed text-ink">
-                      {q.type === 'multiple-choice' || q.type === 'mini-dialogue' ? (
+                      {q.type === 'multiple-choice' ? (
                         <div>
                           <div className="mb-4 whitespace-pre-line">
                             {q.sentencePrefix}

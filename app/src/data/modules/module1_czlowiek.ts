@@ -610,20 +610,6 @@ export const module1Czlowiek: MaturaModule = {
       }
     },
     {
-      id: 'test-10',
-      type: 'mini-dialogue',
-      prompt: 'Uzupełnij brakującą wypowiedź w minidialogu, wybierając poprawną opcję:',
-      sentencePrefix: 'X: Do you get along well with your stepbrother?\nY: Not really. We almost never ',
-      sentenceSuffix: ' on anything.',
-      options: ['see eye to eye', 'turn a blind eye', 'pull someone\'s leg', 'keep an eye out'],
-      correctAnswers: ['see eye to eye'],
-      explanation: 'Idiom "see eye to eye" oznacza "zgadzać się w zupełności". "Turn a blind eye" to przymykać oko, a "pull someone\'s leg" to nabierać kogoś.',
-      level: 'Podstawowy',
-      grammarRef: {
-        topic: 'Idiomy relacji międzyludzkich'
-      }
-    },
-    {
       id: 'test-11',
       type: 'key-word-transformation',
       prompt: 'Przekształć zdanie z użyciem podanego słowa klucza (od 2 do 5 słów):',

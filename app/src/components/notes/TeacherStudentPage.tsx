@@ -3,7 +3,10 @@ import { Eye, EyeOff, StickyNote } from 'lucide-react';
 import type { MaturaModule, SectionType } from '../../types';
 import type { UserProfile } from '../../users';
 import { DashboardView } from '../DashboardView';
-import { Button, Tabs } from '../ui';
+import { Button, Tabs, Toast } from '../ui';
+import { TeacherCardsPanel } from '../TeacherCardsPanel';
+import { useSettings } from '../../useSettings';
+import { useTeacherCards } from '../../useTeacherCards';
 import { TeacherNotesPanel } from './TeacherNotesPanel';
 import { useNotesStrings } from './notesStrings';
 import { useStudentNotes } from './useStudentNotes';
@@ -26,25 +29,31 @@ const writeHidden = (hidden: boolean) => {
   }
 };
 
-type Tab = 'progress' | 'notes';
+type Tab = 'progress' | 'notes' | 'cards';
 
 interface TeacherStudentPageProps {
   modules: MaturaModule[];
   student: UserProfile;
+  /** Which tab to open first; the lesson bar links straight to the cards. */
+  initialTab?: 'cards';
   headerAction: React.ReactNode;
   onOpen: (moduleId: string, section: SectionType) => void;
+  onOpenDeck: (moduleId: string) => void;
   onBackToClass: () => void;
   onSignedOut: () => void;
 }
 
 /** A learner's page as the teacher sees it. Exists only in the lazy chunk, loaded after the server confirmed the teacher. */
-const TeacherStudentPage: React.FC<TeacherStudentPageProps> = ({ modules, student, headerAction, onOpen, onBackToClass, onSignedOut }) => {
+const TeacherStudentPage: React.FC<TeacherStudentPageProps> = ({ modules, student, initialTab, headerAction, onOpen, onOpenDeck, onBackToClass, onSignedOut }) => {
   const nt = useNotesStrings();
+  const { t } = useSettings();
+  const { cardsOf } = useTeacherCards();
   const notesState = useStudentNotes(student.id, onSignedOut);
-  const [tab, setTab] = useState<Tab>('progress');
+  const [tab, setTab] = useState<Tab>(initialTab ?? 'progress');
   const [hidden, setHidden] = useState(readHidden);
   const [moduleFilter, setModuleFilter] = useState('');
   const { deleted, deleteFailed, notes, undoDelete } = notesState;
+  const cardCount = Object.values(cardsOf(student.id)).reduce((n, cards) => n + cards.length, 0);
 
   const perModule = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -55,7 +64,7 @@ const TeacherStudentPage: React.FC<TeacherStudentPageProps> = ({ modules, studen
   const toggleHidden = () => {
     writeHidden(!hidden);
     setHidden(!hidden);
-    setTab('progress');
+    if (tab === 'notes') setTab('progress');
   };
 
   const openTopic = (moduleId: string) => {
@@ -89,6 +98,7 @@ const TeacherStudentPage: React.FC<TeacherStudentPageProps> = ({ modules, studen
         user={student}
         teacherView
         onOpen={onOpen}
+        onOpenDeck={onOpenDeck}
         onBackToClass={onBackToClass}
         headerAction={
           <>
@@ -99,34 +109,28 @@ const TeacherStudentPage: React.FC<TeacherStudentPageProps> = ({ modules, studen
         resetConfirmSuffix={nt('notes.resetKeeps')}
         renderTopicBadge={hidden ? undefined : topicBadge}
         tabs={
-          hidden ? undefined : (
-            <Tabs<Tab>
-              ariaLabel={nt('notes.tabsLabel')}
-              value={tab}
-              onChange={setTab}
-              items={[
-                { id: 'progress', label: nt('notes.tabProgress') },
-                { id: 'notes', label: nt('notes.tabNotes'), count: notes.length },
-              ]}
-            />
-          )
+          <Tabs<Tab>
+            ariaLabel={nt('notes.tabsLabel')}
+            value={tab}
+            onChange={setTab}
+            items={[
+              { id: 'progress', label: nt('notes.tabProgress') },
+              ...(hidden ? [] : [{ id: 'notes' as const, label: nt('notes.tabNotes'), count: notes.length }]),
+              { id: 'cards', label: t('lesson.tab'), count: cardCount },
+            ]}
+          />
         }
         replacement={
-          !hidden && tab === 'notes' ? (
+          tab === 'cards' ? (
+            <TeacherCardsPanel student={student} modules={modules} />
+          ) : !hidden && tab === 'notes' ? (
             <TeacherNotesPanel studentId={student.id} studentName={student.name} modules={modules} notesState={notesState} moduleFilter={moduleFilter} onModuleFilter={setModuleFilter} />
           ) : undefined
         }
       />
 
       {(deleted || deleteFailed) && (
-        <div role="status" className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-lg bg-ink px-4 py-3 text-sm leading-5 text-white shadow-lg">
-          {deleted ? nt('notes.deleted') : nt('notes.deleteFailed')}
-          {deleted && (
-            <button type="button" onClick={undoDelete} className="cursor-pointer font-semibold underline">
-              {nt('notes.undo')}
-            </button>
-          )}
-        </div>
+        <Toast action={deleted ? { label: nt('notes.undo'), onClick: undoDelete } : undefined}>{deleted ? nt('notes.deleted') : nt('notes.deleteFailed')}</Toast>
       )}
     </>
   );

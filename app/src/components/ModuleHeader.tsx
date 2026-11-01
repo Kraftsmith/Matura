@@ -11,19 +11,24 @@ interface ModuleHeaderProps {
   onSectionChange: (section: SectionType) => void;
   /** Route of the open section without the profile, for "Copy link". */
   shareRest: string;
+  /** Cards in this user's deck, their own included. */
+  deckSize: number;
   masteredCardsCount: number;
   testScore: number | null;
+  exercisesTotal: number;
+  exercisesPassed: number;
 }
 
-export const ModuleHeader: React.FC<ModuleHeaderProps> = ({ module, activeSection, onSectionChange, shareRest, masteredCardsCount, testScore }) => {
+export const ModuleHeader: React.FC<ModuleHeaderProps> = ({ module, activeSection, onSectionChange, shareRest, deckSize, masteredCardsCount, testScore, exercisesTotal, exercisesPassed }) => {
   const { t } = useSettings();
 
   const tabs: { id: SectionType; label: string; count?: number }[] = [
     { id: 'opis-foto', label: t('tab.picture') },
     { id: 'gramatyka', label: t('tab.grammar'), count: module.testQuestions.length },
     { id: 'slownictwo', label: t('tab.vocabulary') },
+    { id: 'srodki', label: t('tab.srodki'), count: exercisesTotal },
     { id: 'pisanie', label: t('tab.writing') },
-    { id: 'fiszki', label: t('tab.flashcards'), count: module.flashcards.length },
+    { id: 'fiszki', label: t('tab.flashcards'), count: deckSize },
   ];
 
   const levelName = module.badge === 'B1+' ? t('hdr.levelBasic') : t('hdr.levelExtended');
@@ -33,7 +38,7 @@ export const ModuleHeader: React.FC<ModuleHeaderProps> = ({ module, activeSectio
       <b className="font-semibold text-ink">{module.badge}</b> {levelName}
     </span>,
     <span key="cards">
-      <b className="font-semibold text-ink">{module.flashcards.length}</b> {t('hdr.cards')}
+      <b className="font-semibold text-ink">{deckSize}</b> {t('hdr.cards')}
     </span>,
   ];
   if (masteredCardsCount > 0)
@@ -46,6 +51,12 @@ export const ModuleHeader: React.FC<ModuleHeaderProps> = ({ module, activeSectio
     meta.push(
       <span key="t">
         {t('hdr.test')}: <b className="font-semibold text-ink">{testScore}%</b>
+      </span>,
+    );
+  if (exercisesPassed > 0)
+    meta.push(
+      <span key="s">
+        {t('hdr.srodki')}: <b className="font-semibold text-ink">{exercisesPassed}/{exercisesTotal}</b>
       </span>,
     );
 

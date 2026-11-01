@@ -1,4 +1,4 @@
-// Creates the tables for the teacher's login and notes. Safe to run again.
+// Creates the tables for the teacher's login, notes and the flashcards added for learners. Safe to run again.
 // Run: npm run db:migrate
 import { neon } from '@neondatabase/serverless';
 
@@ -38,6 +38,27 @@ await sql`
     updated_at timestamptz not null default now()
   )`;
 await sql`create index if not exists teacher_notes_student on teacher_notes (student_id, created_at desc)`;
+
+await sql`
+  create table if not exists user_cards (
+    id text primary key,
+    user_id text not null,
+    module_id text not null,
+    front text not null check (char_length(front) between 1 and 100),
+    part_of_speech text not null,
+    meaning_pl text not null default '',
+    meaning_ru text,
+    meaning_en text,
+    example text not null default '',
+    example_pl text,
+    example_ru text,
+    category text not null,
+    source text not null,
+    source_ref text,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz
+  )`;
+await sql`create index if not exists user_cards_user on user_cards (user_id, created_at)`;
 
 await sql`insert into users (id, role) values ('teacher', 'teacher') on conflict (id) do nothing`;
 

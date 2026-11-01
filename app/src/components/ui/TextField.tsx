@@ -69,7 +69,7 @@ export const TextArea: React.FC<TextAreaProps> = ({ label, hint, error, trailing
 };
 
 /** Inline answer input used inside a sentence (key word transformation, word formation). */
-export const InlineInput: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { state?: 'idle' | 'correct' | 'wrong' }> = ({
+export const InlineInput: React.FC<React.ComponentProps<'input'> & { state?: 'idle' | 'correct' | 'wrong' }> = ({
   state = 'idle', className = '', ...rest
 }) => {
   const tone =

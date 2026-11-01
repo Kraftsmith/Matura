@@ -1,8 +1,11 @@
-import type { GapFillItem, MaturaModule, TestQuestion } from './types';
+import type { Flashcard, GapFillItem, LanguageUseExerciseType, MaturaModule, TestQuestion } from './types';
 import type { I18nKey } from './i18n';
 import { vocabularyTextsByModule } from './data/vocabularyTexts';
 import { vocabularyExercisesByText } from './data/vocabularyExercises';
-import { GRAMMAR_PASS_SCORE, emptyModuleProgress, type ModuleProgress, type ProgressState } from './progress-context';
+import { languageUseExercisesByModule } from './data/languageUseExercises';
+import { EXERCISE_PASS_SCORE, GRAMMAR_PASS_SCORE, emptyModuleProgress, type ModuleProgress, type ProgressState } from './progress-context';
+import { deckOf, type TeacherCards } from './decks';
+import { normalise } from './text';
 
 export type GrammarStatus = 'none' | 'inProgress' | 'passed';
 
@@ -15,9 +18,6 @@ export const isTestAnswerCorrect = (q: TestQuestion, answer = ''): boolean => {
   const a = answer.trim().toLowerCase();
   return !!a && q.correctAnswers.some((c) => c.trim().toLowerCase() === a);
 };
-
-/** Lower-case, single-spaced, hyphens treated as spaces, so "rip-off" and "Rip off" both match. */
-const normalise = (s: string) => s.toLowerCase().replace(/[-‐-―]/g, ' ').replace(/[’‘]/g, "'").replace(/\s+/g, ' ').trim();
 
 export const isGapCorrect = (item: GapFillItem, value = ''): boolean => {
   const v = normalise(value);
@@ -42,13 +42,24 @@ export interface ExerciseWork {
   answers: WorkAnswer[];
 }
 
+/** One tried "Środki językowe" exercise, as the dashboards list it. */
+export interface LanguageUseWork {
+  id: string;
+  functionLabel: string;
+  type: LanguageUseExerciseType;
+  best: number;
+  attempts: number;
+  lastAt: string;
+}
+
 /** Everything the learner typed in one module, in a form the dashboards can show. */
 export interface ModuleWork {
   test?: { answered: number; checked: number; correct: number; total: number; answers: WorkAnswer[] };
   exercises: ExerciseWork[];
+  languageUse: LanguageUseWork[];
   notes: { question: string; text: string }[];
   essay?: { title: string; text: string; words: number; at: string };
-  /** Tasks with saved work: the test, each exercise, the notes and the essay count once each. */
+  /** Tasks with saved work: the test, each exercise of either kind, the notes and the essay count once each. */
   count: number;
 }
 
@@ -84,6 +95,11 @@ const summarizeWork = (module: MaturaModule, p: ModuleProgress): ModuleWork => {
     return [{ id: text.id, title: text.title, total: items.length, best: saved.best, revealed, answers }];
   });
 
+  const languageUse = (languageUseExercisesByModule[module.id] ?? []).flatMap((e): LanguageUseWork[] => {
+    const result = p.exercises?.[e.id];
+    return result ? [{ id: e.id, functionLabel: e.functionLabel, type: e.type, best: result.best, attempts: result.attempts, lastAt: result.lastAt }] : [];
+  });
+
   const notes = module.pictureDescription.examQuestions.flatMap((q) => {
     const text = p.pictureNotes?.[q.questionNumber]?.trim();
     return text ? [{ question: q.questionText, text }] : [];
@@ -93,49 +109,60 @@ const summarizeWork = (module: MaturaModule, p: ModuleProgress): ModuleWork => {
     ? { title: module.writingPrompt.title, text: p.essay.text, words: countWords(p.essay.text), at: p.essay.at }
     : undefined;
 
-  return { test, exercises, notes, essay, count: (test ? 1 : 0) + exercises.length + (notes.length ? 1 : 0) + (essay ? 1 : 0) };
+  return { test, exercises, languageUse, notes, essay, count: (test ? 1 : 0) + exercises.length + languageUse.length + (notes.length ? 1 : 0) + (essay ? 1 : 0) };
 };
 
 export interface ModuleSummary {
   module: MaturaModule;
   total: number;
+  /** The learner's own cards in the deck. */
+  own: number;
   mastered: number;
   review: number;
   wordsPct: number;
   best?: number;
   attempts: number;
   grammar: GrammarStatus;
+  exercisesTotal: number;
+  exercisesPassed: number;
   work: ModuleWork;
 }
 
 /** Counts only ids that still exist in the deck, in case data changed between sessions. */
-export const summarizeModule = (module: MaturaModule, p: ModuleProgress = emptyModuleProgress()): ModuleSummary => {
-  const total = module.flashcards.length;
-  const ids = new Set(module.flashcards.map((c) => c.id));
+export const summarizeModule = (module: MaturaModule, p: ModuleProgress = emptyModuleProgress(), deck: Flashcard[] = module.flashcards, own = 0): ModuleSummary => {
+  const total = deck.length;
+  const ids = new Set(deck.map((c) => c.id));
   const mastered = p.mastered.filter((id) => ids.has(id)).length;
   const review = p.review.filter((id) => ids.has(id)).length;
   const best = p.test?.best;
+  const work = summarizeWork(module, p);
   return {
     module,
     total,
+    own,
     mastered,
     review,
     wordsPct: total ? (mastered / total) * 100 : 0,
     best,
     attempts: p.test?.attempts ?? 0,
     grammar: grammarStatusOf(best),
-    work: summarizeWork(module, p),
+    exercisesTotal: languageUseExercisesByModule[module.id]?.length ?? 0,
+    exercisesPassed: work.languageUse.filter((e) => e.best >= EXERCISE_PASS_SCORE).length,
+    work,
   };
 };
 
 export interface UserSummary {
   rows: ModuleSummary[];
   totalWords: number;
+  ownCards: number;
   masteredWords: number;
   reviewWords: number;
   wordsPct: number;
   grammarPassed: number;
   grammarStarted: number;
+  exercisesTotal: number;
+  exercisesPassed: number;
   startedModules: number;
   /** Tasks with saved work across all modules. */
   workCount: number;
@@ -143,8 +170,8 @@ export interface UserSummary {
   lastModule?: MaturaModule;
 }
 
-export const summarizeUser = (modules: MaturaModule[], state: ProgressState | undefined): UserSummary => {
-  const rows = modules.map((m) => summarizeModule(m, state?.modules[m.id]));
+export const summarizeUser = (modules: MaturaModule[], state: ProgressState | undefined, teacherCards?: TeacherCards): UserSummary => {
+  const rows = modules.map((m) => summarizeModule(m, state?.modules[m.id], deckOf(m, state, teacherCards), state?.cards?.[m.id]?.length ?? 0));
   const totalWords = rows.reduce((a, r) => a + r.total, 0);
   const masteredWords = rows.reduce((a, r) => a + r.mastered, 0);
   const reviewWords = rows.reduce((a, r) => a + r.review, 0);
@@ -160,11 +187,14 @@ export const summarizeUser = (modules: MaturaModule[], state: ProgressState | un
   return {
     rows,
     totalWords,
+    ownCards: rows.reduce((a, r) => a + r.own, 0),
     masteredWords,
     reviewWords,
     wordsPct: totalWords ? Math.round((masteredWords / totalWords) * 100) : 0,
     grammarPassed,
     grammarStarted,
+    exercisesTotal: rows.reduce((a, r) => a + r.exercisesTotal, 0),
+    exercisesPassed: rows.reduce((a, r) => a + r.exercisesPassed, 0),
     startedModules,
     workCount: rows.reduce((a, r) => a + r.work.count, 0),
     lastActiveAt,

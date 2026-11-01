@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { GapFillItem, VocabularyItem, VocabularyText } from '../types';
-import { Volume2, ImageIcon, MessageCircle, Languages, Maximize2, ChevronDown, ChevronUp, PenLine, RotateCcw, Eye, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { Volume2, ImageIcon, MessageCircle, Languages, Maximize2, ChevronDown, ChevronUp, PenLine, RotateCcw, Eye, CheckCircle2, ArrowLeft, Plus, Check } from 'lucide-react';
 import { Button, Chip, InlineInput, SectionTitle } from './ui';
 import { ImageLightbox } from './ImageLightbox';
 import { useSettings } from '../useSettings';
@@ -12,6 +12,11 @@ import { isGapCorrect } from '../progressSummary';
 import { SaveStatus } from './SaveStatus';
 import { buildHash } from '../userRoute';
 import { CopyLinkButton } from './CopyLinkButton';
+import { LessonBar } from './LessonBar';
+import { SelectionCardBar } from './SelectionCardBar';
+import { speak } from '../speech';
+import { useAddFlashcard } from '../useAddFlashcard';
+import { useLessonStudent } from '../useLessonStudent';
 
 /** Gap-fill sentences under a text: type the key word, check, see the answers, try again. */
 const GapFillExercise: React.FC<{ moduleId: string; textId: string; items: GapFillItem[] }> = ({ moduleId, textId, items }) => {
@@ -129,22 +134,15 @@ interface VocabularyViewProps {
   textId?: string;
   vocabulary: VocabularyItem[];
   moduleTitle: string;
+  /** The server confirmed the teacher, so they can add cards for a learner. */
+  teacherSignedIn?: boolean;
 }
 
-const speak = (text: string) => {
-  if (!('speechSynthesis' in window)) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'en-GB';
-  u.rate = 0.9;
-  window.speechSynthesis.speak(u);
-};
-
 /** Renders a paragraph, turning **term** into a highlighted key word. */
-const Paragraph: React.FC<{ text: string }> = ({ text }) => {
+const Paragraph: React.FC<{ text: string; textId: string }> = ({ text, textId }) => {
   const parts = text.split('**');
   return (
-    <p className="text-base leading-7 text-ink">
+    <p data-card-text={textId} className="text-base leading-7 text-ink">
       {parts.map((part, i) =>
         i % 2 === 1 ? (
           <mark key={i} className="rounded bg-primary-tint px-0.5 font-semibold text-primary-hover">
@@ -188,9 +186,34 @@ const Illustration: React.FC<{ src: string; alt: string; onOpen: () => void }> =
   );
 };
 
-const TextCard: React.FC<{ moduleId: string; text: VocabularyText; route: string; showTranslations: boolean }> = ({ moduleId, text, route, showTranslations }) => {
+/** A word that is already in the deck: the way to its card. */
+const InDeckLink: React.FC<{ moduleId: string; cardId: string }> = ({ moduleId, cardId }) => {
+  const { t } = useSettings();
+  const { user } = useUser();
+  return (
+    <a
+      href={`#${buildHash(user.id, `${moduleId}/fiszki/${cardId}`)}`}
+      className="grid h-6 w-6 shrink-0 place-items-center rounded text-success hover:bg-primary-tint"
+      title={t('add.inDeck')}
+      aria-label={t('add.inDeck')}
+    >
+      <Check className="h-4 w-4" />
+    </a>
+  );
+};
+
+interface TextCardProps {
+  moduleId: string;
+  text: VocabularyText;
+  route: string;
+  showTranslations: boolean;
+  targetUserId?: string;
+}
+
+const TextCard: React.FC<TextCardProps> = ({ moduleId, text, route, showTranslations, targetUserId }) => {
   const { tr } = useSettings();
   const { user } = useUser();
+  const add = useAddFlashcard(moduleId, targetUserId);
   const [lightbox, setLightbox] = useState(false);
 
   return (
@@ -222,15 +245,17 @@ const TextCard: React.FC<{ moduleId: string; text: VocabularyText; route: string
 
         <div className="grid max-w-[72ch] gap-4">
           {text.paragraphs.map((p, i) => (
-            <Paragraph key={i} text={p} />
+            <Paragraph key={i} text={p} textId={text.id} />
           ))}
         </div>
 
         <section className="grid gap-3 border-t border-line-soft pt-5">
           <h4 className="text-base leading-6 font-semibold">Key vocabulary</h4>
           <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-2">
-            {text.glossary.map((g) => (
-              <div key={g.term} className="grid grid-cols-[auto_1fr] items-start gap-x-2 border-b border-line-soft py-2 last:border-b-0 sm:[&:nth-last-child(2)]:border-b-0">
+            {text.glossary.map((g) => {
+              const cardId = add.cardIdFor(g.term);
+              return (
+              <div key={g.term} className="grid grid-cols-[auto_1fr_auto] items-start gap-x-2 border-b border-line-soft py-2 last:border-b-0 sm:[&:nth-last-child(2)]:border-b-0">
                 <button
                   type="button"
                   onClick={() => speak(g.term)}
@@ -247,8 +272,10 @@ const TextCard: React.FC<{ moduleId: string; text: VocabularyText; route: string
                     <dd className="text-sm leading-5 text-ink-3 italic">{tr(g.polish, g.russian)}</dd>
                   )}
                 </div>
+                {cardId && <InDeckLink moduleId={moduleId} cardId={cardId} />}
               </div>
-            ))}
+              );
+            })}
           </dl>
         </section>
 
@@ -272,9 +299,11 @@ const TextCard: React.FC<{ moduleId: string; text: VocabularyText; route: string
   );
 };
 
-export const VocabularyView: React.FC<VocabularyViewProps> = ({ moduleId, texts, textId, vocabulary, moduleTitle }) => {
+export const VocabularyView: React.FC<VocabularyViewProps> = ({ moduleId, texts, textId, vocabulary, moduleTitle, teacherSignedIn = false }) => {
   const { tr, t } = useSettings();
   const { user } = useUser();
+  const [lessonStudent, chooseStudent] = useLessonStudent(teacherSignedIn);
+  const add = useAddFlashcard(moduleId, lessonStudent);
   const sectionRoute = `${moduleId}/slownictwo`;
   const focused = textId ? texts.find((x) => x.id === textId) : undefined;
 
@@ -289,6 +318,8 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({ moduleId, texts,
 
   return (
     <div className="mx-auto grid max-w-4xl gap-8 px-4 py-6">
+      {teacherSignedIn && <LessonBar student={lessonStudent} onChoose={chooseStudent} />}
+      <SelectionCardBar moduleId={moduleId} texts={texts} targetUserId={lessonStudent} />
       <SectionTitle
         title={`${t('vocab.title')}: ${moduleTitle}`}
         description={`${texts.length} ${texts.length === 1 ? 'text' : 'texts'} on the CKE subtopics of this module. Read, listen, learn the highlighted words, then answer the questions aloud.`}
@@ -312,7 +343,7 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({ moduleId, texts,
             <ArrowLeft className="h-4 w-4" />
             {t('vocab.allTexts')} ({texts.length})
           </a>
-          <TextCard moduleId={moduleId} text={focused} route={`${sectionRoute}/${focused.id}`} showTranslations={showTranslations} />
+          <TextCard moduleId={moduleId} text={focused} route={`${sectionRoute}/${focused.id}`} showTranslations={showTranslations} targetUserId={lessonStudent} />
         </div>
       ) : texts.length === 0 ? (
         <div className="rounded-2xl border border-line bg-surface p-10 text-center">
@@ -322,7 +353,7 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({ moduleId, texts,
       ) : (
         <div className="grid gap-8">
           {texts.map((t) => (
-            <TextCard key={t.id} moduleId={moduleId} text={t} route={`${sectionRoute}/${t.id}`} showTranslations={showTranslations} />
+            <TextCard key={t.id} moduleId={moduleId} text={t} route={`${sectionRoute}/${t.id}`} showTranslations={showTranslations} targetUserId={lessonStudent} />
           ))}
         </div>
       )}
@@ -343,7 +374,9 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({ moduleId, texts,
           </button>
           {listOpen && (
             <ul className="border-t border-line-soft">
-              {sortedList.map((item) => (
+              {sortedList.map((item) => {
+                const cardId = add.cardIdFor(item.english);
+                return (
                 <li key={item.id} className="grid gap-1 border-b border-line-soft px-6 py-3 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
@@ -358,13 +391,36 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({ moduleId, texts,
                       >
                         <Volume2 className="h-4 w-4" />
                       </button>
+                      {cardId ? (
+                        <InDeckLink moduleId={moduleId} cardId={cardId} />
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            add.open({
+                              front: item.english,
+                              backMeaningPl: item.polish,
+                              backMeaningRu: item.russian,
+                              exampleSentence: item.example,
+                              category: item.category,
+                              source: 'slownictwo-list',
+                            })
+                          }
+                          className="grid h-8 w-8 cursor-pointer place-items-center rounded text-ink-3 hover:bg-primary-tint hover:text-primary"
+                          title={t('add.toCards')}
+                          aria-label={`${t('add.toCards')}: ${item.english}`}
+                        >
+                          <Plus className="h-5 w-5" />
+                        </button>
+                      )}
                     </div>
                     <p className="text-sm leading-5 text-ink-2 italic">"{item.example}"</p>
                     {showTranslations && <p className="text-sm leading-5 text-ink-3">{tr(item.polish, item.russian)}</p>}
                   </div>
                   <span className="text-xs leading-4 text-ink-3">{item.category}</span>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           )}
         </section>

@@ -1,4 +1,5 @@
 import { createContext } from 'react';
+import type { UserFlashcard } from './types';
 
 /** The test as the learner left it: answers typed so far and the tasks already checked. */
 export interface TestWork {
@@ -17,6 +18,14 @@ export interface GapWork {
   at: string; // ISO date
 }
 
+/** Result of one "Środki językowe" exercise. */
+export interface ExerciseResult {
+  best: number; // 0–100
+  last: number;
+  attempts: number;
+  lastAt: string; // ISO date
+}
+
 /** How well one module is known. Everything is derived from what the learner actually did. */
 export interface ModuleProgress {
   /** Flashcard ids marked "Opanowane". */
@@ -33,6 +42,8 @@ export interface ModuleProgress {
   testWork?: TestWork;
   /** Gap-fill exercises, keyed by vocabulary text id. */
   gapWork?: Record<string, GapWork>;
+  /** Results of the "Środki językowe" exercises, keyed by exercise id. Saved every time an exercise is checked. */
+  exercises?: Record<string, ExerciseResult>;
   /** Notes to the oral exam questions, keyed by question number. */
   pictureNotes?: Record<number, string>;
   essay?: { text: string; at: string };
@@ -43,6 +54,10 @@ export interface ProgressState {
   version: 1;
   modules: Record<string, ModuleProgress>;
   lastModuleId?: string;
+  /** The learner's own flashcards, keyed by module id. Content, not status: "Wyczyść postęp" keeps them. */
+  cards?: Record<string, UserFlashcard[]>;
+  /** Deck opened last in the Fiszki module, for "Kontynuuj". */
+  lastDeckId?: string;
   /** ISO date of the last change to any of the learner's work. */
   updatedAt?: string;
 }
@@ -62,7 +77,17 @@ export interface ProgressValue {
   updateModule: (moduleId: string, fn: (m: ModuleProgress) => ModuleProgress) => void;
   setCardStatus: (moduleId: string, cardId: string, status: CardStatus) => void;
   saveTestResult: (moduleId: string, scorePercent: number) => void;
+  saveExerciseResult: (moduleId: string, exerciseId: string, scorePercent: number) => void;
   touchModule: (moduleId: string) => void;
+  touchDeck: (moduleId: string) => void;
+  addCard: (moduleId: string, card: Omit<UserFlashcard, 'id' | 'createdAt'>) => UserFlashcard;
+  updateCard: (moduleId: string, cardId: string, patch: Partial<UserFlashcard>) => void;
+  /** Also drops the card's status. Returns what was removed, so "Cofnij" can put it back. */
+  removeCard: (moduleId: string, cardId: string) => { card: UserFlashcard; status: CardStatus } | undefined;
+  /** "Cofnij": puts a removed card back at the end of the deck, with its status. */
+  restoreCard: (moduleId: string, card: UserFlashcard, status: CardStatus) => void;
+  /** Moves a card to another module's deck, applying an edit if there is one; its status moves with it. */
+  moveCard: (fromModuleId: string, toModuleId: string, cardId: string, patch?: Partial<UserFlashcard>) => void;
   resetUser: (userId: string) => void;
   /** The last write to the browser's storage failed: the work lives only in this tab. */
   saveFailed: boolean;
@@ -70,6 +95,8 @@ export interface ProgressValue {
 
 /** A module's grammar counts as studied once its test is passed at this score. */
 export const GRAMMAR_PASS_SCORE = 80;
+/** A "Środki językowe" exercise counts as passed from this best score. */
+export const EXERCISE_PASS_SCORE = 80;
 
 export const emptyModuleProgress = (): ModuleProgress => ({ mastered: [], review: [] });
 export const emptyProgressState = (): ProgressState => ({ version: 1, modules: {} });

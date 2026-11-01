@@ -7,6 +7,7 @@ import { Avatar, GrammarStatusChip } from './GrammarStatusChip';
 import { WorkLine } from './CompletedTasks';
 import { useProgress } from '../useProgress';
 import { useSettings } from '../useSettings';
+import { useTeacherCards } from '../useTeacherCards';
 import { GRAMMAR_PASS_SCORE } from '../progress-context';
 import { formatRelative, summarizeUser, type UserSummary } from '../progressSummary';
 
@@ -67,6 +68,9 @@ const StudentCard: React.FC<{ student: UserProfile; summary: UserSummary; module
         </div>
         <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm leading-5 text-ink-2">
           <span>
+            {t('teacher.exercises')}: <b className="font-semibold text-ink">{s.exercisesPassed}</b> / {s.exercisesTotal}
+          </span>
+          <span>
             {t('teacher.testsStarted')}: <b className="font-semibold text-ink">{s.grammarStarted}</b>
           </span>
           <span>
@@ -78,6 +82,9 @@ const StudentCard: React.FC<{ student: UserProfile; summary: UserSummary; module
           <span>
             {t('work.title')}: <b className="font-semibold text-ink">{s.workCount}</b>
           </span>
+          <span>
+            {t('dash.ownCards')}: <b className="font-semibold text-ink">{s.ownCards}</b>
+          </span>
         </div>
       </dl>
       {extra}
@@ -88,7 +95,8 @@ const StudentCard: React.FC<{ student: UserProfile; summary: UserSummary; module
 export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ modules, students, onOpenStudent, headerAction, renderStudentExtra }) => {
   const { allStates } = useProgress();
   const { t } = useSettings();
-  const summaries = students.map((st) => ({ student: st, summary: summarizeUser(modules, allStates[st.id]) }));
+  const { cardsOf } = useTeacherCards();
+  const summaries = students.map((st) => ({ student: st, summary: summarizeUser(modules, allStates[st.id], cardsOf(st.id)) }));
   const cols = `minmax(0,1.4fr) repeat(${students.length}, minmax(0,1fr))`;
   const attemptsLabel = (n: number) => (n === 1 ? t('dash.attempt', { n }) : t('dash.attempts', { n }));
 

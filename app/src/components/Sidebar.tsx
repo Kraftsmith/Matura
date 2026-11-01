@@ -1,6 +1,6 @@
 import React from 'react';
 import type { MaturaModule } from '../types';
-import { LayoutDashboard, X } from 'lucide-react';
+import { Layers, LayoutDashboard, X } from 'lucide-react';
 import { ListRow } from './ui';
 import { useSettings } from '../useSettings';
 
@@ -9,12 +9,18 @@ interface SidebarProps {
   /** null while the dashboard is open: no module row is highlighted. */
   currentModuleId: string | null;
   masteredCardsMap: Record<string, number>;
+  /** Cards in each module's deck for this user. */
+  deckSizeMap: Record<string, number>;
+  /** Cards marked "Do powtórki" across all decks. */
+  reviewCount: number;
+  fiszkiActive: boolean;
   testScoresMap: Record<string, number>;
   /** False for the teacher: module rows show deck size instead of personal progress. */
   showProgress?: boolean;
   dashboardLabel?: string;
   onSelectModule: (moduleId: string) => void;
   onSelectDashboard: () => void;
+  onSelectFiszki: () => void;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -23,16 +29,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
   modules,
   currentModuleId,
   masteredCardsMap,
+  deckSizeMap,
+  reviewCount,
+  fiszkiActive,
   testScoresMap,
   showProgress = true,
   dashboardLabel,
   onSelectModule,
   onSelectDashboard,
+  onSelectFiszki,
   isOpen,
   onClose,
 }) => {
   const { t } = useSettings();
-  const dashboardActive = currentModuleId === null;
+  const dashboardActive = currentModuleId === null && !fiszkiActive;
   return (
     <>
       {isOpen && <div className="fixed inset-0 z-40 bg-ink/40 lg:hidden" onClick={onClose} aria-hidden />}
@@ -75,13 +85,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </span>
           </ListRow>
 
+          <ListRow
+            active={fiszkiActive}
+            aria-current={fiszkiActive ? 'page' : undefined}
+            onClick={() => {
+              onSelectFiszki();
+              onClose();
+            }}
+          >
+            <span className="flex min-w-0 items-center gap-2">
+              <Layers className="h-5 w-5 shrink-0 text-ink-2" />
+              <span className="min-w-0">
+                <span className="block truncate">{t('side.flashcards')}</span>
+                {showProgress && reviewCount > 0 && <span className="block truncate text-sm font-normal text-ink-2">{t('side.toReview', { n: reviewCount })}</span>}
+              </span>
+            </span>
+          </ListRow>
+
           {modules.map((mod) => {
             const active = mod.id === currentModuleId;
             const mastered = masteredCardsMap[mod.id] ?? 0;
             const score = testScoresMap[mod.id];
             // Only real progress earns a second line; deck sizes alone are noise here.
             const parts: string[] = [];
-            if (showProgress && mastered > 0) parts.push(`${mastered}/${mod.flashcards.length} ${t('side.words')}`);
+            if (showProgress && mastered > 0) parts.push(`${mastered}/${deckSizeMap[mod.id] ?? mod.flashcards.length} ${t('side.words')}`);
             if (showProgress && score !== undefined) parts.push(`${t('side.test')} ${score}%`);
             return (
               <ListRow

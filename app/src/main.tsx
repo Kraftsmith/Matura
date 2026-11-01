@@ -5,13 +5,19 @@ import App from './App.tsx'
 import { SettingsProvider } from './settings'
 import { UserProvider } from './user'
 import { ProgressProvider } from './progress'
+import { TeacherCardsProvider } from './teacherCards'
+import { validateLanguageUseExercises } from './data/languageUseExercises'
+
+if (import.meta.env.DEV) validateLanguageUseExercises().forEach((problem) => console.error(problem))
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <SettingsProvider>
       <UserProvider>
         <ProgressProvider>
-          <App />
+          <TeacherCardsProvider>
+            <App />
+          </TeacherCardsProvider>
         </ProgressProvider>
       </UserProvider>
     </SettingsProvider>

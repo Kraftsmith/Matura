@@ -2,6 +2,7 @@ import React from 'react';
 import { CheckCircle2, XCircle } from 'lucide-react';
 import { SectionTitle } from './ui';
 import { useSettings } from '../useSettings';
+import { EXERCISE_PASS_SCORE } from '../progress-context';
 import { formatRelative, type ModuleSummary, type ModuleWork, type WorkAnswer } from '../progressSummary';
 
 /** One line for a table cell: which tasks of the module have saved work. */
@@ -11,6 +12,7 @@ export const WorkLine: React.FC<{ work: ModuleWork }> = ({ work }) => {
   const parts = [
     work.test && `${t('work.test')}: ${work.test.correct} / ${work.test.total}`,
     work.exercises.length > 0 && `${t('work.exercises')}: ${work.exercises.length}`,
+    work.languageUse.length > 0 && `${t('work.srodki')}: ${work.languageUse.length}`,
     work.notes.length > 0 && `${t('work.notes')}: ${work.notes.length}`,
     work.essay && `${t('work.essay')}: ${t('work.words', { n: work.essay.words })}`,
   ].filter(Boolean);
@@ -65,7 +67,7 @@ export const CompletedTasks: React.FC<{ rows: ModuleSummary[]; teacherView: bool
         <p className="rounded-2xl border border-line bg-surface px-5 py-4 text-sm leading-5 text-ink-2">{t('work.empty')}</p>
       ) : (
         <div className="grid gap-4">
-          {withWork.map(({ module: m, work }) => (
+          {withWork.map(({ module: m, work, exercisesPassed, exercisesTotal }) => (
             <article key={m.id} className="rounded-2xl border border-line bg-surface px-5 pt-4 pb-1">
               <h3 className="pb-3 text-base leading-6 font-semibold text-ink">
                 {m.number}. {m.titlePl}
@@ -91,6 +93,26 @@ export const CompletedTasks: React.FC<{ rows: ModuleSummary[]; teacherView: bool
                   <Answers answers={e.answers} />
                 </Task>
               ))}
+
+              {work.languageUse.length > 0 && (
+                <Task title={t('work.srodki')} result={t('work.srodkiLine', { k: exercisesPassed, n: exercisesTotal })}>
+                  <ul className="mt-2 grid gap-2">
+                    {work.languageUse.map((e) => (
+                      <li key={e.id} className="grid grid-cols-[auto_1fr] gap-x-2 text-sm leading-5">
+                        {e.best >= EXERCISE_PASS_SCORE ? <CheckCircle2 className="mt-0.5 h-4 w-4 text-success" aria-label={t('srodki.passed')} /> : <span className="h-4 w-4" />}
+                        <div className="min-w-0">
+                          <p className="font-semibold text-ink">
+                            {e.functionLabel} <span className="font-normal text-ink-2">· {t(`srodki.type.${e.type}`)}</span>
+                          </p>
+                          <p className="text-ink-2">
+                            {t('work.srodkiBest', { p: e.best })} · {e.attempts === 1 ? t('dash.attempt', { n: e.attempts }) : t('dash.attempts', { n: e.attempts })} · {formatRelative(e.lastAt, t, locale)}
+                          </p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </Task>
+              )}
 
               {work.notes.length > 0 && (
                 <Task title={t('work.notes')} result={String(work.notes.length)}>

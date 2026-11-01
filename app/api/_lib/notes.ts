@@ -27,6 +27,7 @@ export const isNoteId = (id: string | undefined): id is string => UUID.test(id ?
 
 export const validText = (v: unknown): v is string => typeof v === 'string' && v.trim().length >= 1 && v.length <= MAX_TEXT;
 export const validTag = (v: unknown): v is string => typeof v === 'string' && TAGS.includes(v);
+export const isModuleId = (v: unknown): v is string => typeof v === 'string' && MODULE_IDS.includes(v);
 export const validModule = (v: unknown): v is string | null => v === null || (typeof v === 'string' && MODULE_IDS.includes(v));
 
 export const toNote = (r: Record<string, unknown>) => ({

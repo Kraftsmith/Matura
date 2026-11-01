@@ -9,6 +9,7 @@ import {
   type ProgressValue,
 } from './progress-context';
 import { useUser } from './useUser';
+import type { UserFlashcard } from './types';
 
 const STORAGE_KEY = 'matura.progress.v3';
 /** Older keys hold the seeded demo progress mixed with real answers, so they are dropped rather than migrated. */
@@ -37,6 +38,19 @@ const readStored = (): Record<string, ProgressState> => {
     return {};
   }
 };
+
+const newCardId = (moduleId: string) => `u-${moduleId}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 4)}`;
+
+const withStatus = (m: ModuleProgress, cardId: string, status: CardStatus): ModuleProgress => {
+  const mastered = m.mastered.filter((id) => id !== cardId);
+  const review = m.review.filter((id) => id !== cardId);
+  if (status === 'mastered') mastered.push(cardId);
+  if (status === 'review') review.push(cardId);
+  return { ...m, mastered, review };
+};
+
+const statusIn = (m: ModuleProgress | undefined, cardId: string): CardStatus =>
+  m?.mastered.includes(cardId) ? 'mastered' : m?.review.includes(cardId) ? 'review' : 'none';
 
 export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useUser();
@@ -95,13 +109,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const setCardStatus = useCallback(
     (moduleId: string, cardId: string, status: CardStatus) => {
-      updateModule(moduleId, (m) => {
-        const mastered = m.mastered.filter((id) => id !== cardId);
-        const review = m.review.filter((id) => id !== cardId);
-        if (status === 'mastered') mastered.push(cardId);
-        if (status === 'review') review.push(cardId);
-        return { ...m, mastered, review };
-      });
+      updateModule(moduleId, (m) => withStatus(m, cardId, status));
     },
     [updateModule],
   );
@@ -122,6 +130,28 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     [updateModule],
   );
 
+  const saveExerciseResult = useCallback(
+    (moduleId: string, exerciseId: string, scorePercent: number) => {
+      const score = Math.max(0, Math.min(100, Math.round(scorePercent)));
+      updateModule(moduleId, (m) => {
+        const previous = m.exercises?.[exerciseId];
+        return {
+          ...m,
+          exercises: {
+            ...m.exercises,
+            [exerciseId]: {
+              best: Math.max(previous?.best ?? 0, score),
+              last: score,
+              attempts: (previous?.attempts ?? 0) + 1,
+              lastAt: new Date().toISOString(),
+            },
+          },
+        };
+      });
+    },
+    [updateModule],
+  );
+
   const touchModule = useCallback(
     (moduleId: string) => {
       updateUser((s) => (s.lastModuleId === moduleId ? s : { ...s, lastModuleId: moduleId }));
@@ -129,17 +159,83 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     [updateUser],
   );
 
+  const touchDeck = useCallback(
+    (moduleId: string) => {
+      updateUser((s) => (s.lastDeckId === moduleId ? s : { ...s, lastDeckId: moduleId }));
+    },
+    [updateUser],
+  );
+
+  const setCards = useCallback(
+    (moduleId: string, fn: (cards: UserFlashcard[]) => UserFlashcard[]) => {
+      updateUser((s) => ({
+        ...s,
+        updatedAt: new Date().toISOString(),
+        cards: { ...s.cards, [moduleId]: fn(s.cards?.[moduleId] ?? []) },
+      }));
+    },
+    [updateUser],
+  );
+
+  const addCard = useCallback<ProgressValue['addCard']>(
+    (moduleId, draft) => {
+      const card: UserFlashcard = { ...draft, id: newCardId(moduleId), createdAt: new Date().toISOString() };
+      setCards(moduleId, (cards) => [...cards, card]);
+      return card;
+    },
+    [setCards],
+  );
+
+  const updateCard = useCallback<ProgressValue['updateCard']>(
+    (moduleId, cardId, patch) => {
+      setCards(moduleId, (cards) => cards.map((c) => (c.id === cardId ? { ...c, ...patch, id: cardId, updatedAt: new Date().toISOString() } : c)));
+    },
+    [setCards],
+  );
+
+  const removeCard = useCallback<ProgressValue['removeCard']>(
+    (moduleId, cardId) => {
+      const current = allStates[userId];
+      const card = current?.cards?.[moduleId]?.find((c) => c.id === cardId);
+      if (!card) return undefined;
+      const status = statusIn(current?.modules[moduleId], cardId);
+      setCards(moduleId, (cards) => cards.filter((c) => c.id !== cardId));
+      updateModule(moduleId, (m) => withStatus(m, cardId, 'none'));
+      return { card, status };
+    },
+    [allStates, userId, setCards, updateModule],
+  );
+
+  const restoreCard = useCallback<ProgressValue['restoreCard']>(
+    (moduleId, card, status) => {
+      setCards(moduleId, (cards) => [...cards, card]);
+      updateModule(moduleId, (m) => withStatus(m, card.id, status));
+    },
+    [setCards, updateModule],
+  );
+
+  const moveCard = useCallback<ProgressValue['moveCard']>(
+    (fromModuleId, toModuleId, cardId, patch) => {
+      const removed = removeCard(fromModuleId, cardId);
+      if (removed) restoreCard(toModuleId, { ...removed.card, ...patch, updatedAt: new Date().toISOString() }, removed.status);
+    },
+    [removeCard, restoreCard],
+  );
+
+  /** Clears statuses and results; the learner's own cards are their writing, so they stay. */
   const resetUser = useCallback((uid: string) => {
     setAllStates((prev) => {
       const next = { ...prev };
-      delete next[uid];
+      const cards = prev[uid]?.cards;
+      if (cards) next[uid] = { ...emptyProgressState(), cards };
+      else delete next[uid];
       return next;
     });
   }, []);
 
   const value = useMemo<ProgressValue>(
-    () => ({ userId, state, allStates, getModule, getModuleFor, updateModule, setCardStatus, saveTestResult, touchModule, resetUser, saveFailed }),
-    [userId, state, allStates, getModule, getModuleFor, updateModule, setCardStatus, saveTestResult, touchModule, resetUser, saveFailed],
+    () => ({ userId, state, allStates, getModule, getModuleFor, updateModule, setCardStatus, saveTestResult, saveExerciseResult, touchModule, touchDeck, addCard, updateCard, removeCard, restoreCard, moveCard, resetUser, saveFailed }),
+    [userId, state, allStates, getModule, getModuleFor, updateModule, setCardStatus, saveTestResult, saveExerciseResult, touchModule, touchDeck, addCard, updateCard, removeCard, restoreCard, moveCard, resetUser, saveFailed],
   );
 
   return <ProgressContext.Provider value={value}>{children}</ProgressContext.Provider>;

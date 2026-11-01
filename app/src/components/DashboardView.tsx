@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpenCheck, ChevronRight, ClipboardCheck, Layers, Play, RotateCcw } from 'lucide-react';
+import { BookOpenCheck, ChevronRight, ClipboardCheck, Layers, MessagesSquare, Play, RotateCcw } from 'lucide-react';
 import type { MaturaModule, SectionType } from '../types';
 import type { UserProfile } from '../users';
 import { Button, Meter, SectionTitle, StatTile } from './ui';
@@ -7,7 +7,8 @@ import { Avatar, GrammarStatusChip } from './GrammarStatusChip';
 import { CompletedTasks } from './CompletedTasks';
 import { useProgress } from '../useProgress';
 import { useSettings } from '../useSettings';
-import { GRAMMAR_PASS_SCORE } from '../progress-context';
+import { useTeacherCards } from '../useTeacherCards';
+import { EXERCISE_PASS_SCORE, GRAMMAR_PASS_SCORE } from '../progress-context';
 import { formatRelative, summarizeUser } from '../progressSummary';
 
 interface DashboardViewProps {
@@ -17,6 +18,10 @@ interface DashboardViewProps {
   /** True when a teacher is looking at a learner's page. */
   teacherView?: boolean;
   onOpen: (moduleId: string, section: SectionType) => void;
+  /** Opens one deck in the Fiszki module. */
+  onOpenDeck: (moduleId: string) => void;
+  /** Opens the review of all decks; a learner's own page only. */
+  onOpenReview?: () => void;
   onBackToClass?: () => void;
   /** Extra controls in the header, next to the reset button. */
   headerAction?: React.ReactNode;
@@ -29,13 +34,15 @@ interface DashboardViewProps {
   replacement?: React.ReactNode;
 }
 
-const gridCols = 'md:grid-cols-[minmax(0,1.6fr)_minmax(0,1.4fr)_minmax(0,1.1fr)_auto]';
+const gridCols = 'md:grid-cols-[minmax(0,1.5fr)_minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,0.8fr)_15rem]';
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
   modules,
   user,
   teacherView = false,
   onOpen,
+  onOpenDeck,
+  onOpenReview,
   onBackToClass,
   headerAction,
   resetConfirmSuffix,
@@ -45,7 +52,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 }) => {
   const { allStates, resetUser } = useProgress();
   const { t, uiLang } = useSettings();
-  const s = summarizeUser(modules, allStates[user.id]);
+  const { cardsOf } = useTeacherCards();
+  const s = summarizeUser(modules, allStates[user.id], cardsOf(user.id));
   const anyProgress = s.startedModules > 0;
   const locale = uiLang === 'en' ? 'en-GB' : 'pl-PL';
 
@@ -57,6 +65,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   };
 
   const attemptsLabel = (n: number) => (n === 1 ? t('dash.attempt', { n }) : t('dash.attempts', { n }));
+
+  const reviewTile = (
+    <StatTile
+      icon={<RotateCcw className="h-4 w-4" />}
+      label={t('dash.review')}
+      value={s.reviewWords}
+      hint={s.reviewWords > 0 ? t('dash.reviewHint') : t('dash.noReview')}
+      className="h-full bg-transparent"
+    />
+  );
 
   return (
     <div className="grid gap-8">
@@ -78,12 +96,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             {teacherView ? `${t('dash.titleFor')}: ${user.name}` : `${t('dash.title')}, ${user.name}`}
           </h1>
         </div>
-        <p className="mt-2 max-w-[72ch] text-base leading-6 text-ink-2">{t('dash.rules', { n: GRAMMAR_PASS_SCORE })}</p>
+        <p className="mt-2 max-w-[72ch] text-base leading-6 text-ink-2">{t('dash.rules', { n: GRAMMAR_PASS_SCORE, e: EXERCISE_PASS_SCORE })}</p>
         <p className="mt-1 text-sm leading-5 text-ink-2">
           {t('dash.lastActivity')}: <b className="font-semibold text-ink">{formatRelative(s.lastActiveAt, t, locale)}</b>
           {s.lastModule && (
             <>
               {' '}· {t('dash.lastModule')}: <b className="font-semibold text-ink">{s.lastModule.titlePl}</b>
+            </>
+          )}
+          {teacherView && s.ownCards > 0 && (
+            <>
+              {' '}· {t('dash.ownCards')}: <b className="font-semibold text-ink">{s.ownCards}</b>
             </>
           )}
         </p>
@@ -108,7 +131,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {replacement ?? (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             <StatTile
               icon={<Layers className="h-4 w-4" />}
               label={t('dash.words')}
@@ -133,6 +156,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               hint={<Meter value={(s.grammarPassed / modules.length) * 100} tone="success" label={t('dash.grammar')} className="mt-1" />}
             />
             <StatTile
+              icon={<MessagesSquare className="h-4 w-4" />}
+              label={t('dash.exercises')}
+              value={
+                <>
+                  {s.exercisesPassed} <span className="text-base font-normal text-ink-2">/ {s.exercisesTotal}</span>
+                </>
+              }
+              hint={<Meter value={s.exercisesTotal ? (s.exercisesPassed / s.exercisesTotal) * 100 : 0} tone="success" label={t('dash.exercises')} className="mt-1" />}
+            />
+            <StatTile
               icon={<ClipboardCheck className="h-4 w-4" />}
               label={t('dash.testsStarted')}
               value={
@@ -146,12 +179,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   : t('dash.repeatable')
               }
             />
-            <StatTile
-              icon={<RotateCcw className="h-4 w-4" />}
-              label={t('dash.review')}
-              value={s.reviewWords}
-              hint={s.reviewWords > 0 ? t('dash.reviewHint') : t('dash.noReview')}
-            />
+            {onOpenReview ? (
+              <button type="button" onClick={onOpenReview} className="cursor-pointer rounded-2xl text-left hover:bg-hero focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+                {reviewTile}
+              </button>
+            ) : (
+              reviewTile
+            )}
           </div>
 
           <section className="grid gap-4">
@@ -162,10 +196,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <span>{t('dash.colTopic')}</span>
                 <span>{t('dash.colWords')}</span>
                 <span>{t('dash.colGrammar')}</span>
+                <span>{t('dash.colSrodki')}</span>
                 <span className="sr-only">Actions</span>
               </div>
 
-              {s.rows.map(({ module: m, total, mastered, best, attempts, wordsPct: pct }) => (
+              {s.rows.map(({ module: m, total, own, mastered, best, attempts, wordsPct: pct, exercisesPassed, exercisesTotal }) => (
                 <div key={m.id} className={`grid gap-3 border-b border-line-soft px-5 py-4 last:border-b-0 md:items-center md:gap-4 ${gridCols}`}>
                   <div className="min-w-0">
                     <button
@@ -187,6 +222,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       <span className="tabular-nums text-ink">
                         <b className="font-semibold">{mastered}</b> / {total}
                         <span className="ml-1 text-ink-2">({Math.round(pct)}%)</span>
+                        {own > 0 && <span className="ml-1 text-ink-2">{t('dash.ownInDeck', { n: own })}</span>}
                       </span>
                     </div>
                     <Meter value={pct} tone={mastered === total && total > 0 ? 'success' : 'primary'} label={`${t('dash.colWords')}: ${m.titlePl}`} />
@@ -198,12 +234,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     {attempts > 0 && <span className="text-xs leading-4 text-ink-2">{attemptsLabel(attempts)}</span>}
                   </div>
 
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="secondary" onClick={() => onOpen(m.id, 'fiszki')}>
+                  <div className="flex items-center justify-between gap-2 text-sm leading-5 md:block">
+                    <span className="text-ink-2 md:sr-only">{t('dash.colSrodki')}</span>
+                    <span className="tabular-nums text-ink">
+                      <b className="font-semibold">{exercisesPassed}</b> / {exercisesTotal}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <Button size="sm" variant="secondary" onClick={() => onOpenDeck(m.id)}>
                       {t('dash.openFlashcards')}
                     </Button>
                     <Button size="sm" variant="secondary" onClick={() => onOpen(m.id, 'gramatyka')}>
                       {t('dash.openGrammar')}
+                    </Button>
+                    <Button size="sm" variant="secondary" onClick={() => onOpen(m.id, 'srodki')}>
+                      {t('dash.openSrodki')}
                     </Button>
                   </div>
                 </div>

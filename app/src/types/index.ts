@@ -3,20 +3,24 @@ export type TranslationLang = 'pl' | 'ru';
 export type SectionType =
   | 'dashboard'
   | 'fiszki'
+  | 'fiszki-hub'
   | 'opis-foto'
   | 'gramatyka' 
   | 'slownictwo' 
+  | 'srodki'
   | 'pisanie'
   | 'design-system';
+
+export type PartOfSpeech = 'noun' | 'verb' | 'adjective' | 'adverb' | 'idiom' | 'phrasal_verb' | 'phrase';
 
 export interface Flashcard {
   id: string;
   front: string; // Target word or phrase
   phonetic?: string;
-  partOfSpeech: 'noun' | 'verb' | 'adjective' | 'adverb' | 'idiom' | 'phrasal_verb';
+  partOfSpeech: PartOfSpeech;
   backMeaningPl: string; // Polish translation
   backMeaningRu?: string; // Russian translation
-  backMeaningEn: string; // English definition
+  backMeaningEn?: string; // English definition
   exampleSentence: string; // Example in English
   exampleTranslation?: string; // Example in Polish
   exampleTranslationRu?: string; // Example in Russian
@@ -25,12 +29,31 @@ export interface Flashcard {
   category: string; // Subtopic (e.g. Cechy charakteru, Wygląd)
 }
 
+export type UserCardSource = 'manual' | 'slownictwo-text' | 'slownictwo-list' | 'srodki' | 'teacher';
+
+/**
+ * A flashcard added by the learner or, with source 'teacher', by the teacher for them.
+ * The learner's own live in their progress state; the teacher's come from the server.
+ */
+export interface UserFlashcard extends Flashcard {
+  source: UserCardSource;
+  /** Id of the text or exercise the word came from. */
+  sourceRef?: string;
+  createdAt: string; // ISO
+  updatedAt?: string; // ISO, only after an edit
+}
+
+/** A card the teacher added for one learner. */
+export interface TeacherFlashcard extends UserFlashcard {
+  studentId: string;
+  moduleId: string;
+}
+
 export type QuestionType = 
   | 'multiple-choice'
   | 'word-formation'
   | 'key-word-transformation'
-  | 'translation'
-  | 'mini-dialogue';
+  | 'translation';
 
 export interface TestQuestion {
   id: string;
@@ -179,3 +202,66 @@ export interface GapFillItem {
 export interface VocabularyExercise {
   items: GapFillItem[];
 }
+
+/** Text of an explanation: Polish, with an optional Russian version shown with the translations on. */
+export interface LocalizedText {
+  pl: string;
+  ru?: string;
+}
+
+export type LanguageUseExerciseType = 'matching' | 'word-bank' | 'mini-dialogue';
+
+interface LanguageUseExerciseBase {
+  /** '<module prefix>-sj-<n>', e.g. 'czl-sj-1'. */
+  id: string;
+  type: LanguageUseExerciseType;
+  /** Polish instruction, worded as in the exam. */
+  instruction: string;
+  /** Optional hint in a frame above the task. */
+  tip?: string;
+  /** The language function, e.g. 'Podziękowania i przeprosiny'; shown as a chip. */
+  functionLabel: string;
+  level: 'P' | 'R';
+}
+
+/** Dopasowanie: sentences 1–n and replies a–n. */
+export interface MatchingExercise extends LanguageUseExerciseBase {
+  type: 'matching';
+  /** Left column, in order 1…n. */
+  prompts: { id: string; text: string }[];
+  /** Right column, in the order shown (a…n). */
+  replies: { id: string; text: string }[];
+  /** promptId → replyId. */
+  answers: Record<string, string>;
+  /** Explanations of the pairs by promptId, shown after checking. */
+  explanations?: Record<string, LocalizedText>;
+}
+
+/** Bank słów: sentences with one ___ gap and a frame of words. */
+export interface WordBankExercise extends LanguageUseExerciseBase {
+  type: 'word-bank';
+  /** Words of the frame in the order shown, the extra word included. */
+  bank: string[];
+  items: (GapFillItem & { explanation?: LocalizedText })[];
+}
+
+/** One line of a mini-dialogue. A line with text null is the gap; `after` is what follows the gap on that line. */
+export interface DialogueLine {
+  speaker: 'X' | 'Y';
+  text: string | null;
+  after?: string;
+}
+
+/** Minidialogi: 2–3 lines, one of them a gap, with options A/B/C. */
+export interface MiniDialogueExercise extends LanguageUseExerciseBase {
+  type: 'mini-dialogue';
+  items: {
+    id: string;
+    lines: DialogueLine[];
+    options: string[];
+    correctIndex: number;
+    explanation: LocalizedText;
+  }[];
+}
+
+export type LanguageUseExercise = MatchingExercise | WordBankExercise | MiniDialogueExercise;
