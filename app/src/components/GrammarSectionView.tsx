@@ -154,7 +154,7 @@ export const GrammarSectionView: React.FC<GrammarSectionViewProps> = ({ moduleId
               </Button>
             </div>
           </div>
-          <InteractiveTestView questions={questions} rules={rules} moduleTitle={moduleTitle} onScoreSave={onScoreSave} embedded />
+          <InteractiveTestView moduleId={moduleId} questions={questions} rules={rules} moduleTitle={moduleTitle} onScoreSave={onScoreSave} embedded />
         </section>
       )}
     </div>

@@ -4,6 +4,7 @@ import type { MaturaModule } from '../types';
 import type { UserProfile } from '../users';
 import { Button, Meter, SectionTitle } from './ui';
 import { Avatar, GrammarStatusChip } from './GrammarStatusChip';
+import { WorkLine } from './CompletedTasks';
 import { useProgress } from '../useProgress';
 import { useSettings } from '../useSettings';
 import { GRAMMAR_PASS_SCORE } from '../progress-context';
@@ -13,13 +14,18 @@ interface TeacherDashboardViewProps {
   modules: MaturaModule[];
   students: UserProfile[];
   onOpenStudent: (userId: string) => void;
+  /** Extra controls in the header. */
+  headerAction?: React.ReactNode;
+  /** Extra line at the bottom of a learner's card. */
+  renderStudentExtra?: (studentId: string) => React.ReactNode;
 }
 
-const StudentCard: React.FC<{ student: UserProfile; summary: UserSummary; modulesCount: number; onOpen: () => void }> = ({
+const StudentCard: React.FC<{ student: UserProfile; summary: UserSummary; modulesCount: number; onOpen: () => void; extra?: React.ReactNode }> = ({
   student,
   summary: s,
   modulesCount,
   onOpen,
+  extra,
 }) => {
   const { t, uiLang } = useSettings();
   const locale = uiLang === 'en' ? 'en-GB' : 'pl-PL';
@@ -69,13 +75,17 @@ const StudentCard: React.FC<{ student: UserProfile; summary: UserSummary; module
           <span>
             {t('teacher.review')}: <b className="font-semibold text-ink">{s.reviewWords}</b>
           </span>
+          <span>
+            {t('work.title')}: <b className="font-semibold text-ink">{s.workCount}</b>
+          </span>
         </div>
       </dl>
+      {extra}
     </article>
   );
 };
 
-export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ modules, students, onOpenStudent }) => {
+export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ modules, students, onOpenStudent, headerAction, renderStudentExtra }) => {
   const { allStates } = useProgress();
   const { t } = useSettings();
   const summaries = students.map((st) => ({ student: st, summary: summarizeUser(modules, allStates[st.id]) }));
@@ -91,13 +101,15 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ modu
           <h1 className="text-3xl leading-10 font-semibold sm:text-4xl sm:leading-12">{t('teacher.title')}</h1>
         </div>
         <p className="mt-2 max-w-[72ch] text-base leading-6 text-ink-2">{t('teacher.intro', { n: students.length, p: GRAMMAR_PASS_SCORE })}</p>
+        <p className="mt-1 max-w-[72ch] text-sm leading-5 text-ink-2">{t('work.localOnly')}</p>
+        {headerAction && <div className="mt-4 flex flex-wrap items-center gap-3">{headerAction}</div>}
       </div>
 
       <section className="grid gap-4">
         <SectionTitle title={t('teacher.students')} description={t('teacher.studentsDesc')} />
         <div className="grid gap-4 lg:grid-cols-2">
           {summaries.map(({ student, summary }) => (
-            <StudentCard key={student.id} student={student} summary={summary} modulesCount={modules.length} onOpen={() => onOpenStudent(student.id)} />
+            <StudentCard key={student.id} student={student} summary={summary} modulesCount={modules.length} onOpen={() => onOpenStudent(student.id)} extra={renderStudentExtra?.(student.id)} />
           ))}
         </div>
       </section>
@@ -146,6 +158,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ modu
                         <GrammarStatusChip best={r.best} />
                         {r.attempts > 0 && <span className="text-xs leading-4 text-ink-2">{attemptsLabel(r.attempts)}</span>}
                       </div>
+                      <WorkLine work={r.work} />
                     </div>
                   );
                 })}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { Flashcard } from '../types';
 import { Volume2, RotateCw, Shuffle, ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
 import { Button, Chip } from './ui';
+import { SaveStatus } from './SaveStatus';
 import { useSettings } from '../useSettings';
 import confetti from 'canvas-confetti';
 
@@ -163,6 +164,7 @@ export const FlashcardsView: React.FC<FlashcardsViewProps> = ({ cards, moduleTit
         <div className="h-2 w-full overflow-hidden rounded-full bg-line-soft">
           <div className="h-full rounded-full bg-primary transition-all duration-300" style={{ width: `${progressPercent}%` }} />
         </div>
+        <SaveStatus active={masteredIds.size + reviewIds.size > 0} />
       </div>
 
       <div className="perspective-1000 min-h-[360px] cursor-pointer" onClick={handleFlip}>

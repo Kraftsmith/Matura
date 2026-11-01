@@ -6,36 +6,40 @@ import { ImageLightbox } from './ImageLightbox';
 import { useSettings } from '../useSettings';
 import { vocabularyExercisesByText } from '../data/vocabularyExercises';
 import { useUser } from '../useUser';
+import { useProgress } from '../useProgress';
+import type { GapWork } from '../progress-context';
+import { isGapCorrect } from '../progressSummary';
+import { SaveStatus } from './SaveStatus';
 import { buildHash } from '../userRoute';
 import { CopyLinkButton } from './CopyLinkButton';
 
-/** Lower-case, single-spaced, hyphens treated as spaces, so "rip-off" and "Rip off" both match. */
-const normalise = (s: string) => s.toLowerCase().replace(/[-‐-―]/g, ' ').replace(/[’‘]/g, "'").replace(/\s+/g, ' ').trim();
-
-const isGapCorrect = (item: GapFillItem, value: string) => {
-  const v = normalise(value);
-  return v.length > 0 && [item.answer, ...(item.alternatives ?? [])].some((a) => normalise(a) === v);
-};
-
 /** Gap-fill sentences under a text: type the key word, check, see the answers, try again. */
-const GapFillExercise: React.FC<{ textId: string; items: GapFillItem[] }> = ({ textId, items }) => {
+const GapFillExercise: React.FC<{ moduleId: string; textId: string; items: GapFillItem[] }> = ({ moduleId, textId, items }) => {
   const { t } = useSettings();
-  const [values, setValues] = useState<string[]>(() => items.map(() => ''));
-  const [checked, setChecked] = useState(false);
+  const { getModule, updateModule } = useProgress();
+  const saved = getModule(moduleId).gapWork?.[textId];
+  const values = items.map((_, i) => saved?.values[i] ?? '');
+  const checked = saved?.checked ?? false;
   const [bankOpen, setBankOpen] = useState(false);
 
   const correctCount = items.filter((item, i) => isGapCorrect(item, values[i])).length;
   const wordBank = [...new Set(items.map((item) => item.answer))].sort((a, b) => a.localeCompare(b));
 
-  const check = () => setChecked(true);
-  const reset = () => {
-    setValues(items.map(() => ''));
-    setChecked(false);
+  const save = (patch: Partial<GapWork>) =>
+    updateModule(moduleId, (m) => ({
+      ...m,
+      gapWork: {
+        ...m.gapWork,
+        [textId]: { values: [], checked: false, ...m.gapWork?.[textId], ...patch, at: new Date().toISOString() },
+      },
+    }));
+
+  const check = () => {
+    const attempted = values.some((v) => v.trim());
+    save({ checked: true, best: attempted ? Math.max(saved?.best ?? 0, correctCount) : saved?.best });
   };
-  const reveal = () => {
-    setValues(items.map((item) => item.answer));
-    setChecked(true);
-  };
+  const reset = () => save({ values: [], checked: false, revealed: false });
+  const reveal = () => save({ values: items.map((item) => item.answer), checked: true, revealed: true });
 
   return (
     <section className="grid gap-3 border-t border-line-soft pt-5" aria-labelledby={`${textId}-practice`}>
@@ -70,7 +74,7 @@ const GapFillExercise: React.FC<{ textId: string; items: GapFillItem[] }> = ({ t
                 autoComplete="off"
                 spellCheck={false}
                 className="mx-1 my-0.5 align-baseline"
-                onChange={(e) => setValues((prev) => prev.map((v, j) => (j === i ? e.target.value : v)))}
+                onChange={(e) => save({ values: values.map((v, j) => (j === i ? e.target.value : v)) })}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') check();
                 }}
@@ -104,6 +108,7 @@ const GapFillExercise: React.FC<{ textId: string; items: GapFillItem[] }> = ({ t
         <Button size="sm" variant={bankOpen ? 'secondary' : 'ghost'} onClick={() => setBankOpen((o) => !o)} aria-pressed={bankOpen}>
           {t('vocab.wordBank')}
         </Button>
+        <SaveStatus active={!!saved && !saved.revealed && values.some((v) => v.trim())} className="ml-auto" />
       </div>
 
       {bankOpen && (
@@ -183,7 +188,7 @@ const Illustration: React.FC<{ src: string; alt: string; onOpen: () => void }> =
   );
 };
 
-const TextCard: React.FC<{ text: VocabularyText; route: string; showTranslations: boolean }> = ({ text, route, showTranslations }) => {
+const TextCard: React.FC<{ moduleId: string; text: VocabularyText; route: string; showTranslations: boolean }> = ({ moduleId, text, route, showTranslations }) => {
   const { tr } = useSettings();
   const { user } = useUser();
   const [lightbox, setLightbox] = useState(false);
@@ -248,7 +253,7 @@ const TextCard: React.FC<{ text: VocabularyText; route: string; showTranslations
         </section>
 
         {vocabularyExercisesByText[text.id] && (
-          <GapFillExercise textId={text.id} items={vocabularyExercisesByText[text.id].items} />
+          <GapFillExercise moduleId={moduleId} textId={text.id} items={vocabularyExercisesByText[text.id].items} />
         )}
 
         <section className="grid gap-2 rounded-lg border border-line border-l-4 border-l-primary bg-surface px-5 py-4">
@@ -307,7 +312,7 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({ moduleId, texts,
             <ArrowLeft className="h-4 w-4" />
             {t('vocab.allTexts')} ({texts.length})
           </a>
-          <TextCard text={focused} route={`${sectionRoute}/${focused.id}`} showTranslations={showTranslations} />
+          <TextCard moduleId={moduleId} text={focused} route={`${sectionRoute}/${focused.id}`} showTranslations={showTranslations} />
         </div>
       ) : texts.length === 0 ? (
         <div className="rounded-2xl border border-line bg-surface p-10 text-center">
@@ -317,7 +322,7 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({ moduleId, texts,
       ) : (
         <div className="grid gap-8">
           {texts.map((t) => (
-            <TextCard key={t.id} text={t} route={`${sectionRoute}/${t.id}`} showTranslations={showTranslations} />
+            <TextCard key={t.id} moduleId={moduleId} text={t} route={`${sectionRoute}/${t.id}`} showTranslations={showTranslations} />
           ))}
         </div>
       )}

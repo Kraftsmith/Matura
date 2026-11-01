@@ -54,8 +54,8 @@ const pl = {
   'dash.continue': 'Kontynuuj',
   'dash.start': 'Zacznij',
   'dash.reset': 'Wyczyść postęp',
-  'dash.resetConfirmMine': 'Wyczyścić cały Twój postęp (fiszki i wyniki testów)?',
-  'dash.resetConfirmStudent': 'Wyczyścić postęp ucznia {name} (fiszki i wyniki testów)?',
+  'dash.resetConfirmMine': 'Wyczyścić cały Twój postęp (fiszki, wyniki testów i wykonane zadania)?',
+  'dash.resetConfirmStudent': 'Wyczyścić postęp ucznia {name} (fiszki, wyniki testów i wykonane zadania)?',
   'dash.words': 'Wyuczone słówka',
   'dash.grammar': 'Zaliczona gramatyka',
   'dash.topics': 'tematów',
@@ -83,6 +83,14 @@ const pl = {
   'status.none': 'Nie rozpoczęto',
 
   // Teacher
+  'auth.signIn': 'Zaloguj się',
+  'auth.signOut': 'Wyloguj',
+  'auth.code': 'Kod dostępu',
+  'auth.submit': 'Wejdź',
+  'auth.wrongCode': 'Nieprawidłowy kod.',
+  'auth.tooMany': 'Zbyt wiele prób. Spróbuj ponownie za 15 minut.',
+  'auth.failed': 'Nie udało się zalogować. Spróbuj ponownie.',
+
   'teacher.title': 'Panel nauczyciela',
   'teacher.intro': '{n} uczniów przygotowuje się do matury. Słówka liczą się po oznaczeniu fiszki jako „Opanowane”, gramatyka tematu po zdaniu testu na co najmniej {p}%.',
   'teacher.students': 'Uczniowie',
@@ -93,7 +101,7 @@ const pl = {
   'teacher.toImprove': 'Do poprawy',
   'teacher.review': 'Fiszki do powtórki',
   'teacher.compare': 'Porównanie według tematów',
-  'teacher.compareDesc': 'W każdej komórce: wyuczone słówka z talii oraz status testu gramatycznego.',
+  'teacher.compareDesc': 'W każdej komórce: wyuczone słówka z talii, status testu gramatycznego i wykonane zadania.',
   'teacher.words': 'słówek',
 
   // Grammar section
@@ -199,6 +207,26 @@ const pl = {
   'link.copied': 'Skopiowano',
   'link.copyHint': 'Link do tego miejsca, np. jako zadanie domowe',
   'vocab.allTexts': 'Wszystkie teksty modułu',
+
+  // Saved work
+  'save.saved': 'Zapisano w tej przeglądarce',
+  'save.failed': 'Nie udało się zapisać. Praca zniknie po zamknięciu strony, skopiuj ją w bezpieczne miejsce.',
+  'work.title': 'Wykonane zadania',
+  'work.desc': 'Wszystko, co zostało wpisane w teście, ćwiczeniach, notatkach i wypracowaniu.',
+  'work.descTeacher': 'Odpowiedzi ucznia z testu, ćwiczeń, notatek i wypracowania.',
+  'work.localOnly': 'Widać tu tylko pracę zapisaną w tej przeglądarce. Zadania wykonane na innym urządzeniu się tu nie pojawią.',
+  'work.empty': 'Brak zapisanych zadań.',
+  'work.test': 'Test',
+  'work.testLine': 'odpowiedzi: {a} / {n}, sprawdzono: {c}, poprawnie: {k}',
+  'work.exercises': 'Ćwiczenia',
+  'work.best': 'najlepszy wynik: {k} / {n}',
+  'work.unchecked': 'niesprawdzone',
+  'work.revealed': 'pokazano odpowiedzi',
+  'work.notes': 'Notatki do opisu ilustracji',
+  'work.essay': 'Wypracowanie',
+  'work.words': '{n} słów',
+  'work.correct': 'poprawnie',
+  'work.wrong': 'błędnie',
 };
 
 export type I18nKey = keyof typeof pl;
@@ -252,8 +280,8 @@ const en: Record<I18nKey, string> = {
   'dash.continue': 'Continue',
   'dash.start': 'Start',
   'dash.reset': 'Clear progress',
-  'dash.resetConfirmMine': 'Clear all your progress (flashcards and test results)?',
-  'dash.resetConfirmStudent': 'Clear the progress of {name} (flashcards and test results)?',
+  'dash.resetConfirmMine': 'Clear all your progress (flashcards, test results and completed tasks)?',
+  'dash.resetConfirmStudent': 'Clear the progress of {name} (flashcards, test results and completed tasks)?',
   'dash.words': 'Words learned',
   'dash.grammar': 'Grammar passed',
   'dash.topics': 'topics',
@@ -280,6 +308,14 @@ const en: Record<I18nKey, string> = {
   'status.inProgress': 'In progress',
   'status.none': 'Not started',
 
+  'auth.signIn': 'Sign in',
+  'auth.signOut': 'Sign out',
+  'auth.code': 'Access code',
+  'auth.submit': 'Enter',
+  'auth.wrongCode': 'Wrong code.',
+  'auth.tooMany': 'Too many attempts. Try again in 15 minutes.',
+  'auth.failed': 'Could not sign in. Try again.',
+
   'teacher.title': 'Teacher panel',
   'teacher.intro': '{n} students are preparing for the exam. A word counts once its flashcard is marked "Mastered"; a topic\'s grammar counts once its test scores at least {p}%.',
   'teacher.students': 'Students',
@@ -290,7 +326,7 @@ const en: Record<I18nKey, string> = {
   'teacher.toImprove': 'To improve',
   'teacher.review': 'Cards to review',
   'teacher.compare': 'Comparison by topic',
-  'teacher.compareDesc': 'Each cell shows words learned from the deck and the grammar test status.',
+  'teacher.compareDesc': 'Each cell shows words learned from the deck, the grammar test status and completed tasks.',
   'teacher.words': 'words',
 
   'gram.kicker': 'Grammar and language means',
@@ -390,6 +426,25 @@ const en: Record<I18nKey, string> = {
   'link.copied': 'Copied',
   'link.copyHint': 'Link to this place, e.g. as homework',
   'vocab.allTexts': 'All texts in this module',
+
+  'save.saved': 'Saved in this browser',
+  'save.failed': 'Could not save. Your work will be lost when this page closes, so copy it somewhere safe.',
+  'work.title': 'Completed tasks',
+  'work.desc': 'Everything entered in the test, exercises, notes and essay.',
+  'work.descTeacher': 'The student\'s answers from the test, exercises, notes and essay.',
+  'work.localOnly': 'Only work saved in this browser is shown here. Tasks done on another device will not appear.',
+  'work.empty': 'No saved tasks yet.',
+  'work.test': 'Test',
+  'work.testLine': 'answers: {a} / {n}, checked: {c}, correct: {k}',
+  'work.exercises': 'Exercises',
+  'work.best': 'best score: {k} / {n}',
+  'work.unchecked': 'not checked',
+  'work.revealed': 'answers revealed',
+  'work.notes': 'Picture description notes',
+  'work.essay': 'Essay',
+  'work.words': '{n} words',
+  'work.correct': 'correct',
+  'work.wrong': 'wrong',
 };
 
 export const dictionaries: Record<UiLang, Record<I18nKey, string>> = { pl, en };

@@ -3,10 +3,15 @@ import type { GrammarRule, TestQuestion } from '../types';
 import { CheckCircle2, XCircle, RotateCcw, BookOpen } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Button, Chip, KeyTag, OptionCard, InlineInput } from './ui';
+import { SaveStatus } from './SaveStatus';
 import { useSettings } from '../useSettings';
+import { useProgress } from '../useProgress';
+import type { TestWork } from '../progress-context';
+import { isTestAnswerCorrect } from '../progressSummary';
 import { pluralForm } from '../i18n';
 
 interface InteractiveTestViewProps {
+  moduleId: string;
   questions: TestQuestion[];
   /** When given, tasks are grouped under the rule they check (grammarRef.ruleId). */
   rules?: GrammarRule[];
@@ -23,20 +28,21 @@ interface TaskGroup {
   questions: TestQuestion[];
 }
 
-export const InteractiveTestView: React.FC<InteractiveTestViewProps> = ({ questions, rules = [], moduleTitle, onScoreSave, embedded = false }) => {
+export const InteractiveTestView: React.FC<InteractiveTestViewProps> = ({ moduleId, questions, rules = [], moduleTitle, onScoreSave, embedded = false }) => {
   const { t } = useSettings();
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [checkedIds, setCheckedIds] = useState<Record<string, boolean>>({});
+  const { getModule, updateModule } = useProgress();
+  const work = getModule(moduleId).testWork;
+  const answers = work?.answers ?? {};
+  const checkedIds = work?.checked ?? {};
   const [onlyIncorrectFilter, setOnlyIncorrectFilter] = useState(false);
 
-  const handleInputChange = (id: string, value: string) => setAnswers((prev) => ({ ...prev, [id]: value }));
-  const handleOptionSelect = (id: string, option: string) => setAnswers((prev) => ({ ...prev, [id]: option }));
+  const saveWork = (next: Partial<TestWork>) =>
+    updateModule(moduleId, (m) => ({ ...m, testWork: { answers: {}, checked: {}, ...m.testWork, ...next } }));
 
-  const isQuestionCorrect = (q: TestQuestion): boolean => {
-    const rawAnswer = answers[q.id]?.trim().toLowerCase() || '';
-    if (!rawAnswer) return false;
-    return q.correctAnswers.some((ans) => ans.trim().toLowerCase() === rawAnswer);
-  };
+  const handleInputChange = (id: string, value: string) => saveWork({ answers: { ...answers, [id]: value } });
+  const handleOptionSelect = (id: string, option: string) => saveWork({ answers: { ...answers, [id]: option } });
+
+  const isQuestionCorrect = (q: TestQuestion): boolean => isTestAnswerCorrect(q, answers[q.id]);
 
   /** Called once every question has been checked, whether in one go or one by one: the attempt is complete. */
   const finishAttempt = () => {
@@ -48,7 +54,7 @@ export const InteractiveTestView: React.FC<InteractiveTestViewProps> = ({ questi
 
   const checkSingleQuestion = (id: string) => {
     const next = { ...checkedIds, [id]: true };
-    setCheckedIds(next);
+    saveWork({ checked: next });
     if (questions.every((q) => next[q.id])) finishAttempt();
   };
 
@@ -59,18 +65,17 @@ export const InteractiveTestView: React.FC<InteractiveTestViewProps> = ({ questi
     questions.forEach((q) => {
       allChecked[q.id] = true;
     });
-    setCheckedIds(allChecked);
+    saveWork({ checked: allChecked });
     const scorePercent = finishAttempt();
     if (scorePercent >= 80) confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
   };
 
   const resetTest = () => {
-    setAnswers({});
-    setCheckedIds({});
+    updateModule(moduleId, (m) => ({ ...m, testWork: undefined }));
     setOnlyIncorrectFilter(false);
   };
 
-  const checkedCount = Object.keys(checkedIds).length;
+  const checkedCount = questions.filter((q) => checkedIds[q.id]).length;
   const correctCount = questions.filter((q) => checkedIds[q.id] && isQuestionCorrect(q)).length;
   const scorePercent = checkedCount > 0 ? Math.round((correctCount / questions.length) * 100) : 0;
   const wrongCount = questions.filter((q) => checkedIds[q.id] && !isQuestionCorrect(q)).length;
@@ -109,6 +114,7 @@ export const InteractiveTestView: React.FC<InteractiveTestViewProps> = ({ questi
             </>
           )}
           <p className={`text-sm text-ink-2 ${embedded ? '' : 'mt-1'}`}>{t('test.count', { n: questions.length })}</p>
+          <SaveStatus active={Object.values(answers).some(Boolean)} className="mt-2" />
         </div>
 
         <div className="flex flex-wrap items-center gap-3">

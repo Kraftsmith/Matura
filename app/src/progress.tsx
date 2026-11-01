@@ -42,15 +42,29 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const { user } = useUser();
   const userId = user.id;
   const [allStates, setAllStates] = useState<Record<string, ProgressState>>(readStored);
+  const [saveFailed, setSaveFailed] = useState(false);
 
   useEffect(() => {
     try {
       const payload: StoredProgress = { version: 2, users: allStates };
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      // The result of the write is only known here, after it happened.
+      // oxlint-disable-next-line react/set-state-in-effect
+      setSaveFailed(false);
     } catch {
-      /* storage unavailable: keep in memory only */
+      /* storage unavailable: keep in memory only and tell the learner */
+      setSaveFailed(true);
     }
   }, [allStates]);
+
+  // Another tab saved: take its data, otherwise this tab's next write would overwrite that work.
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY) setAllStates(readStored());
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
   const state = allStates[userId] ?? emptyProgressState();
 
@@ -124,8 +138,8 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, []);
 
   const value = useMemo<ProgressValue>(
-    () => ({ userId, state, allStates, getModule, getModuleFor, setCardStatus, saveTestResult, touchModule, resetUser }),
-    [userId, state, allStates, getModule, getModuleFor, setCardStatus, saveTestResult, touchModule, resetUser],
+    () => ({ userId, state, allStates, getModule, getModuleFor, updateModule, setCardStatus, saveTestResult, touchModule, resetUser, saveFailed }),
+    [userId, state, allStates, getModule, getModuleFor, updateModule, setCardStatus, saveTestResult, touchModule, resetUser, saveFailed],
   );
 
   return <ProgressContext.Provider value={value}>{children}</ProgressContext.Provider>;

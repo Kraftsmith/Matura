@@ -3,19 +3,23 @@ import type { PictureDescriptionData } from '../types';
 import { Volume2, ChevronDown, ChevronUp, Copy, Check, Clock, Lightbulb, Maximize2 } from 'lucide-react';
 import { Button } from './ui';
 import { ImageLightbox } from './ImageLightbox';
+import { SaveStatus } from './SaveStatus';
 import { useSettings } from '../useSettings';
+import { useProgress } from '../useProgress';
 
 interface PictureDescriptionViewProps {
+  moduleId: string;
   data: PictureDescriptionData;
   moduleTitle: string;
 }
 
-export const PictureDescriptionView: React.FC<PictureDescriptionViewProps> = ({ data, moduleTitle }) => {
+export const PictureDescriptionView: React.FC<PictureDescriptionViewProps> = ({ moduleId, data, moduleTitle }) => {
   const { tr } = useSettings();
+  const { getModule, updateModule } = useProgress();
+  const userNotes = getModule(moduleId).pictureNotes ?? {};
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [revealedAnswers, setRevealedAnswers] = useState<Record<number, boolean>>({});
   const [copiedPhrase, setCopiedPhrase] = useState<string | null>(null);
-  const [userNotes, setUserNotes] = useState<Record<number, string>>({});
   const [timerSeconds, setTimerSeconds] = useState<number | null>(null);
   const [timerActive, setTimerActive] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -314,9 +318,13 @@ export const PictureDescriptionView: React.FC<PictureDescriptionViewProps> = ({ 
                     rows={2}
                     placeholder="Wpisz swoje kluczowe argumenty po angielsku przed odsłuchaniem wzorca..."
                     value={userNotes[q.questionNumber] || ''}
-                    onChange={(e) => setUserNotes({ ...userNotes, [q.questionNumber]: e.target.value })}
+                    onChange={(e) => {
+                      const text = e.target.value;
+                      updateModule(moduleId, (m) => ({ ...m, pictureNotes: { ...m.pictureNotes, [q.questionNumber]: text } }));
+                    }}
                     className="w-full text-xs p-3 rounded-lg border border-line focus:border-primary focus:ring-1 focus:ring-primary outline-hidden transition resize-y"
                   />
+                  <SaveStatus active={!!userNotes[q.questionNumber]?.trim()} />
                 </div>
 
                 {/* Model Answer Toggle */}

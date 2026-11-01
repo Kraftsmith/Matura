@@ -1,20 +1,26 @@
 import React, { useState } from 'react';
 import type { WritingPrompt } from '../types';
 import { CheckCircle2, Sparkles, ChevronDown, ChevronUp, Copy, Check } from 'lucide-react';
+import { SaveStatus } from './SaveStatus';
+import { useProgress } from '../useProgress';
+import { countWords } from '../progressSummary';
 
 interface WritingTrainerViewProps {
+  moduleId: string;
   prompt: WritingPrompt;
   moduleTitle: string;
 }
 
-export const WritingTrainerView: React.FC<WritingTrainerViewProps> = ({ prompt, moduleTitle }) => {
-  const [essayText, setEssayText] = useState('');
+export const WritingTrainerView: React.FC<WritingTrainerViewProps> = ({ moduleId, prompt, moduleTitle }) => {
+  const { getModule, updateModule } = useProgress();
+  const essayText = getModule(moduleId).essay?.text ?? '';
   const [showModel, setShowModel] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Word count calculation
-  const words = essayText.trim().split(/\s+/).filter(Boolean);
-  const wordCount = essayText.trim() === '' ? 0 : words.length;
+  const setEssayText = (text: string) =>
+    updateModule(moduleId, (m) => ({ ...m, essay: text ? { text, at: new Date().toISOString() } : undefined }));
+
+  const wordCount = countWords(essayText);
 
   const isUnderMin = wordCount < prompt.wordLimit.min;
   const isOverMax = wordCount > prompt.wordLimit.max;
@@ -105,9 +111,12 @@ export const WritingTrainerView: React.FC<WritingTrainerViewProps> = ({ prompt, 
             {isUnderMin && `Brakuje jeszcze ${prompt.wordLimit.min - wordCount} słów do dolnego limitu.`}
             {isOverMax && `Przekroczono limit o ${wordCount - prompt.wordLimit.max} słów.`}
           </span>
-          <button onClick={() => setEssayText('')} className="text-ink-3 hover:text-ink-2 underline">
-            Wyczyść
-          </button>
+          <span className="flex items-center gap-3">
+            <SaveStatus active={!!essayText.trim()} />
+            <button onClick={() => setEssayText('')} className="text-ink-3 hover:text-ink-2 underline">
+              Wyczyść
+            </button>
+          </span>
         </div>
       </div>
 

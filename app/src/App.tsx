@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { lazy, Suspense, useState, useEffect, useCallback, useMemo } from 'react';
 import type { SectionType } from './types';
 import { allModules } from './data/modulesData';
 import { vocabularyTextsByModule } from './data/vocabularyTexts';
@@ -14,12 +14,18 @@ import { VocabularyView } from './components/VocabularyView';
 import { WritingTrainerView } from './components/WritingTrainerView';
 import { GrammarHandbookModal } from './components/GrammarHandbookModal';
 import { DesignSystemShowcase } from './components/DesignSystemShowcase';
+import { TeacherAccess } from './components/TeacherAccess';
 import { ChevronRight } from 'lucide-react';
 import { useProgress } from './useProgress';
 import { useUser } from './useUser';
 import { useSettings } from './useSettings';
+import { useTeacherSession } from './useTeacherSession';
 import { findUser, students } from './users';
 import { buildHash, splitUserHash } from './userRoute';
+
+// Loaded only after the server confirmed the teacher: a learner's browser never receives this code.
+const TeacherStudentPage = lazy(() => import('./components/notes/TeacherStudentPage'));
+const TeacherClassPage = lazy(() => import('./components/notes/TeacherClassPage'));
 
 const moduleSections: SectionType[] = ['opis-foto', 'gramatyka', 'slownictwo', 'pisanie', 'fiszki'];
 /** Section shown when a module is opened without an explicit section (the first tab). */
@@ -96,6 +102,7 @@ export function App() {
   const { t } = useSettings();
   const { state: progress, setCardStatus, saveTestResult, touchModule } = useProgress();
   const isTeacher = user.role === 'teacher';
+  const teacherSession = useTeacherSession(isTeacher);
 
   const { moduleId: currentModuleId, section: activeSection } = route;
 
@@ -162,12 +169,35 @@ export function App() {
 
   // Which dashboard to show: the teacher sees the class, or one learner when the URL names one.
   const viewedStudent = isTeacher && route.viewUserId ? findUser(route.viewUserId) : undefined;
+  const teacherAccess = <TeacherAccess session={teacherSession} />;
+  const studentForTeacher = viewedStudent && (
+    <DashboardView modules={allModules} user={viewedStudent} teacherView onOpen={handleOpenFromDashboard} onBackToClass={handleBackToClass} headerAction={teacherAccess} />
+  );
+  const classForTeacher = <TeacherDashboardView modules={allModules} students={students} onOpenStudent={handleOpenStudent} headerAction={teacherAccess} />;
   const dashboard =
     activeSection !== 'dashboard' ? null : isTeacher ? (
       viewedStudent ? (
-        <DashboardView modules={allModules} user={viewedStudent} teacherView onOpen={handleOpenFromDashboard} onBackToClass={handleBackToClass} />
+        teacherSession.signedIn ? (
+          <Suspense fallback={studentForTeacher}>
+            <TeacherStudentPage
+              key={viewedStudent.id}
+              modules={allModules}
+              student={viewedStudent}
+              headerAction={teacherAccess}
+              onOpen={handleOpenFromDashboard}
+              onBackToClass={handleBackToClass}
+              onSignedOut={teacherSession.markSignedOut}
+            />
+          </Suspense>
+        ) : (
+          studentForTeacher
+        )
+      ) : teacherSession.signedIn ? (
+        <Suspense fallback={classForTeacher}>
+          <TeacherClassPage modules={allModules} students={students} headerAction={teacherAccess} onOpenStudent={handleOpenStudent} onSignedOut={teacherSession.markSignedOut} />
+        </Suspense>
       ) : (
-        <TeacherDashboardView modules={allModules} students={students} onOpenStudent={handleOpenStudent} />
+        classForTeacher
       )
     ) : (
       <DashboardView modules={allModules} user={user} onOpen={handleOpenFromDashboard} />
@@ -234,7 +264,7 @@ export function App() {
           )}
 
           {activeSection === 'opis-foto' && (
-            <PictureDescriptionView key={currentModule.id} data={currentModule.pictureDescription} moduleTitle={currentModule.titlePl} />
+            <PictureDescriptionView key={currentModule.id} moduleId={currentModule.id} data={currentModule.pictureDescription} moduleTitle={currentModule.titlePl} />
           )}
 
           {activeSection === 'gramatyka' && (
@@ -261,7 +291,7 @@ export function App() {
           )}
 
           {activeSection === 'pisanie' && (
-            <WritingTrainerView key={currentModule.id} prompt={currentModule.writingPrompt} moduleTitle={currentModule.titlePl} />
+            <WritingTrainerView key={currentModule.id} moduleId={currentModule.id} prompt={currentModule.writingPrompt} moduleTitle={currentModule.titlePl} />
           )}
 
           {activeSection === 'design-system' && <DesignSystemShowcase />}
