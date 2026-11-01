@@ -5,11 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:api": "vercel dev",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "db:migrate": "node --env-file=.env.local scripts/db-migrate.mjs",
+    "teacher:code": "node --env-file=.env.local scripts/teacher-code.mjs"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.2.0",
     "@types/canvas-confetti": "^1.9.0",
     "canvas-confetti": "^1.9.4",
     "lucide-react": "^1.59.0",

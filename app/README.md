@@ -30,3 +30,14 @@ If you are developing a production application, we recommend enabling type-aware
 ```
 
 See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+
+## Teacher notes API
+
+Private notes about students live in Postgres (Neon) behind `app/api/`. Plain `npm run dev` has no API; to run everything locally:
+
+```bash
+vercel env pull .env.local   # once, needs a linked project
+npm run db:migrate           # safe to repeat
+npm run teacher:code         # prints a new teacher code once; the old one and all sessions stop working
+npm run dev:api              # front end and API together
+```

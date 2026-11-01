@@ -81,6 +81,7 @@ const NewNote: React.FC<{ studentId: string; studentName: string; modules: Matur
     onAdd({ text: text.trim(), tag, moduleId: moduleId || undefined });
     change('');
     setTag('general');
+    setModuleId(initialModule);
   };
 
   return (

@@ -23,6 +23,7 @@ export const useStudentNotes = (studentId: string, onSignedOut: () => void) => {
   const [deleted, setDeleted] = useState<ShownNote>();
   const [deleteFailed, setDeleteFailed] = useState(false);
   const pending = useRef<PendingDelete>(undefined);
+  const removedIds = useRef(new Set<string>());
 
   const handleError = useCallback(
     (e: unknown) => {
@@ -36,7 +37,8 @@ export const useStudentNotes = (studentId: string, onSignedOut: () => void) => {
     setStatus('loading');
     listNotes(studentId)
       .then((list) => {
-        setNotes(list);
+        // A slow answer is older than what is on screen: it must not bring back deleted notes or undo new work.
+        setNotes((current) => [...current, ...list.filter((n) => !removedIds.current.has(n.id) && !current.some((c) => c.id === n.id))].sort(byPinnedThenNew));
         setStatus('ready');
       })
       .catch((e: unknown) => {
@@ -118,6 +120,7 @@ export const useStudentNotes = (studentId: string, onSignedOut: () => void) => {
     if (isLocal(current.note.id)) return;
     deleteNote(current.note.id).catch((e: unknown) => {
       handleError(e);
+      removedIds.current.delete(current.note.id);
       setNotes((list) => [...list, current.note].sort(byPinnedThenNew));
       setDeleteFailed(true);
     });
@@ -128,6 +131,7 @@ export const useStudentNotes = (studentId: string, onSignedOut: () => void) => {
     (note: ShownNote) => {
       flushDelete();
       setDeleteFailed(false);
+      removedIds.current.add(note.id);
       setNotes((list) => list.filter((n) => n.id !== note.id));
       setDeleted(note);
       pending.current = { note, timer: setTimeout(flushDelete, UNDO_MS) };
@@ -141,6 +145,7 @@ export const useStudentNotes = (studentId: string, onSignedOut: () => void) => {
     clearTimeout(current.timer);
     pending.current = undefined;
     setDeleted(undefined);
+    removedIds.current.delete(current.note.id);
     setNotes((list) => [...list, current.note].sort(byPinnedThenNew));
   }, []);
 
