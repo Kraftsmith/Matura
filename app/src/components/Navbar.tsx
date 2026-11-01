@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { BookOpen, Menu, Settings, Palette, Languages, LayoutDashboard, Check, ChevronDown, Globe } from 'lucide-react';
+import { BookOpen, Menu, Settings, Palette, Languages, LayoutDashboard, ChevronDown, Globe, LogOut, UserRound } from 'lucide-react';
 import type { SectionType, TranslationLang } from '../types';
 import type { UiLang } from '../i18n';
 import { Button } from './ui';
 import { useSettings } from '../useSettings';
+import { useProgress } from '../useProgress';
 import { useUser } from '../useUser';
 import { Avatar } from './GrammarStatusChip';
 
@@ -62,7 +63,8 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onOpenHandbook, o
   const menuRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const { translationLang, setTranslationLang, uiLang, setUiLang, t } = useSettings();
-  const { user, users, setUserId } = useUser();
+  const { user, signOut } = useUser();
+  const { flush } = useProgress();
 
   useEffect(() => {
     if (!menuOpen && !userMenuOpen) return;
@@ -85,6 +87,11 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onOpenHandbook, o
   }, [menuOpen, userMenuOpen]);
 
   const dashboardLabel = user.role === 'teacher' ? t('nav.students') : t('nav.progress');
+
+  const handleSignOut = async () => {
+    setUserMenuOpen(false);
+    if ((await flush()) || window.confirm(t('auth.unsaved'))) await signOut();
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-surface">
@@ -128,8 +135,8 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onOpenHandbook, o
               onClick={() => setUserMenuOpen((o) => !o)}
               aria-haspopup="menu"
               aria-expanded={userMenuOpen}
-              aria-label={`${t('nav.signedIn')}: ${user.name}. ${t('nav.switchUser')}`}
-              title={t('nav.switchUser')}
+              aria-label={`${t('nav.signedIn')}: ${user.name}`}
+              title={user.name}
               className={`flex h-10 cursor-pointer items-center gap-2 rounded-lg pr-2 pl-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                 userMenuOpen ? 'bg-primary-tint' : 'hover:bg-hero'
               }`}
@@ -141,32 +148,29 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onOpenHandbook, o
 
             {userMenuOpen && (
               <div role="menu" className="absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-lg border border-line bg-surface py-1">
-                <p className="px-4 pt-2 pb-1 text-xs leading-4 text-ink-2">{t('nav.whoLearns')}</p>
-                {users.map((u) => {
-                  const on = u.id === user.id;
-                  return (
-                    <button
-                      key={u.id}
-                      type="button"
-                      role="menuitemradio"
-                      aria-checked={on}
-                      onClick={() => {
-                        setUserMenuOpen(false);
-                        setUserId(u.id);
-                      }}
-                      className={`flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left hover:bg-hero focus-visible:bg-hero focus-visible:outline-none ${
-                        on ? 'bg-primary-tint' : ''
-                      }`}
-                    >
-                      <Avatar initials={u.initials} size="sm" />
-                      <span className="min-w-0 flex-1">
-                        <span className={`block text-base leading-6 ${on ? 'font-semibold text-primary' : 'text-ink'}`}>{u.name}</span>
-                        <span className="block text-xs leading-4 text-ink-2">{t(u.role === 'teacher' ? 'role.teacher' : 'role.student')}</span>
-                      </span>
-                      {on && <Check className="h-4 w-4 text-primary" />}
-                    </button>
-                  );
-                })}
+                <div className="px-4 pt-2 pb-2">
+                  <p className="truncate text-base leading-6 font-semibold text-ink">{user.name}</p>
+                  <p className="truncate text-xs leading-4 text-ink-2">{user.email}</p>
+                </div>
+                <div className="my-1 border-t border-line-soft" />
+                <a
+                  href="#profile"
+                  role="menuitem"
+                  onClick={() => setUserMenuOpen(false)}
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-base leading-6 text-ink hover:bg-hero focus-visible:bg-hero focus-visible:outline-none"
+                >
+                  <UserRound className="h-5 w-5 text-ink-2" />
+                  {t('nav.profile')}
+                </a>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => void handleSignOut()}
+                  className="flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left text-base leading-6 text-ink hover:bg-hero focus-visible:bg-hero focus-visible:outline-none"
+                >
+                  <LogOut className="h-5 w-5 text-ink-2" />
+                  {t('auth.signOut')}
+                </button>
               </div>
             )}
           </div>

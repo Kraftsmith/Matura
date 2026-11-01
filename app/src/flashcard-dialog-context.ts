@@ -8,13 +8,14 @@ export interface CardRequest {
   /** The deck from the address; without it the dialog offers a list of decks. */
   moduleId?: string;
   prefill?: CardPrefill;
-  /** The card goes to this learner's deck instead of the signed-in user's own. */
-  targetUserId?: string;
   /** Edits this card instead of adding a new one. */
   editing?: UserFlashcard;
 }
 
 export interface FlashcardDialogValue {
+  /** The learner the teacher is adding cards for; undefined means the teacher's own deck. */
+  lessonStudent: string | undefined;
+  chooseStudent: (id: string | undefined) => void;
   open: (request: CardRequest) => void;
   /** Removes the learner's own card, with "Cofnij" for 8 seconds. */
   removeOwn: (moduleId: string, card: UserFlashcard) => void;

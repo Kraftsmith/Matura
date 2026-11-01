@@ -12,14 +12,16 @@ import { useProgress } from '../useProgress';
 import { useSettings } from '../useSettings';
 import { useTeacherCards } from '../useTeacherCards';
 import { useUser } from '../useUser';
-import { buildHash } from '../userRoute';
-import { findUser } from '../users';
+import { StudentChoice } from './LessonBar';
 import { Button, Chip, TextArea, TextField, fieldClass } from './ui';
 
 const PARTS_OF_SPEECH: PartOfSpeech[] = ['noun', 'verb', 'adjective', 'adverb', 'idiom', 'phrasal_verb', 'phrase'];
 
 interface AddFlashcardDialogProps {
   request: CardRequest;
+  lessonStudent: string | undefined;
+  onChooseStudent: (id: string | undefined) => void;
+  teacherSignedIn: boolean | undefined;
   signIn: React.ReactNode;
   onSignedOut: () => void;
   onClose: () => void;
@@ -31,16 +33,17 @@ interface AddFlashcardDialogProps {
 
 const moduleOfOwn = (cards: Record<string, UserFlashcard[]> | undefined, id: string) => Object.entries(cards ?? {}).find(([, list]) => list.some((c) => c.id === id))?.[0];
 
-export const AddFlashcardDialog: React.FC<AddFlashcardDialogProps> = ({ request, signIn, onSignedOut, onClose, onAdded, onAddedForStudent, onRemoveOwn, onRemoveForStudent }) => {
+export const AddFlashcardDialog: React.FC<AddFlashcardDialogProps> = ({ request, lessonStudent, onChooseStudent, teacherSignedIn, signIn, onSignedOut, onClose, onAdded, onAddedForStudent, onRemoveOwn, onRemoveForStudent }) => {
   const { t, translationLang } = useSettings();
-  const { user } = useUser();
+  const { user, students } = useUser();
   const progress = useProgress();
   const teacherCards = useTeacherCards();
   const titleId = useId();
 
   const { editing, prefill } = request;
   const teacherCard = editing && isTeacherCard(editing) ? editing : undefined;
-  const targetUserId = teacherCard?.studentId ?? request.targetUserId;
+  const targetUserId = teacherCard?.studentId ?? (editing ? undefined : lessonStudent);
+  const needsSignIn = !editing && user.role === 'teacher' && teacherSignedIn === false;
   const startModule = teacherCard?.moduleId ?? (editing && moduleOfOwn(progress.state.cards, editing.id)) ?? request.moduleId ?? progress.state.lastDeckId ?? allModules[0].id;
   const start = { ...prefill, ...editing };
   const rus = translationLang === 'ru';
@@ -69,7 +72,7 @@ export const AddFlashcardDialog: React.FC<AddFlashcardDialogProps> = ({ request,
 
   const duplicateLink =
     duplicate &&
-    (targetUserId && isTeacherCard(duplicate) ? `#${buildHash(user.id, `dashboard/${targetUserId}/fiszki`)}` : `#${buildHash(user.id, `${moduleId}/fiszki/${duplicate.id}`)}`);
+    (targetUserId && isTeacherCard(duplicate) ? `#dashboard/${targetUserId}/fiszki` : `#${moduleId}/fiszki/${duplicate.id}`);
 
   const submit = async () => {
     if (!canSave) return;
@@ -163,11 +166,18 @@ export const AddFlashcardDialog: React.FC<AddFlashcardDialogProps> = ({ request,
                 </select>
               </label>
             )}
-            {targetUserId && (
-              <>
-                <p>{t('lesson.forStudent', { name: findUser(targetUserId)?.name ?? targetUserId })}</p>
-                <p>{t('lesson.visible')}</p>
-              </>
+            {teacherCard && <p>{t('lesson.forStudent', { name: students.find((s) => s.id === teacherCard.studentId)?.name ?? teacherCard.studentId })}</p>}
+            {!editing && teacherSignedIn && (
+              <div className="mt-2">
+                <StudentChoice student={lessonStudent} onChoose={onChooseStudent} />
+              </div>
+            )}
+            {targetUserId && <p className="mt-1">{t('lesson.visible')}</p>}
+            {needsSignIn && (
+              <div className="mt-2 grid justify-items-start gap-2">
+                <p>{t('lesson.signInHint')}</p>
+                {signIn}
+              </div>
             )}
           </div>
 
@@ -235,7 +245,7 @@ export const AddFlashcardDialog: React.FC<AddFlashcardDialogProps> = ({ request,
 
         <div className="grid gap-2 border-t border-line-soft px-5 py-4">
           {failure === 'save' && <p className="text-sm leading-5 text-error">{t('lesson.saveFailed')}</p>}
-          {failure === 'session' && (
+          {failure === 'session' && !needsSignIn && !teacherSignedIn && (
             <div className="grid gap-2">
               <p className="text-sm leading-5 text-error">{t('lesson.signedOut')}</p>
               {signIn}

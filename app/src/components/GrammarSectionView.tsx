@@ -5,8 +5,6 @@ import { Button, Chip } from './ui';
 import { InteractiveTestView } from './InteractiveTestView';
 import { useSettings } from '../useSettings';
 import { pluralForm } from '../i18n';
-import { useUser } from '../useUser';
-import { buildHash } from '../userRoute';
 import { CopyLinkButton } from './CopyLinkButton';
 
 interface GrammarSectionViewProps {
@@ -30,7 +28,6 @@ const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ b
  */
 export const GrammarSectionView: React.FC<GrammarSectionViewProps> = ({ moduleId, focusId, rules, questions, moduleTitle, onScoreSave }) => {
   const { tr, t } = useSettings();
-  const { user } = useUser();
   const sectionRoute = `${moduleId}/gramatyka`;
 
   // Every rule and the test have their own address (…/gramatyka/gram-2, …/gramatyka/test).
@@ -76,7 +73,7 @@ export const GrammarSectionView: React.FC<GrammarSectionViewProps> = ({ moduleId
                       {t('gram.level')}: {levelLabel(rule.level)}
                     </span>
                     <h3 className="text-lg font-semibold text-ink">
-                      <a href={`#${buildHash(user.id, `${sectionRoute}/${rule.id}`)}`} className="hover:text-primary hover:underline">
+                      <a href={`#${sectionRoute}/${rule.id}`} className="hover:text-primary hover:underline">
                         {rule.title}
                       </a>
                     </h3>

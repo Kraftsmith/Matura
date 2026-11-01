@@ -3,9 +3,7 @@ import { ArrowLeft, Languages } from 'lucide-react';
 import type { LanguageUseExercise } from '../../types';
 import type { ExerciseResult } from '../../progress-context';
 import { pluralForm } from '../../i18n';
-import { buildHash } from '../../userRoute';
 import { useSettings } from '../../useSettings';
-import { useUser } from '../../useUser';
 import { Button, SectionTitle } from '../ui';
 import { ExerciseCard } from './ExerciseCard';
 
@@ -21,7 +19,6 @@ interface LanguageUseViewProps {
 
 export const LanguageUseView: React.FC<LanguageUseViewProps> = ({ moduleId, exercises, exerciseId, moduleTitle, results, onResult }) => {
   const { t, translationLang } = useSettings();
-  const { user } = useUser();
   const [showTranslations, setShowTranslations] = useState(false);
   const sectionRoute = `${moduleId}/srodki`;
   const focused = exercises.find((e) => e.id === exerciseId);
@@ -66,7 +63,7 @@ export const LanguageUseView: React.FC<LanguageUseViewProps> = ({ moduleId, exer
 
       {focused ? (
         <div className="grid gap-4">
-          <a href={`#${buildHash(user.id, sectionRoute)}`} className="inline-flex items-center gap-1.5 justify-self-start text-sm font-semibold text-primary hover:underline">
+          <a href={`#${sectionRoute}`} className="inline-flex items-center gap-1.5 justify-self-start text-sm font-semibold text-primary hover:underline">
             <ArrowLeft className="h-4 w-4" />
             {t('srodki.allExercises')} ({exercises.length})
           </a>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { BookOpenCheck, ChevronRight, ClipboardCheck, Layers, MessagesSquare, Play, RotateCcw } from 'lucide-react';
 import type { MaturaModule, SectionType } from '../types';
-import type { UserProfile } from '../users';
+import { daysUntil, type ExamPlan, type UserProfile } from '../users';
 import { Button, Meter, SectionTitle, StatTile } from './ui';
 import { Avatar, GrammarStatusChip } from './GrammarStatusChip';
 import { CompletedTasks } from './CompletedTasks';
@@ -14,7 +14,7 @@ import { formatRelative, summarizeUser } from '../progressSummary';
 interface DashboardViewProps {
   modules: MaturaModule[];
   /** Whose progress is shown. */
-  user: UserProfile;
+  user: UserProfile & ExamPlan;
   /** True when a teacher is looking at a learner's page. */
   teacherView?: boolean;
   onOpen: (moduleId: string, section: SectionType) => void;
@@ -66,6 +66,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const attemptsLabel = (n: number) => (n === 1 ? t('dash.attempt', { n }) : t('dash.attempts', { n }));
 
+  const examDays = daysUntil(user.examDate);
+  const examLine = [
+    user.goal,
+    user.level && t(user.level === 'rozszerzona' ? 'profile.levelExtended' : 'profile.levelBasic'),
+    examDays !== undefined && t('profile.daysToExam', { n: examDays }),
+  ].filter(Boolean);
+
   const reviewTile = (
     <StatTile
       icon={<RotateCcw className="h-4 w-4" />}
@@ -96,6 +103,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             {teacherView ? `${t('dash.titleFor')}: ${user.name}` : `${t('dash.title')}, ${user.name}`}
           </h1>
         </div>
+        {examLine.length > 0 && <p className="mt-2 text-base leading-6 font-semibold text-ink">{examLine.join(' · ')}</p>}
         <p className="mt-2 max-w-[72ch] text-base leading-6 text-ink-2">{t('dash.rules', { n: GRAMMAR_PASS_SCORE, e: EXERCISE_PASS_SCORE })}</p>
         <p className="mt-1 text-sm leading-5 text-ink-2">
           {t('dash.lastActivity')}: <b className="font-semibold text-ink">{formatRelative(s.lastActiveAt, t, locale)}</b>

@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { Eye, EyeOff, StickyNote } from 'lucide-react';
 import type { MaturaModule, SectionType } from '../../types';
-import type { UserProfile } from '../../users';
+import type { ClassStudent } from '../../users';
 import { DashboardView } from '../DashboardView';
 import { Button, Tabs, Toast } from '../ui';
 import { TeacherCardsPanel } from '../TeacherCardsPanel';
+import { StudentPlanPanel } from './StudentPlanPanel';
 import { useSettings } from '../../useSettings';
 import { useTeacherCards } from '../../useTeacherCards';
 import { TeacherNotesPanel } from './TeacherNotesPanel';
@@ -29,14 +30,13 @@ const writeHidden = (hidden: boolean) => {
   }
 };
 
-type Tab = 'progress' | 'notes' | 'cards';
+type Tab = 'progress' | 'notes' | 'cards' | 'plan';
 
 interface TeacherStudentPageProps {
   modules: MaturaModule[];
-  student: UserProfile;
+  student: ClassStudent;
   /** Which tab to open first; the lesson bar links straight to the cards. */
   initialTab?: 'cards';
-  headerAction: React.ReactNode;
   onOpen: (moduleId: string, section: SectionType) => void;
   onOpenDeck: (moduleId: string) => void;
   onBackToClass: () => void;
@@ -44,7 +44,7 @@ interface TeacherStudentPageProps {
 }
 
 /** A learner's page as the teacher sees it. Exists only in the lazy chunk, loaded after the server confirmed the teacher. */
-const TeacherStudentPage: React.FC<TeacherStudentPageProps> = ({ modules, student, initialTab, headerAction, onOpen, onOpenDeck, onBackToClass, onSignedOut }) => {
+const TeacherStudentPage: React.FC<TeacherStudentPageProps> = ({ modules, student, initialTab, onOpen, onOpenDeck, onBackToClass, onSignedOut }) => {
   const nt = useNotesStrings();
   const { t } = useSettings();
   const { cardsOf } = useTeacherCards();
@@ -100,12 +100,7 @@ const TeacherStudentPage: React.FC<TeacherStudentPageProps> = ({ modules, studen
         onOpen={onOpen}
         onOpenDeck={onOpenDeck}
         onBackToClass={onBackToClass}
-        headerAction={
-          <>
-            {hideButton}
-            {headerAction}
-          </>
-        }
+        headerAction={hideButton}
         resetConfirmSuffix={nt('notes.resetKeeps')}
         renderTopicBadge={hidden ? undefined : topicBadge}
         tabs={
@@ -117,12 +112,15 @@ const TeacherStudentPage: React.FC<TeacherStudentPageProps> = ({ modules, studen
               { id: 'progress', label: nt('notes.tabProgress') },
               ...(hidden ? [] : [{ id: 'notes' as const, label: nt('notes.tabNotes'), count: notes.length }]),
               { id: 'cards', label: t('lesson.tab'), count: cardCount },
+              { id: 'plan', label: t('profile.matura') },
             ]}
           />
         }
         replacement={
           tab === 'cards' ? (
             <TeacherCardsPanel student={student} modules={modules} />
+          ) : tab === 'plan' ? (
+            <StudentPlanPanel student={student} onRemoved={onBackToClass} />
           ) : !hidden && tab === 'notes' ? (
             <TeacherNotesPanel studentId={student.id} studentName={student.name} modules={modules} notesState={notesState} moduleFilter={moduleFilter} onModuleFilter={setModuleFilter} />
           ) : undefined

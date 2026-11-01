@@ -1,27 +1,23 @@
-import { findUser } from './users';
+/** Ids that used to open every address. Only here so that old links keep working. */
+const LEGACY_PROFILES = ['maria', 'evgeny', 'teacher'];
 
-/**
- * Every address starts with the profile: #maria, #maria/czlowiek/slownictwo, #teacher/dashboard/evgeny.
- * The part after the profile is the page route handled by App.
- */
-export interface UserHash {
-  /** Profile named in the address, if the first segment is a known user id. */
-  userId?: string;
-  /** The remaining route, without a leading slash (may be empty). */
-  rest: string;
-}
+/** Pages that work without a session. */
+const PUBLIC_PAGES = ['login', 'register', 'forgot', 'reset', 'verify', 'join', 'regulamin', 'prywatnosc'] as const;
+export type PublicPage = (typeof PUBLIC_PAGES)[number];
 
-export const splitUserHash = (hash: string): UserHash => {
-  const raw = decodeURIComponent(hash.replace(/^#\/?/, '')).replace(/\/$/, '');
+const clean = (hash: string): string => decodeURIComponent(hash.replace(/^#\/?/, '')).replace(/\/$/, '');
+
+/** The page route without a leading slash and without the profile segment of an old link. Who you are comes from the session. */
+export const routeOf = (hash: string): string => {
+  const raw = clean(hash);
   const [first, ...others] = raw.split('/');
-  if (first && findUser(first)) return { userId: first, rest: others.join('/') };
-  return { rest: raw };
+  return LEGACY_PROFILES.includes(first) ? others.join('/') : raw;
 };
 
-export const buildHash = (userId: string, rest: string): string => (rest ? `${userId}/${rest}` : userId);
+export const publicPage = (hash: string): { page: PublicPage; param?: string } | undefined => {
+  const [page, param] = clean(hash).split('/');
+  return (PUBLIC_PAGES as readonly string[]).includes(page) ? { page: page as PublicPage, param } : undefined;
+};
 
-/**
- * Full link to a page without the profile segment, for homework: whoever opens it lands on that page
- * in their own profile (the last one used in their browser), not in the profile of the person who shared it.
- */
+/** Full link to a page: whoever opens it lands on that page in their own account. */
 export const shareLink = (rest: string): string => `${window.location.origin}${window.location.pathname}#${rest}`;

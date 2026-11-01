@@ -1,6 +1,7 @@
 export type TranslationLang = 'pl' | 'ru';
 
 export type SectionType =
+  | 'profile'
   | 'dashboard'
   | 'fiszki'
   | 'fiszki-hub'

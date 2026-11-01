@@ -11,8 +11,6 @@ import { useFlashcardDialog } from '../useAddFlashcard';
 import { useProgress } from '../useProgress';
 import { useSettings } from '../useSettings';
 import { useTeacherCards } from '../useTeacherCards';
-import { useUser } from '../useUser';
-import { buildHash } from '../userRoute';
 
 const FILTER_KEY = 'matura.fiszkiFilter';
 const FILTERS = ['all', 'started', 'review', 'mine'] as const;
@@ -46,8 +44,7 @@ const useOwnLabel = () => {
 };
 
 const useHref = () => {
-  const { user } = useUser();
-  return (rest: string) => `#${buildHash(user.id, rest)}`;
+  return (rest: string) => `#${rest}`;
 };
 
 /** Every deck of the signed-in user with its counts. */

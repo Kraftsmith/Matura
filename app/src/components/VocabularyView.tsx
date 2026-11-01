@@ -5,18 +5,15 @@ import { Button, Chip, InlineInput, SectionTitle } from './ui';
 import { ImageLightbox } from './ImageLightbox';
 import { useSettings } from '../useSettings';
 import { vocabularyExercisesByText } from '../data/vocabularyExercises';
-import { useUser } from '../useUser';
 import { useProgress } from '../useProgress';
 import type { GapWork } from '../progress-context';
 import { isGapCorrect } from '../progressSummary';
 import { SaveStatus } from './SaveStatus';
-import { buildHash } from '../userRoute';
 import { CopyLinkButton } from './CopyLinkButton';
 import { LessonBar } from './LessonBar';
 import { SelectionCardBar } from './SelectionCardBar';
 import { speak } from '../speech';
-import { useAddFlashcard } from '../useAddFlashcard';
-import { useLessonStudent } from '../useLessonStudent';
+import { useAddFlashcard, useFlashcardDialog } from '../useAddFlashcard';
 
 /** Gap-fill sentences under a text: type the key word, check, see the answers, try again. */
 const GapFillExercise: React.FC<{ moduleId: string; textId: string; items: GapFillItem[] }> = ({ moduleId, textId, items }) => {
@@ -189,10 +186,9 @@ const Illustration: React.FC<{ src: string; alt: string; onOpen: () => void }> =
 /** A word that is already in the deck: the way to its card. */
 const InDeckLink: React.FC<{ moduleId: string; cardId: string }> = ({ moduleId, cardId }) => {
   const { t } = useSettings();
-  const { user } = useUser();
   return (
     <a
-      href={`#${buildHash(user.id, `${moduleId}/fiszki/${cardId}`)}`}
+      href={`#${moduleId}/fiszki/${cardId}`}
       className="grid h-6 w-6 shrink-0 place-items-center rounded text-success hover:bg-primary-tint"
       title={t('add.inDeck')}
       aria-label={t('add.inDeck')}
@@ -212,7 +208,6 @@ interface TextCardProps {
 
 const TextCard: React.FC<TextCardProps> = ({ moduleId, text, route, showTranslations, targetUserId }) => {
   const { tr } = useSettings();
-  const { user } = useUser();
   const add = useAddFlashcard(moduleId, targetUserId);
   const [lightbox, setLightbox] = useState(false);
 
@@ -229,7 +224,7 @@ const TextCard: React.FC<TextCardProps> = ({ moduleId, text, route, showTranslat
           </div>
           <div className="flex items-start justify-between gap-3">
             <h3 className="text-2xl leading-8 font-semibold">
-              <a href={`#${buildHash(user.id, route)}`} className="hover:text-primary hover:underline">
+              <a href={`#${route}`} className="hover:text-primary hover:underline">
                 {text.title}
               </a>
             </h3>
@@ -301,8 +296,7 @@ const TextCard: React.FC<TextCardProps> = ({ moduleId, text, route, showTranslat
 
 export const VocabularyView: React.FC<VocabularyViewProps> = ({ moduleId, texts, textId, vocabulary, moduleTitle, teacherSignedIn = false }) => {
   const { tr, t } = useSettings();
-  const { user } = useUser();
-  const [lessonStudent, chooseStudent] = useLessonStudent(teacherSignedIn);
+  const { lessonStudent, chooseStudent } = useFlashcardDialog();
   const add = useAddFlashcard(moduleId, lessonStudent);
   const sectionRoute = `${moduleId}/slownictwo`;
   const focused = textId ? texts.find((x) => x.id === textId) : undefined;
@@ -339,7 +333,7 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({ moduleId, texts,
 
       {focused ? (
         <div className="grid gap-4">
-          <a href={`#${buildHash(user.id, sectionRoute)}`} className="inline-flex items-center gap-1.5 justify-self-start text-sm font-semibold text-primary hover:underline">
+          <a href={`#${sectionRoute}`} className="inline-flex items-center gap-1.5 justify-self-start text-sm font-semibold text-primary hover:underline">
             <ArrowLeft className="h-4 w-4" />
             {t('vocab.allTexts')} ({texts.length})
           </a>

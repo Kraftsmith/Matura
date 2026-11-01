@@ -89,7 +89,9 @@ export interface ProgressValue {
   /** Moves a card to another module's deck, applying an edit if there is one; its status moves with it. */
   moveCard: (fromModuleId: string, toModuleId: string, cardId: string, patch?: Partial<UserFlashcard>) => void;
   resetUser: (userId: string) => void;
-  /** The last write to the browser's storage failed: the work lives only in this tab. */
+  /** Sends what is waiting; false when something did not reach the server. */
+  flush: () => Promise<boolean>;
+  /** The last save to the server failed: the work is only in this browser for now. */
   saveFailed: boolean;
 }
 

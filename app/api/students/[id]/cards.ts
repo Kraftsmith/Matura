@@ -1,15 +1,17 @@
 import { randomUUID } from 'node:crypto';
-import { badRequest, db, guarded, isTeacher, json, notFound } from '../../_lib/http.js';
-import { isModuleId, isStudentId } from '../../_lib/notes.js';
+import { badRequest, db, guarded, json, notFound, requireStudentOf, requireUser, unauthorized } from '../../_lib/http.js';
+import { isModuleId } from '../../_lib/notes.js';
 import { parseCard, sameFront, toCard } from '../../_lib/cards.js';
 
 // /api/students/<id>/cards
 const studentIdOf = (req: Request) => new URL(req.url).pathname.split('/')[3];
 
-/** Open without a session: learners have no login, and these rows hold only study words, never notes. */
+/** The learner's own cards from the teacher, or those of a learner in the teacher's class. */
 export const GET = guarded(async (req) => {
   const studentId = studentIdOf(req);
-  if (!isStudentId(studentId)) return notFound();
+  const user = await requireUser(req);
+  if (!user) return unauthorized();
+  if (user.id !== studentId && !(await requireStudentOf(req, studentId))) return notFound();
 
   const rows = await db()`select * from user_cards where user_id = ${studentId} and source = 'teacher' order by created_at`;
   return json({ cards: rows.map(toCard) });
@@ -17,7 +19,7 @@ export const GET = guarded(async (req) => {
 
 export const POST = guarded(async (req) => {
   const studentId = studentIdOf(req);
-  if (!(await isTeacher(req)) || !isStudentId(studentId)) return notFound();
+  if (!(await requireStudentOf(req, studentId))) return notFound();
 
   const body = (await req.json().catch(() => null)) as Record<string, unknown> | null;
   const card = parseCard(body);

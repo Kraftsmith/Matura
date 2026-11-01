@@ -7,7 +7,6 @@ import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
 import { ModuleHeader } from './components/ModuleHeader';
 import { DashboardView } from './components/DashboardView';
-import { TeacherDashboardView } from './components/TeacherDashboardView';
 import { FlashcardsView } from './components/FlashcardsView';
 import { DeckPage, DeckTabActions, FlashcardsHubView, ReviewSession } from './components/FlashcardsHubView';
 import { FlashcardDialogProvider } from './components/FlashcardDialogProvider';
@@ -18,26 +17,24 @@ import { LanguageUseView } from './components/language-use/LanguageUseView';
 import { WritingTrainerView } from './components/WritingTrainerView';
 import { GrammarHandbookModal } from './components/GrammarHandbookModal';
 import { DesignSystemShowcase } from './components/DesignSystemShowcase';
-import { TeacherAccess } from './components/TeacherAccess';
+import { ProfilePage } from './components/ProfilePage';
 import { ChevronRight } from 'lucide-react';
 import { useProgress } from './useProgress';
 import { EXERCISE_PASS_SCORE } from './progress-context';
 import { useUser } from './useUser';
 import { useSettings } from './useSettings';
-import { useTeacherSession } from './useTeacherSession';
 import { useTeacherCards } from './useTeacherCards';
 import { deckCounts, deckOf } from './decks';
-import { findUser, students } from './users';
-import { buildHash, splitUserHash } from './userRoute';
+import { routeOf } from './userRoute';
 
-// Loaded only after the server confirmed the teacher: a learner's browser never receives this code.
+// Loaded only for the role the server gave: a learner's browser never receives this code.
 const TeacherStudentPage = lazy(() => import('./components/notes/TeacherStudentPage'));
 const TeacherClassPage = lazy(() => import('./components/notes/TeacherClassPage'));
 
 const moduleSections: SectionType[] = ['opis-foto', 'gramatyka', 'slownictwo', 'srodki', 'pisanie', 'fiszki'];
 /** Section shown when a module is opened without an explicit section (the first tab). */
 const DEFAULT_SECTION: SectionType = moduleSections[0];
-const standaloneSections: SectionType[] = ['dashboard', 'fiszki-hub', 'design-system'];
+const standaloneSections: SectionType[] = ['dashboard', 'fiszki-hub', 'design-system', 'profile'];
 const validSections: SectionType[] = [...moduleSections, ...standaloneSections];
 const DEFAULT_MODULE = allModules[0].id;
 
@@ -63,13 +60,12 @@ interface Route {
 const isStandalone = (s: SectionType) => standaloneSections.includes(s);
 
 /**
- * URL scheme: #<userId>/<moduleId>/<section>[/<item>], e.g. #maria/praca/opis-foto,
- * #maria/czlowiek/slownictwo/czl-txt-2 (one text), #maria/czlowiek/srodki/czl-sj-2 (one exercise), #maria/czlowiek/gramatyka/test.
- * The profile segment is handled by UserProvider; here we parse what follows it.
- * Also accepted: #<section> (default module), #<moduleId> (first tab), #design-system,
+ * URL scheme: #<moduleId>/<section>[/<item>], e.g. #praca/opis-foto,
+ * #czlowiek/slownictwo/czl-txt-2 (one text), #czlowiek/srodki/czl-sj-2 (one exercise), #czlowiek/gramatyka/test.
+ * Also accepted: #<section> (default module), #<moduleId> (first tab), #design-system, #profile,
  * #dashboard/<studentId> (teacher looking at one learner, /fiszki opens their cards),
  * #fiszki (all decks), #fiszki/powtorka (review of all decks), #fiszki/<moduleId>[/<cardId>] (one deck).
- * A bare #<userId> or an empty hash opens the dashboard.
+ * An empty hash opens the dashboard.
  */
 /** Keeps the item only if it exists in that module's section; unknown items fall back to the whole section. */
 const validItem = (moduleId: string, section: SectionType, item?: string): string | undefined => {
@@ -89,15 +85,15 @@ const validItem = (moduleId: string, section: SectionType, item?: string): strin
 };
 
 const parseHash = (hash: string): Route => {
-  const raw = splitUserHash(hash).rest;
+  const raw = routeOf(hash);
   const [a, rawB, c] = raw.split('/');
   const b = rawB && legacySections[rawB] ? legacySections[rawB] : rawB;
   const isModule = (id: string) => allModules.some((m) => m.id === id);
   const isSection = (s: string): s is SectionType => validSections.includes(s as SectionType);
 
   if (!raw || a === 'dashboard') {
-    const student = b && findUser(b)?.role === 'student' ? b : undefined;
-    return { moduleId: DEFAULT_MODULE, section: 'dashboard', viewUserId: student, item: student && c === 'fiszki' ? c : undefined };
+    // Whether this learner is in the class is known only after the server answers.
+    return { moduleId: DEFAULT_MODULE, section: 'dashboard', viewUserId: b, item: b && c === 'fiszki' ? c : undefined };
   }
   if (a === 'fiszki') {
     if (b === REVIEW_ITEM) return { moduleId: DEFAULT_MODULE, section: 'fiszki-hub', item: REVIEW_ITEM };
@@ -105,6 +101,7 @@ const parseHash = (hash: string): Route => {
     return { moduleId: DEFAULT_MODULE, section: 'fiszki-hub' };
   }
   if (a === 'design-system') return { moduleId: DEFAULT_MODULE, section: 'design-system' };
+  if (a === 'profile') return { moduleId: DEFAULT_MODULE, section: 'profile' };
   if (isModule(a)) {
     const section = b && isSection(b) && !isStandalone(b) ? b : DEFAULT_SECTION;
     return { moduleId: a, section, item: validItem(a, section, c) };
@@ -126,11 +123,10 @@ export function App() {
   const [route, setRoute] = useState<Route>(() => parseHash(window.location.hash));
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [handbookOpen, setHandbookOpen] = useState(false);
-  const { user } = useUser();
+  const { user, students, classLoaded, markSignedOut } = useUser();
   const { t } = useSettings();
   const { state: progress, setCardStatus, saveTestResult, saveExerciseResult, touchModule } = useProgress();
   const isTeacher = user.role === 'teacher';
-  const teacherSession = useTeacherSession(isTeacher);
 
   const { cardsOf, setLive } = useTeacherCards();
 
@@ -144,14 +140,13 @@ export function App() {
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
-  // Keep the address bar canonical (e.g. "#test" becomes "#maria/czlowiek/gramatyka"): every page of every
-  // profile has its own shareable link.
+  // Keep the address bar canonical (e.g. "#test" becomes "#czlowiek/gramatyka"): every page has its own shareable link.
   useEffect(() => {
     // Only the teacher can look at another learner's page; for a student the extra segment is dropped.
     const shown = isTeacher ? route : { ...route, viewUserId: undefined, item: route.section === 'dashboard' ? undefined : route.item };
-    const canonical = '#' + buildHash(user.id, toHash(shown));
+    const canonical = `#${toHash(shown)}`;
     if (window.location.hash !== canonical) window.history.replaceState(null, '', canonical);
-  }, [route, user.id, isTeacher]);
+  }, [route, isTeacher]);
 
   // Remember the module the learner worked in last, so the dashboard can offer "Kontynuuj".
   useEffect(() => {
@@ -163,13 +158,10 @@ export function App() {
     setLive(activeSection === 'slownictwo' || activeSection === 'fiszki' || activeSection === 'fiszki-hub');
   }, [activeSection, setLive]);
 
-  const navigate = useCallback(
-    (next: Route) => {
-      setRoute(next);
-      window.location.hash = buildHash(user.id, toHash(next));
-    },
-    [user.id],
-  );
+  const navigate = useCallback((next: Route) => {
+    setRoute(next);
+    window.location.hash = toHash(next);
+  }, []);
 
   const handleSectionChange = (section: SectionType) => navigate({ moduleId: currentModuleId, section });
   const handleModuleChange = (moduleId: string) => navigate({ moduleId, section: DEFAULT_SECTION });
@@ -221,38 +213,26 @@ export function App() {
   const reviewIds = useMemo(() => new Set(currentProgress?.review ?? []), [currentProgress]);
 
   // Which dashboard to show: the teacher sees the class, or one learner when the URL names one.
-  const viewedStudent = isTeacher && route.viewUserId ? findUser(route.viewUserId) : undefined;
-  const teacherAccess = <TeacherAccess session={teacherSession} />;
-  const studentForTeacher = viewedStudent && (
-    <DashboardView modules={allModules} user={viewedStudent} teacherView onOpen={handleOpenFromDashboard} onOpenDeck={handleOpenDeck} onBackToClass={handleBackToClass} headerAction={teacherAccess} />
-  );
-  const classForTeacher = <TeacherDashboardView modules={allModules} students={students} onOpenStudent={handleOpenStudent} headerAction={teacherAccess} />;
+  const viewedStudent = isTeacher && route.viewUserId ? students.find((s) => s.id === route.viewUserId) : undefined;
   const dashboard =
     activeSection !== 'dashboard' ? null : isTeacher ? (
-      viewedStudent ? (
-        teacherSession.signedIn ? (
-          <Suspense fallback={studentForTeacher}>
-            <TeacherStudentPage
-              key={`${viewedStudent.id}-${route.item ?? ''}`}
-              modules={allModules}
-              student={viewedStudent}
-              initialTab={route.item ? 'cards' : undefined}
-              headerAction={teacherAccess}
-              onOpen={handleOpenFromDashboard}
-              onOpenDeck={handleOpenDeck}
-              onBackToClass={handleBackToClass}
-              onSignedOut={teacherSession.markSignedOut}
-            />
-          </Suspense>
-        ) : (
-          studentForTeacher
-        )
-      ) : teacherSession.signedIn ? (
-        <Suspense fallback={classForTeacher}>
-          <TeacherClassPage modules={allModules} students={students} headerAction={teacherAccess} onOpenStudent={handleOpenStudent} onSignedOut={teacherSession.markSignedOut} />
+      !classLoaded ? null : viewedStudent ? (
+        <Suspense fallback={null}>
+          <TeacherStudentPage
+            key={`${viewedStudent.id}-${route.item ?? ''}`}
+            modules={allModules}
+            student={viewedStudent}
+            initialTab={route.item ? 'cards' : undefined}
+            onOpen={handleOpenFromDashboard}
+            onOpenDeck={handleOpenDeck}
+            onBackToClass={handleBackToClass}
+            onSignedOut={markSignedOut}
+          />
         </Suspense>
       ) : (
-        classForTeacher
+        <Suspense fallback={null}>
+          <TeacherClassPage modules={allModules} students={students} onOpenStudent={handleOpenStudent} onSignedOut={markSignedOut} />
+        </Suspense>
       )
     ) : (
       <DashboardView modules={allModules} user={user} onOpen={handleOpenFromDashboard} onOpenDeck={handleOpenDeck} onOpenReview={handleOpenReview} />
@@ -274,7 +254,7 @@ export function App() {
   );
 
   return (
-    <FlashcardDialogProvider signIn={teacherAccess} onSignedOut={teacherSession.markSignedOut}>
+    <FlashcardDialogProvider teacherSignedIn={isTeacher ? true : undefined} signIn={null} onSignedOut={markSignedOut}>
     <div className="flex min-h-screen flex-col bg-surface font-sans text-ink antialiased">
       <Navbar
         activeSection={activeSection}
@@ -304,7 +284,7 @@ export function App() {
         <main className="w-full min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
           {activeSection === 'design-system' && (
             <nav className="mb-6 flex items-center gap-1.5 text-sm text-ink-2" aria-label={t('misc.path')}>
-              <a href={`#${buildHash(user.id, 'dashboard')}`} className="hover:text-primary hover:underline">
+              <a href="#dashboard" className="hover:text-primary hover:underline">
                 {isTeacher ? t('side.teacherPanel') : t('nav.progress')}
               </a>
               <ChevronRight className="h-3.5 w-3.5" />
@@ -368,7 +348,7 @@ export function App() {
               texts={vocabularyTextsByModule[currentModule.id] ?? []}
               vocabulary={currentModule.vocabularyList}
               moduleTitle={currentModule.titlePl}
-              teacherSignedIn={isTeacher && !!teacherSession.signedIn}
+              teacherSignedIn={isTeacher}
             />
           )}
 
@@ -389,6 +369,8 @@ export function App() {
           )}
 
           {activeSection === 'design-system' && <DesignSystemShowcase />}
+
+          {activeSection === 'profile' && <ProfilePage />}
         </main>
       </div>
 

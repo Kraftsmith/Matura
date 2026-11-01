@@ -17,6 +17,8 @@ interface TeacherDashboardViewProps {
   onOpenStudent: (userId: string) => void;
   /** Extra controls in the header. */
   headerAction?: React.ReactNode;
+  /** Shown above the list of learners. */
+  beforeList?: React.ReactNode;
   /** Extra line at the bottom of a learner's card. */
   renderStudentExtra?: (studentId: string) => React.ReactNode;
 }
@@ -92,7 +94,7 @@ const StudentCard: React.FC<{ student: UserProfile; summary: UserSummary; module
   );
 };
 
-export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ modules, students, onOpenStudent, headerAction, renderStudentExtra }) => {
+export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ modules, students, onOpenStudent, headerAction, beforeList, renderStudentExtra }) => {
   const { allStates } = useProgress();
   const { t } = useSettings();
   const { cardsOf } = useTeacherCards();
@@ -109,10 +111,15 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ modu
           <h1 className="text-3xl leading-10 font-semibold sm:text-4xl sm:leading-12">{t('teacher.title')}</h1>
         </div>
         <p className="mt-2 max-w-[72ch] text-base leading-6 text-ink-2">{t('teacher.intro', { n: students.length, p: GRAMMAR_PASS_SCORE })}</p>
-        <p className="mt-1 max-w-[72ch] text-sm leading-5 text-ink-2">{t('work.localOnly')}</p>
         {headerAction && <div className="mt-4 flex flex-wrap items-center gap-3">{headerAction}</div>}
       </div>
 
+      {beforeList}
+
+      {students.length === 0 && <p className="text-base leading-6 text-ink-2">{t('teacher.noStudents')}</p>}
+
+      {students.length > 0 && (
+      <>
       <section className="grid gap-4">
         <SectionTitle title={t('teacher.students')} description={t('teacher.studentsDesc')} />
         <div className="grid gap-4 lg:grid-cols-2">
@@ -175,6 +182,8 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ modu
           </div>
         </div>
       </section>
+      </>
+      )}
     </div>
   );
 };

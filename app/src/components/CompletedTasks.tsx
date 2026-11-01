@@ -61,7 +61,7 @@ export const CompletedTasks: React.FC<{ rows: ModuleSummary[]; teacherView: bool
 
   return (
     <section className="grid gap-4">
-      <SectionTitle title={t('work.title')} description={teacherView ? `${t('work.descTeacher')} ${t('work.localOnly')}` : t('work.desc')} />
+      <SectionTitle title={t('work.title')} description={teacherView ? t('work.descTeacher') : t('work.desc')} />
 
       {withWork.length === 0 ? (
         <p className="rounded-2xl border border-line bg-surface px-5 py-4 text-sm leading-5 text-ink-2">{t('work.empty')}</p>

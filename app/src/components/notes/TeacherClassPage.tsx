@@ -3,6 +3,7 @@ import { StickyNote } from 'lucide-react';
 import type { MaturaModule } from '../../types';
 import type { UserProfile } from '../../users';
 import { TeacherDashboardView } from '../TeacherDashboardView';
+import { ClassInvite } from './ClassInvite';
 import { useSettings } from '../../useSettings';
 import { formatRelative } from '../../progressSummary';
 import { fetchSummary, SignedOutError, type NotesSummary } from './notesApi';
@@ -11,13 +12,12 @@ import { useNotesStrings } from './notesStrings';
 interface TeacherClassPageProps {
   modules: MaturaModule[];
   students: UserProfile[];
-  headerAction: React.ReactNode;
   onOpenStudent: (userId: string) => void;
   onSignedOut: () => void;
 }
 
 /** The class page with a notes line on each learner's card. Lazy chunk, teacher only. */
-const TeacherClassPage: React.FC<TeacherClassPageProps> = ({ modules, students, headerAction, onOpenStudent, onSignedOut }) => {
+const TeacherClassPage: React.FC<TeacherClassPageProps> = ({ modules, students, onOpenStudent, onSignedOut }) => {
   const nt = useNotesStrings();
   const { t, uiLang } = useSettings();
   const [summary, setSummary] = useState<Record<string, NotesSummary>>();
@@ -51,7 +51,7 @@ const TeacherClassPage: React.FC<TeacherClassPageProps> = ({ modules, students, 
     );
   };
 
-  return <TeacherDashboardView modules={modules} students={students} onOpenStudent={onOpenStudent} headerAction={headerAction} renderStudentExtra={notesLine} />;
+  return <TeacherDashboardView modules={modules} students={students} onOpenStudent={onOpenStudent} beforeList={<ClassInvite />} renderStudentExtra={notesLine} />;
 };
 
 export default TeacherClassPage;

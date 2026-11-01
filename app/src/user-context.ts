@@ -1,10 +1,16 @@
 import { createContext } from 'react';
-import type { UserProfile } from './users';
+import type { AccountUser, ClassStudent } from './users';
 
 export interface UserValue {
-  user: UserProfile;
-  users: UserProfile[];
-  setUserId: (id: string) => void;
+  user: AccountUser;
+  /** The teacher's class; always empty for a learner. */
+  students: ClassStudent[];
+  classLoaded: boolean;
+  refreshClass: () => Promise<void>;
+  setAccount: (user: AccountUser) => void;
+  signOut: () => Promise<void>;
+  /** The server stopped accepting the session. Unsent work stays in this browser. */
+  markSignedOut: () => void;
 }
 
 export const UserContext = createContext<UserValue | null>(null);

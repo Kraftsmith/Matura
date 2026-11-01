@@ -1,66 +1,123 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ApiError, fetchClass, fetchMe, logout, patchMe } from './accountApi';
+import { AuthGate, type GateStatus } from './components/auth/AuthGate';
+import { RETURN_KEY } from './components/auth/returnTo';
 import { UserContext, type UserValue } from './user-context';
-import { DEFAULT_USER_ID, findUser, users } from './users';
-import { buildHash, splitUserHash } from './userRoute';
+import { useSettings } from './useSettings';
+import type { AccountUser, ClassStudent } from './users';
 
-const STORAGE_KEY = 'matura.currentUser';
+/** Stay on the device: this browser's preferences, and an old copy that may belong to someone else. */
+const KEPT_KEYS = ['matura.translationLang', 'matura.uiLang', 'matura.progress.v3'];
 
-/**
- * The profile comes from the address first (#maria/..., #teacher/...), so every user has their own
- * bookmarkable link. A legacy `?user=<id>` query is still accepted and folded into the hash.
- * Without either, the last chosen profile from this browser is used, then the default one.
- */
-const readInitial = (): string => {
-  const fromHash = splitUserHash(window.location.hash).userId;
-  if (fromHash) return fromHash;
-
-  const params = new URLSearchParams(window.location.search);
-  const fromQuery = params.get('user');
-  if (fromQuery !== null) {
-    params.delete('user');
-    const search = params.toString();
-    window.history.replaceState(null, '', `${window.location.pathname}${search ? `?${search}` : ''}${window.location.hash}`);
-    if (findUser(fromQuery)) return fromQuery;
-  }
+const takeReturnTo = (): string | undefined => {
   try {
-    const v = window.localStorage.getItem(STORAGE_KEY);
-    return findUser(v) ? (v as string) : DEFAULT_USER_ID;
+    const value = window.sessionStorage.getItem(RETURN_KEY) ?? undefined;
+    window.sessionStorage.removeItem(RETURN_KEY);
+    return value;
   } catch {
-    return DEFAULT_USER_ID;
+    return undefined;
+  }
+};
+
+/** The computer may be a school one: nothing of the learner's stays behind after signing out. */
+const clearLocalData = () => {
+  try {
+    for (const key of Object.keys(window.localStorage)) {
+      if (key.startsWith('matura.') && !KEPT_KEYS.includes(key)) window.localStorage.removeItem(key);
+    }
+  } catch {
+    /* storage unavailable: nothing was saved there either */
   }
 };
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [userId, setUserIdState] = useState<string>(readInitial);
+  const { uiLang, translationLang, setUiLang, setTranslationLang } = useSettings();
+  const [status, setStatus] = useState<GateStatus>('loading');
+  const [expired, setExpired] = useState(false);
+  const [user, setUser] = useState<AccountUser>();
+  const [students, setStudents] = useState<ClassStudent[]>([]);
+  const [classLoaded, setClassLoaded] = useState(false);
+  const appliedFor = useRef<string>(undefined);
 
-  // The address is the source of truth: typing or following #evgeny/... switches the profile.
-  // Read the target from the event, not from window.location: another listener (App) may already have
-  // re-rendered and rewritten the hash with the previous profile before this one runs.
-  useEffect(() => {
-    const onHashChange = (e: HashChangeEvent) => {
-      const fromHash = splitUserHash(new URL(e.newURL).hash).userId;
-      if (fromHash) setUserIdState(fromHash);
-    };
-    window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
+  const load = useCallback(() => {
+    // oxlint-disable-next-line react/set-state-in-effect
+    setStatus('loading');
+    fetchMe()
+      .then((me) => {
+        setUser(me);
+        setStatus('ready');
+      })
+      .catch((e: unknown) => setStatus(e instanceof ApiError && e.status === 401 ? 'anon' : 'offline'));
   }, []);
 
-  useEffect(() => {
+  // The first check of the session after the page opens.
+  useEffect(load, [load]);
+
+  const markSignedOut = useCallback(() => {
+    setUser(undefined);
+    setExpired(true);
+    setStatus('anon');
+  }, []);
+
+  const signedIn = useCallback((me: AccountUser) => {
+    setUser(me);
+    setExpired(false);
+    setStatus('ready');
+    window.location.hash = takeReturnTo() ?? 'dashboard';
+  }, []);
+
+  const signOut = useCallback(async () => {
+    await logout().catch(() => undefined);
+    clearLocalData();
+    appliedFor.current = undefined;
+    setUser(undefined);
+    setStudents([]);
+    setClassLoaded(false);
+    setStatus('anon');
+    window.location.hash = 'login';
+  }, []);
+
+  const isTeacher = user?.role === 'teacher';
+
+  const refreshClass = useCallback(async () => {
     try {
-      window.localStorage.setItem(STORAGE_KEY, userId);
-    } catch {
-      /* storage unavailable: keep in memory only */
+      setStudents(await fetchClass());
+      setClassLoaded(true);
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 404) markSignedOut();
     }
-  }, [userId]);
+  }, [markSignedOut]);
 
-  /** Switching from the menu lands on that profile's dashboard, at its own address. */
-  const setUserId = useCallback((id: string) => {
-    if (!findUser(id)) return;
-    setUserIdState(id);
-    window.location.hash = buildHash(id, 'dashboard');
-  }, []);
+  useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect
+    if (isTeacher) void refreshClass();
+  }, [isTeacher, refreshClass]);
 
-  const value = useMemo<UserValue>(() => ({ user: findUser(userId) ?? users[0], users, setUserId }), [userId, setUserId]);
+  // Languages follow the account: applied once after signing in, then every change is saved to it.
+  useEffect(() => {
+    if (!user) return;
+    if (appliedFor.current !== user.id) {
+      if (uiLang !== user.uiLang) setUiLang(user.uiLang);
+      else if (translationLang !== user.translationLang) setTranslationLang(user.translationLang);
+      else appliedFor.current = user.id;
+      return;
+    }
+    if (uiLang === user.uiLang && translationLang === user.translationLang) return;
+    // oxlint-disable-next-line react/set-state-in-effect
+    setUser({ ...user, uiLang, translationLang });
+    patchMe({ uiLang, translationLang }).catch(() => undefined);
+  }, [user, uiLang, translationLang, setUiLang, setTranslationLang]);
 
-  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
+  const value = useMemo<UserValue | null>(
+    () => (user ? { user, students, classLoaded, refreshClass, setAccount: setUser, signOut, markSignedOut } : null),
+    [user, students, classLoaded, refreshClass, signOut, markSignedOut],
+  );
+
+  return (
+    <UserContext.Provider value={value}>
+      <AuthGate status={status} expired={expired} user={user} onSignedIn={signedIn} onAccount={setUser} onRetry={load}>
+        {children}
+      </AuthGate>
+    </UserContext.Provider>
+  );
 };

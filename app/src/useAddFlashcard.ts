@@ -27,7 +27,7 @@ export const useAddFlashcard = (moduleId: string, targetUserId?: string) => {
   const { open } = useFlashcardDialog();
   const deck = useTargetDeck(moduleId, targetUserId);
   return {
-    open: (prefill: CardPrefill) => open({ moduleId, prefill, targetUserId }),
+    open: (prefill: CardPrefill) => open({ moduleId, prefill }),
     isInDeck: (front: string) => !!findInDeck(deck, front),
     cardIdFor: (front: string) => findInDeck(deck, front)?.id,
   };

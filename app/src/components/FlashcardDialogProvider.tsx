@@ -5,10 +5,9 @@ import { AddFlashcardDialog } from './AddFlashcardDialog';
 import { Toast, type ToastAction } from './ui';
 import { useProgress } from '../useProgress';
 import { useSettings } from '../useSettings';
+import { useLessonStudent } from '../useLessonStudent';
 import { useTeacherCards } from '../useTeacherCards';
 import { useUser } from '../useUser';
-import { buildHash } from '../userRoute';
-import { findUser } from '../users';
 
 const UNDO_MS = 8000;
 const LINK_MS = 6000;
@@ -22,17 +21,20 @@ interface ShownToast {
 
 interface FlashcardDialogProviderProps {
   children: React.ReactNode;
-  /** Shown in the dialog when the teacher's session ended while they were typing. */
+  /** Undefined for a learner, and while the first check is running. */
+  teacherSignedIn: boolean | undefined;
+  /** Shown in the dialog when the teacher has to sign in to add a card for a learner. */
   signIn: React.ReactNode;
   onSignedOut: () => void;
 }
 
 /** The add / edit dialog and the messages after it, shared by every page that offers a card. */
-export const FlashcardDialogProvider: React.FC<FlashcardDialogProviderProps> = ({ children, signIn, onSignedOut }) => {
+export const FlashcardDialogProvider: React.FC<FlashcardDialogProviderProps> = ({ children, teacherSignedIn, signIn, onSignedOut }) => {
   const { t } = useSettings();
-  const { user } = useUser();
+  const { students } = useUser();
   const progress = useProgress();
   const teacherCards = useTeacherCards();
+  const [lessonStudent, chooseStudent] = useLessonStudent(!!teacherSignedIn);
   const [request, setRequest] = useState<CardRequest & { key: number }>();
   const [toast, setToast] = useState<ShownToast>();
 
@@ -83,10 +85,10 @@ export const FlashcardDialogProvider: React.FC<FlashcardDialogProviderProps> = (
     notify({
       text: arrived.length === 1 ? t('lesson.newCard', { w: first.front }) : t('lesson.newCards', { n: arrived.length }),
       ms: LINK_MS,
-      action: { label: t('add.openShort'), href: `#${buildHash(user.id, rest)}` },
+      action: { label: t('add.openShort'), href: `#${rest}` },
     });
     clearArrived();
-  }, [arrived, clearArrived, notify, t, user.id]);
+  }, [arrived, clearArrived, notify, t]);
 
   const onAdded = useCallback(
     (moduleId: string, deckTitle: string, card: UserFlashcard) => {
@@ -94,22 +96,22 @@ export const FlashcardDialogProvider: React.FC<FlashcardDialogProviderProps> = (
       notify({
         text: t('add.added', { deck: deckTitle }),
         ms: LINK_MS,
-        action: { label: t('add.openShort'), href: `#${buildHash(user.id, `${moduleId}/fiszki/${card.id}`)}` },
+        action: { label: t('add.openShort'), href: `#${moduleId}/fiszki/${card.id}` },
       });
     },
-    [notify, t, user.id],
+    [notify, t],
   );
 
   const onAddedForStudent = useCallback(
     (card: TeacherFlashcard) => {
       window.getSelection()?.removeAllRanges();
       const undo = () => removeForStudent(card);
-      notify({ text: t('lesson.added', { name: findUser(card.studentId)?.name ?? card.studentId }), ms: UNDO_MS, action: { label: t('cards.undo'), onClick: undo } });
+      notify({ text: t('lesson.added', { name: students.find((s) => s.id === card.studentId)?.name ?? card.studentId }), ms: UNDO_MS, action: { label: t('cards.undo'), onClick: undo } });
     },
-    [notify, removeForStudent, t],
+    [notify, removeForStudent, students, t],
   );
 
-  const value = useMemo<FlashcardDialogValue>(() => ({ open, removeOwn, removeForStudent }), [open, removeOwn, removeForStudent]);
+  const value = useMemo<FlashcardDialogValue>(() => ({ lessonStudent, chooseStudent, open, removeOwn, removeForStudent }), [lessonStudent, chooseStudent, open, removeOwn, removeForStudent]);
 
   return (
     <FlashcardDialogContext.Provider value={value}>
@@ -118,6 +120,9 @@ export const FlashcardDialogProvider: React.FC<FlashcardDialogProviderProps> = (
         <AddFlashcardDialog
           key={request.key}
           request={request}
+          lessonStudent={lessonStudent}
+          onChooseStudent={chooseStudent}
+          teacherSignedIn={teacherSignedIn}
           signIn={signIn}
           onSignedOut={onSignedOut}
           onClose={() => setRequest(undefined)}

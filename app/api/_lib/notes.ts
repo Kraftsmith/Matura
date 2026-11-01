@@ -1,4 +1,3 @@
-const STUDENT_IDS = ['maria', 'evgeny'];
 const TAGS = ['general', 'mistakes', 'homework', 'lesson', 'parents'];
 const MAX_TEXT = 5000;
 
@@ -22,7 +21,6 @@ const MODULE_IDS = [
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export const isStudentId = (id: string | undefined): id is string => STUDENT_IDS.includes(id ?? '');
 export const isNoteId = (id: string | undefined): id is string => UUID.test(id ?? '');
 
 export const validText = (v: unknown): v is string => typeof v === 'string' && v.trim().length >= 1 && v.length <= MAX_TEXT;

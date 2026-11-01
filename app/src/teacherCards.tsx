@@ -4,7 +4,6 @@ import type { TeacherCards } from './decks';
 import { TeacherCardsContext, type TeacherCardsValue } from './teacher-cards-context';
 import { createCard as postCard, deleteCard, listCards, patchCard } from './teacherCardsApi';
 import { useUser } from './useUser';
-import { students } from './users';
 
 const STORAGE_KEY = 'matura.teacherCards.v1';
 const POLL_MS = 20_000;
@@ -36,7 +35,7 @@ interface PendingRemove {
 }
 
 export const TeacherCardsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useUser();
+  const { user, students } = useUser();
   const isTeacher = user.role === 'teacher';
   const [stored, setStored] = useState<Stored>(readStored);
   const [arrived, setArrived] = useState<TeacherFlashcard[]>([]);
@@ -64,7 +63,7 @@ export const TeacherCardsProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const load = useCallback(() => {
     if (isTeacher) for (const s of students) loadOne(s.id, false);
     else loadOne(user.id, true);
-  }, [isTeacher, user.id, loadOne]);
+  }, [isTeacher, user.id, students, loadOne]);
 
   useEffect(load, [load]);
 

@@ -1,3 +1,5 @@
+import type { ProgressState } from './progress-context';
+
 export type UserRole = 'student' | 'teacher';
 
 export interface UserProfile {
@@ -7,18 +9,36 @@ export interface UserProfile {
   role: UserRole;
 }
 
-/** Fixed roster: two learners preparing for the exam and one teacher who follows their progress. */
-export const users: UserProfile[] = [
-  { id: 'maria', name: 'Maria', initials: 'M', role: 'student' },
-  { id: 'evgeny', name: 'Evgeny', initials: 'E', role: 'student' },
-  { id: 'teacher', name: 'Nauczyciel', initials: 'N', role: 'teacher' },
-];
+export type ExamLevel = 'podstawowa' | 'rozszerzona';
 
-export const students = users.filter((u) => u.role === 'student');
+export interface ExamPlan {
+  examDate?: string;
+  level?: ExamLevel;
+  goal?: string;
+}
 
-export const DEFAULT_USER_ID = users[0].id;
+/** The signed-in user, as the server sees them. The role is never decided in the browser. */
+export interface AccountUser extends UserProfile, ExamPlan {
+  email: string;
+  uiLang: 'pl' | 'en';
+  translationLang: 'pl' | 'ru';
+  onboarded: boolean;
+  termsAccepted: boolean;
+  teacher?: { name: string };
+}
 
-export const findUser = (id: string | null | undefined): UserProfile | undefined => users.find((u) => u.id === id);
+/** A learner who joined the teacher's class. */
+export interface ClassStudent extends UserProfile, ExamPlan {
+  email: string;
+  progress: ProgressState;
+}
+
+/** Whole days until the exam, or undefined once it has passed. */
+export const daysUntil = (examDate: string | undefined): number | undefined => {
+  if (!examDate) return undefined;
+  const days = Math.ceil((new Date(`${examDate}T00:00:00`).getTime() - Date.now()) / 86_400_000);
+  return days >= 0 ? days : undefined;
+};
 
 export const roleLabel: Record<UserRole, string> = {
   student: 'Uczeń',

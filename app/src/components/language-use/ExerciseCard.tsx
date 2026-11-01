@@ -3,9 +3,7 @@ import { CheckCircle2, Eye, RotateCcw } from 'lucide-react';
 import type { LanguageUseExercise } from '../../types';
 import { EXERCISE_PASS_SCORE, type ExerciseResult } from '../../progress-context';
 import { scoreOf, solvedAnswers, type ExerciseAnswers } from '../../languageUse';
-import { buildHash } from '../../userRoute';
 import { useSettings } from '../../useSettings';
-import { useUser } from '../../useUser';
 import { Button, Callout, Chip } from '../ui';
 import { CopyLinkButton } from '../CopyLinkButton';
 import { MatchingBody } from './MatchingBody';
@@ -36,7 +34,6 @@ interface ExerciseCardProps {
 
 export const ExerciseCard: React.FC<ExerciseCardProps> = ({ exercise, number, route, result, onResult, showTranslations }) => {
   const { t } = useSettings();
-  const { user } = useUser();
   const [answers, setAnswers] = useState<ExerciseAnswers>({});
   const [phase, setPhase] = useState<ExercisePhase>('idle');
 
@@ -64,7 +61,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({ exercise, number, ro
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="grid min-w-0 gap-2">
           <h3 className="text-xl leading-7 font-semibold">
-            <a href={`#${buildHash(user.id, route)}`} className="hover:text-primary hover:underline">
+            <a href={`#${route}`} className="hover:text-primary hover:underline">
               {t('srodki.exercise')} {number}
             </a>
           </h3>
