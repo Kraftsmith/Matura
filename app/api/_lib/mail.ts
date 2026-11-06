@@ -3,7 +3,7 @@ import { addHit, hitCount } from './rateLimit.js';
 
 type Lang = 'pl' | 'en';
 
-export type MailKind = 'verify' | 'exists' | 'reset' | 'setPassword' | 'newEmail' | 'emailChanging' | 'passwordChanged' | 'accountDeleted';
+export type MailKind = 'verify' | 'exists' | 'reset' | 'setPassword' | 'newEmail' | 'emailChanging' | 'passwordChanged' | 'accountDeleted' | 'invite';
 
 interface Template {
   subject: string;
@@ -26,6 +26,7 @@ const TEMPLATES: Record<Lang, Record<MailKind, Template>> = {
     emailChanging: { subject: 'Zmiana adresu e-mail', body: `Adres e-mail konta jest zmieniany. ${NOT_YOU.pl}` },
     passwordChanged: { subject: 'Hasło zostało zmienione', body: `Hasło do konta zostało zmienione. ${NOT_YOU.pl}` },
     accountDeleted: { subject: 'Konto usunięte', body: 'Twoje konto i wszystkie Twoje dane zostały usunięte.' },
+    invite: { subject: 'Zaproszenie do klasy', body: 'Nauczyciel {teacher} zaprasza Cię do swojej klasy w Matura English. Po dołączeniu nauczyciel zobaczy Twoje imię, e-mail, postępy i odpowiedzi w zadaniach.', button: 'Dołącz do klasy' },
   },
   en: {
     verify: { subject: 'Confirm your email', body: 'Click the button to activate your account. The link works for 24 hours.', button: 'Confirm email' },
@@ -36,6 +37,7 @@ const TEMPLATES: Record<Lang, Record<MailKind, Template>> = {
     emailChanging: { subject: 'Your email is being changed', body: `The email address of your account is being changed. ${NOT_YOU.en}` },
     passwordChanged: { subject: 'Your password was changed', body: `The password of your account was changed. ${NOT_YOU.en}` },
     accountDeleted: { subject: 'Account deleted', body: 'Your account and all your data have been deleted.' },
+    invite: { subject: 'Invitation to a class', body: 'Teacher {teacher} invites you to their class in Matura English. After joining, the teacher will see your name, email, progress and answers to tasks.', button: 'Join the class' },
   },
 };
 
@@ -46,8 +48,12 @@ export const appUrl = (): string => process.env.APP_URL ?? 'http://localhost:300
 
 const isLocal = () => !process.env.VERCEL_ENV || process.env.VERCEL_ENV === 'development';
 
-export const deliver = async (kind: MailKind, to: string, lang: string, path?: string): Promise<void> => {
-  const template = TEMPLATES[lang === 'en' ? 'en' : 'pl'][kind];
+const escapeHtml = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] as string);
+
+export const deliver = async (kind: MailKind, to: string, lang: string, path?: string, vars: Record<string, string> = {}): Promise<void> => {
+  const raw = TEMPLATES[lang === 'en' ? 'en' : 'pl'][kind];
+  // A name typed by a user goes into the mail: it must not become markup.
+  const template = { ...raw, body: raw.body.replace(/\{(\w+)\}/g, (_, k: string) => escapeHtml(vars[k] ?? '')) };
   const link = path ? `${appUrl()}/#${path}` : undefined;
   const key = process.env.RESEND_API_KEY;
 
@@ -71,12 +77,12 @@ export const deliver = async (kind: MailKind, to: string, lang: string, path?: s
  * Sends after the response, so its timing does not show whether there was anything to send.
  * Over the limit the mail is silently skipped: our forms must not be a way to flood someone's inbox.
  */
-export const sendMail = (kind: MailKind, to: string, lang: string, path?: string): void => {
+export const sendMail = (kind: MailKind, to: string, lang: string, path?: string, vars?: Record<string, string>): void => {
   const run = async () => {
     const limitKey = `mail:${to}`;
     if ((await hitCount(limitKey, 60)) >= MAX_PER_HOUR) return;
     await addHit(limitKey);
-    await deliver(kind, to, lang, path);
+    await deliver(kind, to, lang, path, vars);
   };
   waitUntil(run().catch((e: { code?: string }) => console.error('mail_error', e.code ?? 'unknown')));
 };

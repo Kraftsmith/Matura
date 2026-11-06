@@ -32,6 +32,7 @@ const account = <T>(action: string, body: unknown = {}) => request<T>('POST', `/
 
 export interface Registration {
   name: string;
+  role: 'student' | 'teacher';
   email: string;
   password: string;
   acceptedTerms: boolean;
@@ -66,6 +67,7 @@ export const putMeta = (meta: unknown) => request('PUT', '/api/progress', meta);
 export const fetchClass = () => request<{ students: ClassStudent[] }>('GET', '/api/class').then((r) => r.students);
 export const fetchClassCode = () => request<{ code: string }>('GET', '/api/class?invite=1').then((r) => r.code);
 export const replaceClassCode = () => request<{ code: string }>('POST', '/api/class').then((r) => r.code);
+export const inviteByEmail = (email: string) => request('POST', '/api/class', { email });
 export const removeStudent = (id: string) => request('DELETE', `/api/students/${id}`);
 export const clearStudentProgress = (id: string) => request('DELETE', `/api/students/${id}?what=progress`);
 export const patchStudent = (id: string, plan: ExamPlan) =>

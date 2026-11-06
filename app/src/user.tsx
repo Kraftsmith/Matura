@@ -38,28 +38,37 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [students, setStudents] = useState<ClassStudent[]>([]);
   const [classLoaded, setClassLoaded] = useState(false);
   const appliedFor = useRef<string>(undefined);
+  // Signing in or out starts a new generation: a slow answer to an older /api/me must not overrule it.
+  const generation = useRef(0);
 
   const load = useCallback(() => {
+    const mine = ++generation.current;
     // oxlint-disable-next-line react/set-state-in-effect
     setStatus('loading');
     fetchMe()
       .then((me) => {
+        if (mine !== generation.current) return;
         setUser(me);
         setStatus('ready');
       })
-      .catch((e: unknown) => setStatus(e instanceof ApiError && e.status === 401 ? 'anon' : 'offline'));
+      .catch((e: unknown) => {
+        if (mine !== generation.current) return;
+        setStatus(e instanceof ApiError && e.status === 401 ? 'anon' : 'offline');
+      });
   }, []);
 
   // The first check of the session after the page opens.
   useEffect(load, [load]);
 
   const markSignedOut = useCallback(() => {
+    generation.current++;
     setUser(undefined);
     setExpired(true);
     setStatus('anon');
   }, []);
 
   const signedIn = useCallback((me: AccountUser) => {
+    generation.current++;
     setUser(me);
     setExpired(false);
     setStatus('ready');
@@ -67,6 +76,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signOut = useCallback(async () => {
+    generation.current++;
     await logout().catch(() => undefined);
     clearLocalData();
     appliedFor.current = undefined;

@@ -150,6 +150,7 @@ export const RegisterScreen: React.FC<{ inviteCode?: string }> = ({ inviteCode }
   const [error, setError] = useState<string>();
   const [sentTo, setSentTo] = useState<string>();
   const [teacher, setTeacher] = useState<string>();
+  const [role, setRole] = useState<'student' | 'teacher'>('student');
   const passwordError = usePasswordError();
 
   useEffect(() => {
@@ -176,7 +177,7 @@ export const RegisterScreen: React.FC<{ inviteCode?: string }> = ({ inviteCode }
     setBusy(true);
     setError(undefined);
     try {
-      await register({ name, email, password, acceptedTerms: accepted, uiLang, inviteCode: teacher ? inviteCode : undefined, website });
+      await register({ name, role: teacher ? 'student' : role, email, password, acceptedTerms: accepted, uiLang, inviteCode: teacher ? inviteCode : undefined, website });
       setSentTo(email);
     } catch (err) {
       setError(passwordError(err));
@@ -197,6 +198,25 @@ export const RegisterScreen: React.FC<{ inviteCode?: string }> = ({ inviteCode }
     <AuthShell title={t('auth.signUp')}>
       {teacher && <Callout title={t('auth.joining', { teacher })}>{t('auth.joinWarn')}</Callout>}
       <form onSubmit={(e) => void submit(e)} className="grid gap-4">
+        {!teacher && (
+          <div role="radiogroup" aria-label={t('auth.role')} className="grid grid-cols-2 gap-1 rounded-lg bg-chip p-1">
+            {(['student', 'teacher'] as const).map((r) => (
+              <button
+                key={r}
+                type="button"
+                role="radio"
+                aria-checked={role === r}
+                onClick={() => setRole(r)}
+                className={`cursor-pointer rounded-md px-3 py-2 text-sm leading-5 font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary ${
+                  role === r ? 'bg-surface text-ink' : 'text-ink-2 hover:text-ink'
+                }`}
+              >
+                {t(r === 'teacher' ? 'auth.roleTeacher' : 'auth.roleStudent')}
+              </button>
+            ))}
+          </div>
+        )}
+        {role === 'teacher' && !teacher && <p className="text-sm leading-5 text-ink-2">{t('auth.roleTeacherHint')}</p>}
         <TextField label={t('auth.name')} autoComplete="name" autoFocus required maxLength={60} value={name} onChange={(e) => setName(e.target.value)} />
         <TextField label={t('auth.email')} type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
         <PasswordField label={t('auth.password')} autoComplete="new-password" required hint={t('auth.passwordHint')} value={password} onChange={(e) => setPassword(e.target.value)} error={error} />

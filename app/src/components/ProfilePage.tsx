@@ -4,6 +4,11 @@ import { Button, Callout, TextField } from './ui';
 import { PasswordField } from './auth/AuthScreens';
 import { usePasswordError } from './auth/usePasswordError';
 import { ExamFields } from './ExamFields';
+import { ClassInvite } from './ClassInvite';
+import { Avatar } from './GrammarStatusChip';
+import { allModules } from '../data/modulesData';
+import { formatRelative, summarizeUser } from '../progressSummary';
+import { useTeacherCards } from '../useTeacherCards';
 import { useProgress } from '../useProgress';
 import { useSettings } from '../useSettings';
 import { useUser } from '../useUser';
@@ -221,6 +226,48 @@ const YourDataBlock: React.FC = () => {
   );
 };
 
+/** The teacher's class as a list: who joined, when they last worked, how much they did. Opens the learner's page. */
+const StudentsBlock: React.FC = () => {
+  const { t, uiLang } = useSettings();
+  const { students, classLoaded } = useUser();
+  const { cardsOf } = useTeacherCards();
+  const locale = uiLang === 'en' ? 'en-GB' : 'pl-PL';
+
+  return (
+    <>
+      <Block title={t('profile.students')}>
+        {!classLoaded ? null : students.length === 0 ? (
+          <p className="text-sm leading-5 text-ink-2">{t('teacher.noStudents')}</p>
+        ) : (
+          <ul className="grid gap-2">
+            {students.map((s) => {
+              const sum = summarizeUser(allModules, s.progress, cardsOf(s.id));
+              return (
+                <li key={s.id}>
+                  <a href={`#dashboard/${s.id}`} className="flex items-center gap-3 rounded-lg border border-line px-4 py-3 hover:bg-hero">
+                    <Avatar initials={s.initials} size="sm" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-base leading-6 font-semibold text-ink">{s.name}</span>
+                      <span className="block truncate text-xs leading-4 text-ink-2">{s.email}</span>
+                    </span>
+                    <span className="text-right text-sm leading-5 text-ink-2">
+                      <span className="block">
+                        {t('work.title')}: <b className="font-semibold text-ink">{sum.workCount}</b>
+                      </span>
+                      <span className="block">{formatRelative(sum.lastActiveAt, t, locale)}</span>
+                    </span>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Block>
+      <ClassInvite />
+    </>
+  );
+};
+
 export const ProfilePage: React.FC = () => {
   const { t } = useSettings();
   const { user } = useUser();
@@ -228,6 +275,7 @@ export const ProfilePage: React.FC = () => {
     <div className="mx-auto grid w-full max-w-2xl gap-5">
       <h1 className="text-3xl leading-10 font-semibold">{t('profile.title')}</h1>
       <DataBlocks />
+      {user.role === 'teacher' && <StudentsBlock />}
       <AccountBlock />
       {user.role === 'student' && <TeacherBlock />}
       {user.role === 'student' && <YourDataBlock />}
