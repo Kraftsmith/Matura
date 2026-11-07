@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Eye, EyeOff, StickyNote } from 'lucide-react';
 import type { MaturaModule, SectionType } from '../../types';
 import type { ClassStudent } from '../../users';
@@ -7,6 +7,7 @@ import { Button, Tabs, Toast } from '../ui';
 import { TeacherCardsPanel } from '../TeacherCardsPanel';
 import { StudentPlanPanel } from './StudentPlanPanel';
 import { useSettings } from '../../useSettings';
+import { useUser } from '../../useUser';
 import { useTeacherCards } from '../../useTeacherCards';
 import { TeacherNotesPanel } from './TeacherNotesPanel';
 import { useNotesStrings } from './notesStrings';
@@ -48,7 +49,13 @@ const TeacherStudentPage: React.FC<TeacherStudentPageProps> = ({ modules, studen
   const nt = useNotesStrings();
   const { t } = useSettings();
   const { cardsOf } = useTeacherCards();
+  const { refreshClass } = useUser();
   const notesState = useStudentNotes(student.id, onSignedOut);
+
+  // The learner may have saved since the class was loaded: opening their page fetches it again.
+  useEffect(() => {
+    void refreshClass();
+  }, [student.id, refreshClass]);
   const [tab, setTab] = useState<Tab>(initialTab ?? 'progress');
   const [hidden, setHidden] = useState(readHidden);
   const [moduleFilter, setModuleFilter] = useState('');

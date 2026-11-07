@@ -31,6 +31,7 @@ export const LanguageUseView: React.FC<LanguageUseViewProps> = ({ moduleId, exer
   const card = (exercise: LanguageUseExercise) => (
     <ExerciseCard
       key={exercise.id}
+      moduleId={moduleId}
       exercise={exercise}
       number={exercises.indexOf(exercise) + 1}
       route={`${sectionRoute}/${exercise.id}`}

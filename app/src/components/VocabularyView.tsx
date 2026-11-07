@@ -7,8 +7,8 @@ import { useSettings } from '../useSettings';
 import { vocabularyExercisesByText } from '../data/vocabularyExercises';
 import { useProgress } from '../useProgress';
 import type { GapWork } from '../progress-context';
-import { isGapCorrect } from '../progressSummary';
-import { SaveStatus } from './SaveStatus';
+import { isGapCorrect } from '../languageUse';
+import { SaveWork } from './SaveWork';
 import { CopyLinkButton } from './CopyLinkButton';
 import { LessonBar } from './LessonBar';
 import { SelectionCardBar } from './SelectionCardBar';
@@ -110,7 +110,7 @@ const GapFillExercise: React.FC<{ moduleId: string; textId: string; items: GapFi
         <Button size="sm" variant={bankOpen ? 'secondary' : 'ghost'} onClick={() => setBankOpen((o) => !o)} aria-pressed={bankOpen}>
           {t('vocab.wordBank')}
         </Button>
-        <SaveStatus active={!!saved && !saved.revealed && values.some((v) => v.trim())} className="ml-auto" />
+        <SaveWork active={!!saved && !saved.revealed && values.some((v) => v.trim())} className="ml-auto" />
       </div>
 
       {bankOpen && (

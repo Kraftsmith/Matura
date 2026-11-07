@@ -1,11 +1,12 @@
-import type { Flashcard, GapFillItem, LanguageUseExerciseType, MaturaModule, TestQuestion } from './types';
+import type { Flashcard, LanguageUseExerciseType, MaturaModule, TestQuestion } from './types';
 import type { I18nKey } from './i18n';
 import { vocabularyTextsByModule } from './data/vocabularyTexts';
 import { vocabularyExercisesByText } from './data/vocabularyExercises';
 import { languageUseExercisesByModule } from './data/languageUseExercises';
-import { EXERCISE_PASS_SCORE, GRAMMAR_PASS_SCORE, emptyModuleProgress, type ModuleProgress, type ProgressState } from './progress-context';
+import { EXERCISE_PASS_SCORE, GRAMMAR_PASS_SCORE, emptyModuleProgress, type LanguageWork, type ModuleProgress, type ProgressState } from './progress-context';
 import { deckOf, type TeacherCards } from './decks';
-import { normalise } from './text';
+import { isGapCorrect, isItemCorrect } from './languageUse';
+import type { LanguageUseExercise } from './types';
 
 export type GrammarStatus = 'none' | 'inProgress' | 'passed';
 
@@ -17,11 +18,6 @@ export const grammarStatusOf = (best: number | undefined): GrammarStatus => {
 export const isTestAnswerCorrect = (q: TestQuestion, answer = ''): boolean => {
   const a = answer.trim().toLowerCase();
   return !!a && q.correctAnswers.some((c) => c.trim().toLowerCase() === a);
-};
-
-export const isGapCorrect = (item: GapFillItem, value = ''): boolean => {
-  const v = normalise(value);
-  return v.length > 0 && [item.answer, ...(item.alternatives ?? [])].some((a) => normalise(a) === v);
 };
 
 export const countWords = (text: string): number => text.trim().split(/\s+/).filter(Boolean).length;
@@ -47,10 +43,41 @@ export interface LanguageUseWork {
   id: string;
   functionLabel: string;
   type: LanguageUseExerciseType;
-  best: number;
+  /** Unset until the exercise has been checked with at least one answer. */
+  best?: number;
   attempts: number;
-  lastAt: string;
+  lastAt?: string;
+  checked: boolean;
+  revealed: boolean;
+  answers: WorkAnswer[];
 }
+
+const letterOf = (index: number) => String.fromCharCode(97 + index);
+
+/** The learner's answers to one exercise, each with the sentence or dialogue it belongs to. */
+const languageAnswers = (e: LanguageUseExercise, work: LanguageWork): WorkAnswer[] => {
+  const mark = (key: string, value: string) => (work.checked ? isItemCorrect(e, key, value) : undefined);
+  if (e.type === 'matching') {
+    return e.prompts.flatMap((prompt): WorkAnswer[] => {
+      const replyIndex = e.replies.findIndex((r) => r.id === work.answers[prompt.id]);
+      if (replyIndex < 0) return [];
+      return [{ label: prompt.text, answer: `${letterOf(replyIndex)}. ${e.replies[replyIndex].text}`, correct: mark(prompt.id, work.answers[prompt.id]) }];
+    });
+  }
+  if (e.type === 'word-bank') {
+    return e.items.flatMap((item, i): WorkAnswer[] => {
+      const answer = work.answers[String(i)]?.trim();
+      return answer ? [{ label: item.sentence, answer, correct: mark(String(i), answer) }] : [];
+    });
+  }
+  return e.items.flatMap((item): WorkAnswer[] => {
+    const chosen = work.answers[item.id];
+    const option = chosen === undefined ? undefined : item.options[Number(chosen)];
+    if (option === undefined) return [];
+    const label = item.lines.map((l) => `${l.speaker}: ${l.text ?? ['______', l.after].filter(Boolean).join(' ')}`).join('\n');
+    return [{ label, answer: `${String.fromCharCode(65 + Number(chosen))}. ${option}`, correct: mark(item.id, chosen) }];
+  });
+};
 
 /** Everything the learner typed in one module, in a form the dashboards can show. */
 export interface ModuleWork {
@@ -97,7 +124,22 @@ const summarizeWork = (module: MaturaModule, p: ModuleProgress): ModuleWork => {
 
   const languageUse = (languageUseExercisesByModule[module.id] ?? []).flatMap((e): LanguageUseWork[] => {
     const result = p.exercises?.[e.id];
-    return result ? [{ id: e.id, functionLabel: e.functionLabel, type: e.type, best: result.best, attempts: result.attempts, lastAt: result.lastAt }] : [];
+    const work = p.exerciseWork?.[e.id];
+    const typed = !!work && !work.revealed && Object.values(work.answers).some((v) => v.trim());
+    if (!result && !typed && !work?.revealed) return [];
+    return [
+      {
+        id: e.id,
+        functionLabel: e.functionLabel,
+        type: e.type,
+        best: result?.best,
+        attempts: result?.attempts ?? 0,
+        lastAt: [work?.at, result?.lastAt].filter((d): d is string => !!d).sort().at(-1),
+        checked: !!work?.checked,
+        revealed: !!work?.revealed,
+        answers: typed ? languageAnswers(e, work) : [],
+      },
+    ];
   });
 
   const notes = module.pictureDescription.examQuestions.flatMap((q) => {
@@ -147,7 +189,7 @@ export const summarizeModule = (module: MaturaModule, p: ModuleProgress = emptyM
     attempts: p.test?.attempts ?? 0,
     grammar: grammarStatusOf(best),
     exercisesTotal: languageUseExercisesByModule[module.id]?.length ?? 0,
-    exercisesPassed: work.languageUse.filter((e) => e.best >= EXERCISE_PASS_SCORE).length,
+    exercisesPassed: work.languageUse.filter((e) => (e.best ?? 0) >= EXERCISE_PASS_SCORE).length,
     work,
   };
 };

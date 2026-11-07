@@ -3,7 +3,7 @@ import type { GrammarRule, TestQuestion } from '../types';
 import { CheckCircle2, XCircle, RotateCcw, BookOpen } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Button, Chip, KeyTag, OptionCard, InlineInput } from './ui';
-import { SaveStatus } from './SaveStatus';
+import { SaveWork } from './SaveWork';
 import { useSettings } from '../useSettings';
 import { useProgress } from '../useProgress';
 import type { TestWork } from '../progress-context';
@@ -114,7 +114,7 @@ export const InteractiveTestView: React.FC<InteractiveTestViewProps> = ({ module
             </>
           )}
           <p className={`text-sm text-ink-2 ${embedded ? '' : 'mt-1'}`}>{t('test.count', { n: questions.length })}</p>
-          <SaveStatus active={Object.values(answers).some(Boolean)} className="mt-2" />
+          <SaveWork active={Object.values(answers).some(Boolean)} className="mt-3" />
         </div>
 
         <div className="flex flex-wrap items-center gap-3">

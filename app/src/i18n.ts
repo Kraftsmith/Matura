@@ -432,6 +432,10 @@ const pl = {
   // Saved work
   'save.saved': 'Zapisano',
   'save.failed': 'Nie udało się zapisać na serwerze. Praca jest w tej przeglądarce, spróbujemy ponownie.',
+  'save.button': 'Zapisz',
+  'save.hint': 'Zapisz odpowiedzi na koncie, nauczyciel je zobaczy',
+  'save.saving': 'Zapisywanie…',
+  'save.savedAt': 'Zapisano {time}',
   'work.title': 'Wykonane zadania',
   'work.desc': 'Wszystko, co zostało wpisane w teście, ćwiczeniach, notatkach i wypracowaniu.',
   'work.descTeacher': 'Odpowiedzi ucznia z testu, ćwiczeń, notatek i wypracowania.',
@@ -869,6 +873,10 @@ const en: Record<I18nKey, string> = {
 
   'save.saved': 'Saved',
   'save.failed': 'Could not save to the server. Your work is in this browser and we will try again.',
+  'save.button': 'Save',
+  'save.hint': 'Save the answers to your account, the teacher will see them',
+  'save.saving': 'Saving…',
+  'save.savedAt': 'Saved {time}',
   'work.title': 'Completed tasks',
   'work.desc': 'Everything entered in the test, exercises, notes and essay.',
   'work.descTeacher': 'The student\'s answers from the test, exercises, notes and essay.',

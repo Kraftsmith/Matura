@@ -173,8 +173,9 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [fail, t, userId]);
 
-  const push = useCallback(() => {
-    queue.current = queue.current.then(async () => {
+  /** Sends every changed module; true when all of them were accepted. */
+  const push = useCallback((): Promise<boolean> => {
+    const run = queue.current.then(async () => {
       const current = stateRef.current;
       const prints = fingerprint(current);
       try {
@@ -185,29 +186,49 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         retryMs.current = 0;
         setSaveFailed(false);
         writeCache();
+        return true;
       } catch (e) {
         fail(e);
         retryMs.current = Math.min(MAX_RETRY_MS, retryMs.current * 2 || FIRST_RETRY_MS);
         window.setTimeout(() => setRetry((n) => n + 1), retryMs.current);
+        return false;
       }
     });
-    return queue.current;
+    queue.current = run;
+    return run;
   }, [fail, writeCache]);
 
-  /** Sends what is waiting and tells whether everything reached the server. */
-  const flush = useCallback(async () => {
-    if (!syncing) return true;
-    await push();
-    return changedIds(fingerprint(stateRef.current), synced.current).length === 0;
-  }, [push, syncing]);
+  // Callers waiting for an explicit save. Served from the effect below, after the state they changed has rendered.
+  const waiting = useRef<((ok: boolean) => void)[]>([]);
+  const [flushTick, setFlushTick] = useState(0);
+
+  const flush = useCallback(
+    () =>
+      new Promise<boolean>((resolve) => {
+        if (!syncing) {
+          resolve(true);
+          return;
+        }
+        waiting.current.push(resolve);
+        setFlushTick((n) => n + 1);
+      }),
+    [syncing],
+  );
 
   useEffect(() => {
     stateRef.current = state;
     writeCache();
-    if (!syncing || !ready || changedIds(fingerprint(state), synced.current).length === 0) return;
+    if (!syncing) return;
+    if (waiting.current.length > 0) {
+      const waiters = waiting.current;
+      waiting.current = [];
+      void push().then((ok) => waiters.forEach((w) => w(ok)));
+      return;
+    }
+    if (!ready || changedIds(fingerprint(state), synced.current).length === 0) return;
     const id = window.setTimeout(() => void push(), SAVE_DELAY_MS);
     return () => window.clearTimeout(id);
-  }, [state, ready, retry, syncing, push, writeCache]);
+  }, [state, ready, retry, flushTick, syncing, push, writeCache]);
 
   // Another device may have saved while this tab slept; a lost connection may be back.
   useEffect(() => {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { WritingPrompt } from '../types';
 import { CheckCircle2, Sparkles, ChevronDown, ChevronUp, Copy, Check } from 'lucide-react';
-import { SaveStatus } from './SaveStatus';
+import { SaveWork } from './SaveWork';
 import { useProgress } from '../useProgress';
 import { countWords } from '../progressSummary';
 
@@ -112,7 +112,7 @@ export const WritingTrainerView: React.FC<WritingTrainerViewProps> = ({ moduleId
             {isOverMax && `Przekroczono limit o ${wordCount - prompt.wordLimit.max} słów.`}
           </span>
           <span className="flex items-center gap-3">
-            <SaveStatus active={!!essayText.trim()} />
+            <SaveWork active={!!essayText.trim()} />
             <button onClick={() => setEssayText('')} className="text-ink-3 hover:text-ink-2 underline">
               Wyczyść
             </button>

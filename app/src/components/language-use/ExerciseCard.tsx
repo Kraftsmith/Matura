@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { CheckCircle2, Eye, RotateCcw } from 'lucide-react';
 import type { LanguageUseExercise } from '../../types';
-import { EXERCISE_PASS_SCORE, type ExerciseResult } from '../../progress-context';
+import { EXERCISE_PASS_SCORE, type ExerciseResult, type LanguageWork } from '../../progress-context';
 import { scoreOf, solvedAnswers, type ExerciseAnswers } from '../../languageUse';
+import { useProgress } from '../../useProgress';
 import { useSettings } from '../../useSettings';
 import { Button, Callout, Chip } from '../ui';
 import { CopyLinkButton } from '../CopyLinkButton';
+import { SaveWork } from '../SaveWork';
 import { MatchingBody } from './MatchingBody';
 import { MiniDialogueBody } from './MiniDialogueBody';
 import { WordBankBody } from './WordBankBody';
@@ -22,7 +24,10 @@ export interface ExerciseBodyProps<E extends LanguageUseExercise> {
   showTranslations: boolean;
 }
 
+const NO_ANSWERS: ExerciseAnswers = {};
+
 interface ExerciseCardProps {
+  moduleId: string;
   exercise: LanguageUseExercise;
   number: number;
   /** Route of the exercise without the profile. */
@@ -32,27 +37,34 @@ interface ExerciseCardProps {
   showTranslations: boolean;
 }
 
-export const ExerciseCard: React.FC<ExerciseCardProps> = ({ exercise, number, route, result, onResult, showTranslations }) => {
+export const ExerciseCard: React.FC<ExerciseCardProps> = ({ moduleId, exercise, number, route, result, onResult, showTranslations }) => {
   const { t } = useSettings();
-  const [answers, setAnswers] = useState<ExerciseAnswers>({});
-  const [phase, setPhase] = useState<ExercisePhase>('idle');
+  const { getModule, updateModule } = useProgress();
+  // The answers live in the progress, so they survive a reload and the teacher can read them.
+  const work = getModule(moduleId).exerciseWork?.[exercise.id];
+  const answers = work?.answers ?? NO_ANSWERS;
+  const phase: ExercisePhase = work?.revealed ? 'revealed' : work?.checked ? 'checked' : 'idle';
 
   const score = scoreOf(exercise, answers);
   const passed = !!result && result.best >= EXERCISE_PASS_SCORE;
+  const typed = Object.values(answers).some((v) => v.trim());
 
+  const saveWork = (patch: Partial<LanguageWork> | undefined) =>
+    updateModule(moduleId, (m) => {
+      const next = { ...m.exerciseWork };
+      if (patch) next[exercise.id] = { ...(next[exercise.id] ?? { answers: {}, checked: false }), ...patch, at: new Date().toISOString() };
+      else delete next[exercise.id];
+      return { ...m, exerciseWork: next };
+    });
+
+  const setAnswers = (next: ExerciseAnswers) => saveWork({ answers: next });
   const check = () => {
-    setPhase('checked');
+    saveWork({ checked: true });
     // Pressing the button on an empty exercise shows the key's marks but is not an attempt.
-    if (Object.values(answers).some((v) => v.trim())) onResult(score.percent);
+    if (typed) onResult(score.percent);
   };
-  const reset = () => {
-    setAnswers({});
-    setPhase('idle');
-  };
-  const reveal = () => {
-    setAnswers(solvedAnswers(exercise));
-    setPhase('revealed');
-  };
+  const reset = () => saveWork(undefined);
+  const reveal = () => saveWork({ answers: solvedAnswers(exercise), checked: true, revealed: true });
 
   const bodyProps = { answers, phase, onChange: setAnswers, onCheck: check, showTranslations };
 
@@ -119,6 +131,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({ exercise, number, ro
             {t('srodki.showAnswers')}
           </Button>
         )}
+        <SaveWork active={typed && phase !== 'revealed'} className="ml-auto" />
       </div>
     </article>
   );

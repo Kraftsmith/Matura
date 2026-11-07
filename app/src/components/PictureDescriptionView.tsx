@@ -3,7 +3,7 @@ import type { PictureDescriptionData } from '../types';
 import { Volume2, ChevronDown, ChevronUp, Copy, Check, Clock, Lightbulb, Maximize2 } from 'lucide-react';
 import { Button } from './ui';
 import { ImageLightbox } from './ImageLightbox';
-import { SaveStatus } from './SaveStatus';
+import { SaveWork } from './SaveWork';
 import { useSettings } from '../useSettings';
 import { useProgress } from '../useProgress';
 
@@ -324,7 +324,7 @@ export const PictureDescriptionView: React.FC<PictureDescriptionViewProps> = ({ 
                     }}
                     className="w-full text-xs p-3 rounded-lg border border-line focus:border-primary focus:ring-1 focus:ring-primary outline-hidden transition resize-y"
                   />
-                  <SaveStatus active={!!userNotes[q.questionNumber]?.trim()} />
+                  <SaveWork active={!!userNotes[q.questionNumber]?.trim()} />
                 </div>
 
                 {/* Model Answer Toggle */}

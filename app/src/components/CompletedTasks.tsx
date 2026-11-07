@@ -99,14 +99,22 @@ export const CompletedTasks: React.FC<{ rows: ModuleSummary[]; teacherView: bool
                   <ul className="mt-2 grid gap-2">
                     {work.languageUse.map((e) => (
                       <li key={e.id} className="grid grid-cols-[auto_1fr] gap-x-2 text-sm leading-5">
-                        {e.best >= EXERCISE_PASS_SCORE ? <CheckCircle2 className="mt-0.5 h-4 w-4 text-success" aria-label={t('srodki.passed')} /> : <span className="h-4 w-4" />}
+                        {e.best !== undefined && e.best >= EXERCISE_PASS_SCORE ? <CheckCircle2 className="mt-0.5 h-4 w-4 text-success" aria-label={t('srodki.passed')} /> : <span className="h-4 w-4" />}
                         <div className="min-w-0">
                           <p className="font-semibold text-ink">
                             {e.functionLabel} <span className="font-normal text-ink-2">· {t(`srodki.type.${e.type}`)}</span>
                           </p>
                           <p className="text-ink-2">
-                            {t('work.srodkiBest', { p: e.best })} · {e.attempts === 1 ? t('dash.attempt', { n: e.attempts }) : t('dash.attempts', { n: e.attempts })} · {formatRelative(e.lastAt, t, locale)}
+                            {[
+                              e.best !== undefined ? t('work.srodkiBest', { p: e.best }) : t('work.unchecked'),
+                              e.attempts > 0 ? (e.attempts === 1 ? t('dash.attempt', { n: e.attempts }) : t('dash.attempts', { n: e.attempts })) : '',
+                              e.revealed ? t('work.revealed') : '',
+                              formatRelative(e.lastAt, t, locale),
+                            ]
+                              .filter(Boolean)
+                              .join(' · ')}
                           </p>
+                          {e.answers.length > 0 && <Answers answers={e.answers} />}
                         </div>
                       </li>
                     ))}

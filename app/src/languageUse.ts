@@ -1,5 +1,10 @@
-import type { LanguageUseExercise } from './types';
-import { isGapCorrect } from './progressSummary';
+import type { GapFillItem, LanguageUseExercise } from './types';
+import { normalise } from './text';
+
+export const isGapCorrect = (item: GapFillItem, value = ''): boolean => {
+  const v = normalise(value);
+  return v.length > 0 && [item.answer, ...(item.alternatives ?? [])].some((a) => normalise(a) === v);
+};
 
 /** The learner's answers: promptId → replyId (matching), gap index → word (bank), item id → option index (dialogues). */
 export type ExerciseAnswers = Record<string, string>;

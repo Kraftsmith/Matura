@@ -98,9 +98,16 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [markSignedOut]);
 
+  // The class is loaded when the teacher signs in and again whenever they come back to the tab: learners save in between.
   useEffect(() => {
+    if (!isTeacher) return;
     // oxlint-disable-next-line react/set-state-in-effect
-    if (isTeacher) void refreshClass();
+    void refreshClass();
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void refreshClass();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
   }, [isTeacher, refreshClass]);
 
   // Languages follow the account: applied once after signing in, then every change is saved to it.

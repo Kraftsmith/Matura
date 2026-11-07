@@ -18,6 +18,16 @@ export interface GapWork {
   at: string; // ISO date
 }
 
+/** One "Środki językowe" exercise as the learner left it: their answers and whether they were checked. */
+export interface LanguageWork {
+  /** promptId → replyId (matching), gap index → word (bank), item id → option index (dialogues). */
+  answers: Record<string, string>;
+  checked: boolean;
+  /** The key was shown, so the answers are no longer the learner's own. */
+  revealed?: boolean;
+  at: string; // ISO date
+}
+
 /** Result of one "Środki językowe" exercise. */
 export interface ExerciseResult {
   best: number; // 0–100
@@ -44,6 +54,8 @@ export interface ModuleProgress {
   gapWork?: Record<string, GapWork>;
   /** Results of the "Środki językowe" exercises, keyed by exercise id. Saved every time an exercise is checked. */
   exercises?: Record<string, ExerciseResult>;
+  /** Answers to the "Środki językowe" exercises, keyed by exercise id. */
+  exerciseWork?: Record<string, LanguageWork>;
   /** Notes to the oral exam questions, keyed by question number. */
   pictureNotes?: Record<number, string>;
   essay?: { text: string; at: string };
@@ -89,7 +101,10 @@ export interface ProgressValue {
   /** Moves a card to another module's deck, applying an edit if there is one; its status moves with it. */
   moveCard: (fromModuleId: string, toModuleId: string, cardId: string, patch?: Partial<UserFlashcard>) => void;
   resetUser: (userId: string) => void;
-  /** Sends what is waiting; false when something did not reach the server. */
+  /**
+   * Sends what is waiting, including a change made in the same event handler; false when something did not reach the server.
+   * The "Zapisz" buttons and signing out use it.
+   */
   flush: () => Promise<boolean>;
   /** The last save to the server failed: the work is only in this browser for now. */
   saveFailed: boolean;
