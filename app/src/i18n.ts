@@ -4,13 +4,11 @@ export type UiLang = 'pl' | 'en';
 const pl = {
   // Navigation
   'nav.progress': 'Postępy',
-  'nav.students': 'Uczniowie',
   'nav.handbook': 'Repetytorium gramatyczne',
   'nav.handbookShort': 'Gramatyka',
   'nav.openModules': 'Otwórz listę modułów',
   'nav.home': 'Matura Angielski, strona główna',
   'nav.signedIn': 'Zalogowany',
-  'nav.settings': 'Ustawienia',
   'nav.pageSettings': 'Ustawienia strony',
   'nav.translationLang': 'Język tłumaczeń',
   'nav.uiLang': 'Język interfejsu',
@@ -463,13 +461,11 @@ export type I18nKey = keyof typeof pl;
 
 const en: Record<I18nKey, string> = {
   'nav.progress': 'Progress',
-  'nav.students': 'Students',
   'nav.handbook': 'Grammar handbook',
   'nav.handbookShort': 'Grammar',
   'nav.openModules': 'Open module list',
   'nav.home': 'Matura English, home page',
   'nav.signedIn': 'Signed in',
-  'nav.settings': 'Settings',
   'nav.pageSettings': 'Page settings',
   'nav.translationLang': 'Translation language',
   'nav.uiLang': 'Interface language',

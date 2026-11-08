@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { BookOpen, Menu, Settings, Palette, Languages, LayoutDashboard, ChevronDown, Globe, LogOut, UserPlus, UserRound } from 'lucide-react';
+import { BookOpen, Menu, Palette, Languages, LayoutDashboard, ChevronDown, Globe, LogOut, UserPlus, UserRound } from 'lucide-react';
 import { INVITE_SCROLL_KEY } from './ClassInvite';
 import type { SectionType, TranslationLang } from '../types';
 import type { UiLang } from '../i18n';
@@ -59,23 +59,19 @@ const Segmented = <T extends string>({
 );
 
 export const Navbar: React.FC<NavbarProps> = ({ activeSection, onOpenHandbook, onOpenSidebar, onSectionChange }) => {
-  const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const { translationLang, setTranslationLang, uiLang, setUiLang, t } = useSettings();
   const { user, signOut } = useUser();
   const { flush } = useProgress();
 
   useEffect(() => {
-    if (!menuOpen && !userMenuOpen) return;
+    if (!userMenuOpen) return;
     const onDown = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) setUserMenuOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setMenuOpen(false);
         setUserMenuOpen(false);
       }
     };
@@ -85,9 +81,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onOpenHandbook, o
       document.removeEventListener('mousedown', onDown);
       document.removeEventListener('keydown', onKey);
     };
-  }, [menuOpen, userMenuOpen]);
-
-  const dashboardLabel = user.role === 'teacher' ? t('nav.students') : t('nav.progress');
+  }, [userMenuOpen]);
 
   const handleSignOut = async () => {
     setUserMenuOpen(false);
@@ -113,16 +107,18 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onOpenHandbook, o
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant={activeSection === 'dashboard' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => onSectionChange('dashboard')}
-            title={dashboardLabel}
-            className="max-sm:!hidden"
-          >
-            <LayoutDashboard className="h-4 w-4" />
-            {dashboardLabel}
-          </Button>
+          {user.role !== 'teacher' && (
+            <Button
+              variant={activeSection === 'dashboard' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => onSectionChange('dashboard')}
+              title={t('nav.progress')}
+              className="max-sm:!hidden"
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              {t('nav.progress')}
+            </Button>
+          )}
 
           <Button variant="secondary" size="sm" onClick={onOpenHandbook} title={t('nav.handbook')}>
             <BookOpen className="h-4 w-4" />
@@ -195,36 +191,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onOpenHandbook, o
                     {t('nav.invite')}
                   </a>
                 )}
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={() => void handleSignOut()}
-                  className="flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left text-base leading-6 text-ink hover:bg-hero focus-visible:bg-hero focus-visible:outline-none"
-                >
-                  <LogOut className="h-5 w-5 text-ink-2" />
-                  {t('auth.signOut')}
-                </button>
-              </div>
-            )}
-          </div>
-
-          <div className="relative" ref={menuRef}>
-            <button
-              type="button"
-              onClick={() => setMenuOpen((o) => !o)}
-              aria-haspopup="menu"
-              aria-expanded={menuOpen}
-              aria-label={t('nav.settings')}
-              title={t('nav.settings')}
-              className={`grid h-10 w-10 cursor-pointer place-items-center rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
-                menuOpen || activeSection === 'design-system' ? 'bg-primary-tint text-primary' : 'text-ink-2 hover:bg-hero hover:text-ink'
-              }`}
-            >
-              <Settings className="h-5 w-5" />
-            </button>
-
-            {menuOpen && (
-              <div role="menu" className="absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-lg border border-line bg-surface py-1">
+                <div className="my-1 border-t border-line-soft" />
                 <p className="px-4 pt-2 pb-1 text-xs leading-4 text-ink-2">{t('nav.pageSettings')}</p>
 
                 <div className="px-4 py-2">
@@ -248,7 +215,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onOpenHandbook, o
                   type="button"
                   role="menuitem"
                   onClick={() => {
-                    setMenuOpen(false);
+                    setUserMenuOpen(false);
                     onSectionChange('design-system');
                   }}
                   className={`flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left text-base leading-6 hover:bg-hero focus-visible:bg-hero focus-visible:outline-none ${
@@ -258,9 +225,20 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onOpenHandbook, o
                   <Palette className="h-5 w-5 text-ink-2" />
                   {t('nav.designSystem')}
                 </button>
+                <div className="my-1 border-t border-line-soft" />
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => void handleSignOut()}
+                  className="flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left text-base leading-6 text-ink hover:bg-hero focus-visible:bg-hero focus-visible:outline-none"
+                >
+                  <LogOut className="h-5 w-5 text-ink-2" />
+                  {t('auth.signOut')}
+                </button>
               </div>
             )}
           </div>
+
         </div>
       </div>
     </header>
