@@ -1,8 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { fetchClassCode, inviteByEmail, replaceClassCode } from '../accountApi';
 import { Button, TextField } from './ui';
 import { useSettings } from '../useSettings';
 import { shareLink } from '../userRoute';
+
+/** Set by the user menu before opening the profile: the page then scrolls to this block. */
+export const INVITE_SCROLL_KEY = 'matura.scrollToInvite';
 
 /** The link that brings learners into the class, and a way to mail it to one of them. Rendered for the teacher only. */
 export const ClassInvite: React.FC = () => {
@@ -13,10 +16,23 @@ export const ClassInvite: React.FC = () => {
   const [sent, setSent] = useState<string>();
   const [sendError, setSendError] = useState<string>();
   const [busy, setBusy] = useState(false);
+  const section = useRef<HTMLElement>(null);
 
   useEffect(() => {
     fetchClassCode().then(setCode).catch(() => undefined);
   }, []);
+
+  // Opened from "Zaproś ucznia" in the user menu: once the block is on the page, bring it into view.
+  useEffect(() => {
+    if (!code) return;
+    try {
+      if (window.sessionStorage.getItem(INVITE_SCROLL_KEY) !== '1') return;
+      window.sessionStorage.removeItem(INVITE_SCROLL_KEY);
+    } catch {
+      return;
+    }
+    section.current?.scrollIntoView({ block: 'start' });
+  }, [code]);
 
   if (!code) return null;
   const url = shareLink(`join/${code}`);
@@ -51,7 +67,7 @@ export const ClassInvite: React.FC = () => {
   };
 
   return (
-    <section className="grid gap-3 rounded-2xl border border-line bg-surface p-5">
+    <section ref={section} id="klasa" className="grid scroll-mt-24 gap-3 rounded-2xl border border-line bg-surface p-5">
       <div>
         <h2 className="text-xl leading-7 font-semibold">{t('teacher.inviteTitle')}</h2>
         <p className="text-sm leading-5 text-ink-2">{t('teacher.inviteDesc')}</p>

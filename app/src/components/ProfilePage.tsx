@@ -271,6 +271,7 @@ const StudentsBlock: React.FC = () => {
 export const ProfilePage: React.FC = () => {
   const { t } = useSettings();
   const { user } = useUser();
+
   return (
     <div className="mx-auto grid w-full max-w-2xl gap-5">
       <h1 className="text-3xl leading-10 font-semibold">{t('profile.title')}</h1>

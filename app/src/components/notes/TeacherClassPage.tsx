@@ -3,7 +3,6 @@ import { StickyNote } from 'lucide-react';
 import type { MaturaModule } from '../../types';
 import type { UserProfile } from '../../users';
 import { TeacherDashboardView } from '../TeacherDashboardView';
-import { ClassInvite } from '../ClassInvite';
 import { useSettings } from '../../useSettings';
 import { formatRelative } from '../../progressSummary';
 import { fetchSummary, SignedOutError, type NotesSummary } from './notesApi';
@@ -51,7 +50,7 @@ const TeacherClassPage: React.FC<TeacherClassPageProps> = ({ modules, students, 
     );
   };
 
-  return <TeacherDashboardView modules={modules} students={students} onOpenStudent={onOpenStudent} beforeList={<ClassInvite />} renderStudentExtra={notesLine} />;
+  return <TeacherDashboardView modules={modules} students={students} onOpenStudent={onOpenStudent} renderStudentExtra={notesLine} />;
 };
 
 export default TeacherClassPage;

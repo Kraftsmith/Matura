@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { BookOpen, Menu, Settings, Palette, Languages, LayoutDashboard, ChevronDown, Globe, LogOut, UserRound } from 'lucide-react';
+import { BookOpen, Menu, Settings, Palette, Languages, LayoutDashboard, ChevronDown, Globe, LogOut, UserPlus, UserRound } from 'lucide-react';
+import { INVITE_SCROLL_KEY } from './ClassInvite';
 import type { SectionType, TranslationLang } from '../types';
 import type { UiLang } from '../i18n';
 import { Button } from './ui';
@@ -162,6 +163,24 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onOpenHandbook, o
                   <UserRound className="h-5 w-5 text-ink-2" />
                   {t('nav.profile')}
                 </a>
+                {user.role === 'teacher' && (
+                  <a
+                    href="#profile"
+                    role="menuitem"
+                    onClick={() => {
+                      setUserMenuOpen(false);
+                      try {
+                        window.sessionStorage.setItem(INVITE_SCROLL_KEY, '1');
+                      } catch {
+                        /* storage unavailable: the profile opens at the top */
+                      }
+                    }}
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-base leading-6 text-ink hover:bg-hero focus-visible:bg-hero focus-visible:outline-none"
+                  >
+                    <UserPlus className="h-5 w-5 text-ink-2" />
+                    {t('nav.invite')}
+                  </a>
+                )}
                 <button
                   type="button"
                   role="menuitem"
