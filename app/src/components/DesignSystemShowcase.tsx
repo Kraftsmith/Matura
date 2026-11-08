@@ -6,9 +6,9 @@ import {
 import type { OptionState } from './ui';
 
 const colorTokens: { name: string; token: string; hex: string; use: string }[] = [
-  { name: 'Primary', token: 'primary', hex: '#233126', use: 'przyciski, linki, aktywna zakładka' },
-  { name: 'Primary hover', token: 'primary-hover', hex: '#182319', use: 'stan hover przycisku' },
-  { name: 'Primary tint', token: 'primary-tint', hex: '#E9ECE4', use: 'tło aktywnego wiersza, hover secondary' },
+  { name: 'Primary', token: 'primary', hex: '#4A1A23', use: 'przyciski, linki, aktywna zakładka' },
+  { name: 'Primary hover', token: 'primary-hover', hex: '#33111A', use: 'stan hover przycisku' },
+  { name: 'Primary tint', token: 'primary-tint', hex: '#F3E7E9', use: 'tło aktywnego wiersza, hover secondary' },
   { name: 'Ink', token: 'ink', hex: '#1E1F1B', use: 'tekst główny' },
   { name: 'Ink 2', token: 'ink-2', hex: '#555850', use: 'tekst pomocniczy, obramowanie pól' },
   { name: 'Ink 3', token: 'ink-3', hex: '#7B7E74', use: 'placeholder, disabled' },
@@ -16,7 +16,7 @@ const colorTokens: { name: string; token: string; hex: string; use: string }[] =
   { name: 'Hero', token: 'hero', hex: '#F3EFE7', use: 'pas nagłówka modułu, hover wiersza' },
   { name: 'Chip', token: 'chip', hex: '#E6DFD3', use: 'neutralne etykiety, disabled' },
   { name: 'Success', token: 'success', hex: '#5E6B4C', use: 'poprawna odpowiedź, opanowane' },
-  { name: 'Error', token: 'error', hex: '#4A1A23', use: 'błędna odpowiedź, koniec czasu' },
+  { name: 'Error', token: 'error', hex: '#A9362A', use: 'błędna odpowiedź, koniec czasu' },
   { name: 'Warning', token: 'warning', hex: '#8C603E', use: 'pułapki egzaminacyjne' },
 ];
 

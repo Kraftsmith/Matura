@@ -3,16 +3,16 @@
 /*
   Design tokens. The layout discipline comes from course platforms such as Coursera
   (one accent, flat cards, no shadows), but the voice is our own: IBM Plex Sans,
-  square labels and a five-colour palette: Hunter (accent), Sage (correct),
-  Bordeaux (wrong), Cedar (caution), Bone (lines and bands).
+  square labels and a warm palette: Bordeaux (accent), Sage (correct),
+  Brick (wrong), Cedar (caution), Bone (lines and bands); Hunter is held in reserve.
   The semantic colors are used only for real learner status, never for decoration.
 */
 @theme {
   --font-sans: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
 
-  --color-primary: #233126;        /* Hunter */
-  --color-primary-hover: #182319;
-  --color-primary-tint: #E9ECE4;
+  --color-primary: #4A1A23;        /* Bordeaux */
+  --color-primary-hover: #33111A;
+  --color-primary-tint: #F3E7E9;
 
   --color-ink: #1E1F1B;
   --color-ink-2: #555850;
@@ -26,8 +26,8 @@
 
   --color-success: #5E6B4C;        /* Sage, darkened for text */
   --color-success-tint: #EEF1E8;
-  --color-error: #4A1A23;          /* Bordeaux */
-  --color-error-tint: #F4E8EA;
+  --color-error: #A9362A;          /* Brick: a clear red, so a wrong answer is never confused with the brand */
+  --color-error-tint: #FAEAE6;
   --color-warning: #8C603E;        /* Cedar */
   --color-warning-tint: #F6EEE5;
 
