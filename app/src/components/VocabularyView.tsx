@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import type { GapFillItem, VocabularyItem, VocabularyText } from '../types';
+import type { GapFillItem, GlossaryEntry as GlossaryEntryData, VocabularyItem, VocabularyText } from '../types';
 import { Volume2, ImageIcon, MessageCircle, Languages, Maximize2, ChevronDown, ChevronUp, PenLine, RotateCcw, Eye, CheckCircle2, ArrowLeft, Plus, Check } from 'lucide-react';
 import { Button, Chip, InlineInput, SectionTitle } from './ui';
 import { ImageLightbox } from './ImageLightbox';
@@ -198,6 +198,34 @@ const InDeckLink: React.FC<{ moduleId: string; cardId: string }> = ({ moduleId, 
   );
 };
 
+/** One glossary line. The translation stays hidden until asked for, so the learner tries the English definition first. */
+const GlossaryEntry: React.FC<{ entry: GlossaryEntryData; showTranslations: boolean }> = ({ entry, showTranslations }) => {
+  const { tr, t } = useSettings();
+  const [open, setOpen] = useState(false);
+  const translation = tr(entry.polish, entry.russian);
+  const shown = showTranslations || open;
+  return (
+    <div className="min-w-0">
+      <dt className="text-base leading-6 font-semibold text-ink">{entry.term}</dt>
+      <dd className="text-sm leading-5 text-ink-2">{entry.definition}</dd>
+      {translation && shown && <dd className="text-sm leading-5 text-ink-3 italic">{translation}</dd>}
+      {translation && !showTranslations && (
+        <dd>
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            className="mt-0.5 inline-flex cursor-pointer items-center gap-1 text-xs leading-4 text-primary hover:underline"
+          >
+            <Languages className="h-3 w-3" />
+            {open ? t('vocab.hideTranslation') : t('vocab.showTranslation')}
+          </button>
+        </dd>
+      )}
+    </div>
+  );
+};
+
 interface TextCardProps {
   moduleId: string;
   text: VocabularyText;
@@ -207,7 +235,6 @@ interface TextCardProps {
 }
 
 const TextCard: React.FC<TextCardProps> = ({ moduleId, text, route, showTranslations, targetUserId }) => {
-  const { tr } = useSettings();
   const add = useAddFlashcard(moduleId, targetUserId);
   const [lightbox, setLightbox] = useState(false);
 
@@ -260,13 +287,7 @@ const TextCard: React.FC<TextCardProps> = ({ moduleId, text, route, showTranslat
                 >
                   <Volume2 className="h-4 w-4" />
                 </button>
-                <div className="min-w-0">
-                  <dt className="text-base leading-6 font-semibold text-ink">{g.term}</dt>
-                  <dd className="text-sm leading-5 text-ink-2">{g.definition}</dd>
-                  {showTranslations && tr(g.polish, g.russian) && (
-                    <dd className="text-sm leading-5 text-ink-3 italic">{tr(g.polish, g.russian)}</dd>
-                  )}
-                </div>
+                <GlossaryEntry entry={g} showTranslations={showTranslations} />
                 {cardId && <InDeckLink moduleId={moduleId} cardId={cardId} />}
               </div>
               );
