@@ -17,6 +17,8 @@ interface SidebarProps {
   /** False for the teacher: module rows show deck size instead of personal progress. */
   showProgress?: boolean;
   dashboardLabel?: string;
+  /** False for the teacher: their panel opens from the user menu instead. */
+  showDashboard?: boolean;
   onSelectModule: (moduleId: string) => void;
   onSelectDashboard: () => void;
   onSelectFiszki: () => void;
@@ -47,6 +49,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   testScoresMap,
   showProgress = true,
   dashboardLabel,
+  showDashboard = true,
   onSelectModule,
   onSelectDashboard,
   onSelectFiszki,
@@ -83,6 +86,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         <nav className="border-t border-side-line">
+{showDashboard && (
           <SideRow
             active={dashboardActive}
             aria-current={dashboardActive ? 'page' : undefined}
@@ -96,6 +100,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <span className="block truncate">{dashboardLabel ?? t('side.myProgress')}</span>
             </span>
           </SideRow>
+          )}
 
           <SideRow
             active={fiszkiActive}

@@ -273,7 +273,8 @@ export function App() {
           fiszkiActive={inFiszkiModule}
           testScoresMap={testScoresMap}
           showProgress={!isTeacher}
-          dashboardLabel={isTeacher ? t('side.teacherPanel') : t('side.myProgress')}
+          dashboardLabel={t('side.myProgress')}
+          showDashboard={!isTeacher}
           onSelectModule={handleModuleChange}
           onSelectDashboard={handleBackToClass}
           onSelectFiszki={handleOpenHub}
