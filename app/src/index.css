@@ -3,32 +3,33 @@
 /*
   Design tokens. The layout discipline comes from course platforms such as Coursera
   (one accent, flat cards, no shadows), but the voice is our own: IBM Plex Sans,
-  a deep navy accent, a warm paper band and square labels.
-  Three semantic colors are used only for real learner status, never for decoration.
+  square labels and a five-colour palette: Hunter (accent), Sage (correct),
+  Bordeaux (wrong), Cedar (caution), Bone (lines and bands).
+  The semantic colors are used only for real learner status, never for decoration.
 */
 @theme {
   --font-sans: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
 
-  --color-primary: #1E3F8A;
-  --color-primary-hover: #162F68;
-  --color-primary-tint: #E8EDF8;
+  --color-primary: #233126;        /* Hunter */
+  --color-primary-hover: #182319;
+  --color-primary-tint: #E9ECE4;
 
-  --color-ink: #0D0F12;
-  --color-ink-2: #48546E;
-  --color-ink-3: #6B7589;
+  --color-ink: #1E1F1B;
+  --color-ink-2: #555850;
+  --color-ink-3: #7B7E74;
 
-  --color-line: #D9DEE6;
-  --color-line-soft: #E6E9EF;
-  --color-hero: #F6F5F0;
-  --color-chip: #E4E6EC;
+  --color-line: #D8D0C2;           /* Bone */
+  --color-line-soft: #E8E2D8;
+  --color-hero: #F3EFE7;
+  --color-chip: #E6DFD3;
   --color-surface: #FFFFFF;
 
-  --color-success: #1E7F3C;
-  --color-success-tint: #E8F5EC;
-  --color-error: #C62828;
-  --color-error-tint: #FDECEC;
-  --color-warning: #8A5A00;
-  --color-warning-tint: #FFF6E0;
+  --color-success: #5E6B4C;        /* Sage, darkened for text */
+  --color-success-tint: #EEF1E8;
+  --color-error: #4A1A23;          /* Bordeaux */
+  --color-error-tint: #F4E8EA;
+  --color-warning: #8C603E;        /* Cedar */
+  --color-warning-tint: #F6EEE5;
 
   --radius-md: 6px;   /* labels (chips) */
   --radius-lg: 8px;   /* buttons, fields, option cards */
