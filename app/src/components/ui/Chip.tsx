@@ -17,7 +17,7 @@ const tones: Record<ChipTone, string> = {
 
 export const Chip: React.FC<ChipProps> = ({ tone = 'neutral', size = 'md', className = '', children, ...rest }) => (
   <span
-    className={`inline-flex items-center gap-1.5 rounded-md whitespace-nowrap ${
+    className={`inline-flex items-center gap-1.5 rounded-full whitespace-nowrap ${
       size === 'sm' ? 'text-xs leading-4 px-2 py-0.5' : 'text-sm leading-5 px-3 py-1'
     } ${tones[tone]} ${className}`}
     {...rest}

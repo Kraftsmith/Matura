@@ -239,7 +239,7 @@ const TextCard: React.FC<TextCardProps> = ({ moduleId, text, route, showTranslat
   const [lightbox, setLightbox] = useState(false);
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-line bg-surface">
+    <article className="overflow-hidden card">
       <Illustration src={text.image.src} alt={text.image.alt} onOpen={() => setLightbox(true)} />
       <ImageLightbox isOpen={lightbox} src={text.image.src} alt={text.image.alt} caption={text.image.alt} onClose={() => setLightbox(false)} />
 
@@ -361,7 +361,7 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({ moduleId, texts,
           <TextCard moduleId={moduleId} text={focused} route={`${sectionRoute}/${focused.id}`} showTranslations={showTranslations} targetUserId={lessonStudent} />
         </div>
       ) : texts.length === 0 ? (
-        <div className="rounded-2xl border border-line bg-surface p-10 text-center">
+        <div className="card p-10 text-center">
           <p className="text-base leading-6 font-semibold text-ink">Texts for this module are coming soon.</p>
           <p className="mt-1 text-sm leading-5 text-ink-2">Use the flashcards and the word list below in the meantime.</p>
         </div>
@@ -374,7 +374,7 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({ moduleId, texts,
       )}
 
       {!focused && sortedList.length > 0 && (
-        <section className="overflow-hidden rounded-2xl border border-line bg-surface">
+        <section className="overflow-hidden card">
           <button
             type="button"
             onClick={() => setListOpen((o) => !o)}

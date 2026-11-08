@@ -67,7 +67,7 @@ export const ClassInvite: React.FC = () => {
   };
 
   return (
-    <section ref={section} id="klasa" className="grid scroll-mt-24 gap-3 rounded-2xl border border-line bg-surface p-5">
+    <section ref={section} id="klasa" className="grid scroll-mt-24 gap-3 card p-5">
       <div>
         <h2 className="text-xl leading-7 font-semibold">{t('teacher.inviteTitle')}</h2>
         <p className="text-sm leading-5 text-ink-2">{t('teacher.inviteDesc')}</p>

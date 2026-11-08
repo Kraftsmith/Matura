@@ -15,7 +15,7 @@ import { useUser } from '../useUser';
 import type { ExamPlan } from '../users';
 
 const Block: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-  <section className="grid gap-4 rounded-2xl border border-line bg-surface p-5">
+  <section className="grid gap-4 card p-5">
     <h2 className="text-xl leading-7 font-semibold">{title}</h2>
     {children}
   </section>

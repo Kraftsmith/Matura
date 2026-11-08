@@ -75,11 +75,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const reviewTile = (
     <StatTile
-      icon={<RotateCcw className="h-4 w-4" />}
+      icon={<RotateCcw className="h-5 w-5" />}
+      tone="orange"
       label={t('dash.review')}
       value={s.reviewWords}
       hint={s.reviewWords > 0 ? t('dash.reviewHint') : t('dash.noReview')}
-      className="h-full bg-transparent"
+      className="h-full"
     />
   );
 
@@ -141,7 +142,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             <StatTile
-              icon={<Layers className="h-4 w-4" />}
+              icon={<Layers className="h-5 w-5" />}
+              tone="cyan"
               label={t('dash.words')}
               value={
                 <>
@@ -151,7 +153,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               hint={<Meter value={s.wordsPct} tone="success" label={t('dash.words')} className="mt-1" />}
             />
             <StatTile
-              icon={<BookOpenCheck className="h-4 w-4" />}
+              icon={<BookOpenCheck className="h-5 w-5" />}
+              tone="violet"
               label={t('dash.grammar')}
               value={
                 <>
@@ -164,7 +167,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               hint={<Meter value={(s.grammarPassed / modules.length) * 100} tone="success" label={t('dash.grammar')} className="mt-1" />}
             />
             <StatTile
-              icon={<MessagesSquare className="h-4 w-4" />}
+              icon={<MessagesSquare className="h-5 w-5" />}
+              tone="pink"
               label={t('dash.exercises')}
               value={
                 <>
@@ -174,7 +178,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               hint={<Meter value={s.exercisesTotal ? (s.exercisesPassed / s.exercisesTotal) * 100 : 0} tone="success" label={t('dash.exercises')} className="mt-1" />}
             />
             <StatTile
-              icon={<ClipboardCheck className="h-4 w-4" />}
+              icon={<ClipboardCheck className="h-5 w-5" />}
+              tone="green"
               label={t('dash.testsStarted')}
               value={
                 <>
@@ -188,7 +193,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               }
             />
             {onOpenReview ? (
-              <button type="button" onClick={onOpenReview} className="cursor-pointer rounded-2xl text-left hover:bg-hero focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+              <button type="button" onClick={onOpenReview} className="cursor-pointer rounded-2xl text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
                 {reviewTile}
               </button>
             ) : (
@@ -199,7 +204,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <section className="grid gap-4">
             <SectionTitle title={t('dash.topicsTitle')} description={t('dash.topicsDesc')} />
 
-            <div className="overflow-hidden rounded-2xl border border-line bg-surface">
+            <div className="overflow-hidden card">
               <div className={`hidden gap-4 border-b border-line-soft px-5 py-3 text-sm leading-5 text-ink-2 md:grid ${gridCols}`}>
                 <span>{t('dash.colTopic')}</span>
                 <span>{t('dash.colWords')}</span>

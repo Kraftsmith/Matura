@@ -6,18 +6,20 @@ import {
 import type { OptionState } from './ui';
 
 const colorTokens: { name: string; token: string; hex: string; use: string }[] = [
-  { name: 'Primary', token: 'primary', hex: '#4A1A23', use: 'przyciski, linki, aktywna zakładka' },
-  { name: 'Primary hover', token: 'primary-hover', hex: '#33111A', use: 'stan hover przycisku' },
-  { name: 'Primary tint', token: 'primary-tint', hex: '#F3E7E9', use: 'tło aktywnego wiersza, hover secondary' },
-  { name: 'Ink', token: 'ink', hex: '#1E1F1B', use: 'tekst główny' },
-  { name: 'Ink 2', token: 'ink-2', hex: '#555850', use: 'tekst pomocniczy, obramowanie pól' },
-  { name: 'Ink 3', token: 'ink-3', hex: '#7B7E74', use: 'placeholder, disabled' },
-  { name: 'Line', token: 'line', hex: '#D8D0C2', use: 'obramowanie kart' },
-  { name: 'Hero', token: 'hero', hex: '#F3EFE7', use: 'pas nagłówka modułu, hover wiersza' },
-  { name: 'Chip', token: 'chip', hex: '#E6DFD3', use: 'neutralne etykiety, disabled' },
-  { name: 'Success', token: 'success', hex: '#5E6B4C', use: 'poprawna odpowiedź, opanowane' },
-  { name: 'Error', token: 'error', hex: '#A9362A', use: 'błędna odpowiedź, koniec czasu' },
-  { name: 'Warning', token: 'warning', hex: '#8C603E', use: 'pułapki egzaminacyjne' },
+  { name: 'Primary', token: 'primary', hex: '#17818F', use: 'przyciski, linki, aktywna zakładka' },
+  { name: 'Primary hover', token: 'primary-hover', hex: '#126975', use: 'stan hover przycisku' },
+  { name: 'Primary tint', token: 'primary-tint', hex: '#E3F3F5', use: 'tło aktywnego wiersza, hover secondary' },
+  { name: 'Ink', token: 'ink', hex: '#2B2F36', use: 'tekst główny' },
+  { name: 'Ink 2', token: 'ink-2', hex: '#5F6773', use: 'tekst pomocniczy, obramowanie pól' },
+  { name: 'Ink 3', token: 'ink-3', hex: '#8B929C', use: 'placeholder, disabled' },
+  { name: 'Page', token: 'page', hex: '#E9ECF0', use: 'tło strony pod kartami' },
+  { name: 'Side', token: 'side', hex: '#3C4249', use: 'ciemny panel boczny' },
+  { name: 'Line', token: 'line', hex: '#DFE3E8', use: 'obramowanie pól, podziały w kartach' },
+  { name: 'Hero', token: 'hero', hex: '#F5F6F8', use: 'pas nagłówka modułu, hover wiersza' },
+  { name: 'Chip', token: 'chip', hex: '#E6E9ED', use: 'neutralne etykiety, disabled' },
+  { name: 'Success', token: 'success', hex: '#1E8A4C', use: 'poprawna odpowiedź, opanowane' },
+  { name: 'Error', token: 'error', hex: '#D23F3F', use: 'błędna odpowiedź, koniec czasu' },
+  { name: 'Warning', token: 'warning', hex: '#A86400', use: 'pułapki egzaminacyjne' },
 ];
 
 const Spec: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
@@ -102,7 +104,7 @@ export const DesignSystemShowcase: React.FC = () => {
       </section>
 
       <section className="grid gap-5">
-        <SectionTitle title="Typografia" description="IBM Plex Sans. Nagłówki 600, tekst 400, bez wagi 900 i bez wersalików z trackingiem." />
+        <SectionTitle title="Typografia" description="Nunito. Nagłówki 700, tekst 400, bez wagi 900 i bez wersalików z trackingiem." />
         <Card className="grid gap-4">
           <p className="text-4xl leading-12 font-semibold">Nagłówek strony 36/48</p>
           <p className="text-2xl leading-8 font-semibold">Nagłówek sekcji 24/32</p>
@@ -335,9 +337,9 @@ export const DesignSystemShowcase: React.FC = () => {
           <ul className="grid list-disc gap-2 pl-5">
             <li>Jeden przycisk primary na ekran. Reszta to secondary lub ghost.</li>
             <li>Kolor semantyczny tylko dla wyniku ucznia: poprawnie, błędnie, opanowane. Nigdy jako dekoracja.</li>
-            <li>Karty: promień 16 px, obramowanie 1 px line, bez cienia. Przyciski i pola: promień 8 px i 4 px. Etykiety: promień 6 px, nie pigułki.</li>
+            <li>Karty: klasa card, promień 20 px, miękki cień, bez obramowania, na szarym tle strony. Przyciski i pola: promień 10 px i 4 px. Etykiety: pigułki.</li>
             <li>Ikony lucide 16–20 px w kolorze tekstu, zawsze obok etykiety tekstowej.</li>
-            <li>Bez wersalików z trackingiem, bez wagi 900, bez gradientów, bez animate-pulse.</li>
+            <li>Bez wersalików z trackingiem, bez wagi 900, bez animate-pulse. Gradient tylko w okrągłej plakietce ikony (IconBadge) na kartach podsumowania.</li>
             <li>Minimalny rozmiar tekstu 12 px, tekst pomocniczy 14 px w kolorze ink-2.</li>
           </ul>
         </Card>

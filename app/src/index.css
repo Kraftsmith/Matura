@@ -1,44 +1,56 @@
 @import "tailwindcss";
 
 /*
-  Design tokens. The layout discipline comes from course platforms such as Coursera
-  (one accent, flat cards, no shadows), but the voice is our own: IBM Plex Sans,
-  square labels and a warm palette: Bordeaux (accent), Sage (correct),
-  Brick (wrong), Cedar (caution), Bone (lines and bands); Hunter is held in reserve.
+  Design tokens. Reference: the home.pl customer panel. A grey page, white cards
+  with a soft shadow and no border, a dark charcoal sidebar, a rounded typeface
+  (Nunito), one teal accent and pastel gradient badges for the dashboard icons only.
   The semantic colors are used only for real learner status, never for decoration.
 */
 @theme {
-  --font-sans: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
+  --font-sans: "Nunito", "Segoe UI", Arial, sans-serif;
 
-  --color-primary: #4A1A23;        /* Bordeaux */
-  --color-primary-hover: #33111A;
-  --color-primary-tint: #F3E7E9;
+  --color-primary: #17818F;
+  --color-primary-hover: #126975;
+  --color-primary-tint: #E3F3F5;
 
-  --color-ink: #1E1F1B;
-  --color-ink-2: #555850;
-  --color-ink-3: #7B7E74;
+  --color-ink: #2B2F36;
+  --color-ink-2: #5F6773;
+  --color-ink-3: #8B929C;
 
-  --color-line: #D8D0C2;           /* Bone */
-  --color-line-soft: #E8E2D8;
-  --color-hero: #F3EFE7;
-  --color-chip: #E6DFD3;
+  --color-line: #DFE3E8;
+  --color-line-soft: #ECEFF2;
+  --color-hero: #F5F6F8;
+  --color-page: #E9ECF0;          /* behind the cards */
+  --color-chip: #E6E9ED;
   --color-surface: #FFFFFF;
 
-  --color-success: #5E6B4C;        /* Sage, darkened for text */
-  --color-success-tint: #EEF1E8;
-  --color-error: #A9362A;          /* Brick: a clear red, so a wrong answer is never confused with the brand */
-  --color-error-tint: #FAEAE6;
-  --color-warning: #8C603E;        /* Cedar */
-  --color-warning-tint: #F6EEE5;
+  --color-side: #3C4249;          /* sidebar */
+  --color-side-2: #30353B;        /* sidebar: active row, hover */
+  --color-side-text: #ECEEF1;
+  --color-side-muted: #A9B0B8;
+  --color-side-line: #4A5058;
 
-  --radius-md: 6px;   /* labels (chips) */
-  --radius-lg: 8px;   /* buttons, fields, option cards */
-  --radius-2xl: 16px; /* cards, panels */
+  --color-success: #1E8A4C;
+  --color-success-tint: #E6F5EC;
+  --color-error: #D23F3F;
+  --color-error-tint: #FDEBEB;
+  --color-warning: #A86400;
+  --color-warning-tint: #FFF3DF;
+
+  --radius-lg: 10px;  /* buttons, fields, option cards */
+  --radius-2xl: 20px; /* cards, panels */
+
+  --shadow-card: 0 2px 12px rgba(43, 47, 54, 0.07), 0 1px 2px rgba(43, 47, 54, 0.05);
+}
+
+/* A white panel on the grey page: the one way to draw a card. */
+@utility card {
+  @apply rounded-2xl bg-surface shadow-card;
 }
 
 @layer base {
   body {
-    @apply bg-surface text-ink antialiased min-h-screen;
+    @apply bg-page text-ink antialiased min-h-screen;
     font-size: 16px;
     line-height: 24px;
   }

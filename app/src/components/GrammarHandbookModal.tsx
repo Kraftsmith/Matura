@@ -137,7 +137,7 @@ export const GrammarHandbookModal: React.FC<GrammarHandbookModalProps> = ({ isOp
           {filtered.map((topic, idx) => (
             <div
               key={idx}
-              className="p-4 rounded-2xl border border-line bg-surface hover:border-line transition space-y-2"
+              className="p-4 card transition space-y-2"
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-warning-tint text-warning border border-warning-tint">

@@ -64,11 +64,11 @@ export const CompletedTasks: React.FC<{ rows: ModuleSummary[]; teacherView: bool
       <SectionTitle title={t('work.title')} description={teacherView ? t('work.descTeacher') : t('work.desc')} />
 
       {withWork.length === 0 ? (
-        <p className="rounded-2xl border border-line bg-surface px-5 py-4 text-sm leading-5 text-ink-2">{t('work.empty')}</p>
+        <p className="card px-5 py-4 text-sm leading-5 text-ink-2">{t('work.empty')}</p>
       ) : (
         <div className="grid gap-4">
           {withWork.map(({ module: m, work, exercisesPassed, exercisesTotal }) => (
-            <article key={m.id} className="rounded-2xl border border-line bg-surface px-5 pt-4 pb-1">
+            <article key={m.id} className="card px-5 pt-4 pb-1">
               <h3 className="pb-3 text-base leading-6 font-semibold text-ink">
                 {m.number}. {m.titlePl}
               </h3>

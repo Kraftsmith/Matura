@@ -145,7 +145,7 @@ export const FlashcardsView: React.FC<FlashcardsViewProps> = ({ cards, moduleTit
 
   if (filteredDeck.length === 0) {
     return (
-      <div className="mx-auto my-8 max-w-xl rounded-2xl border border-line bg-surface p-12 text-center">
+      <div className="mx-auto my-8 max-w-xl card p-12 text-center">
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-tint text-primary">
           <Sparkles className="h-8 w-8" />
         </div>

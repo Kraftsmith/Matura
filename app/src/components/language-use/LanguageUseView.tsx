@@ -71,7 +71,7 @@ export const LanguageUseView: React.FC<LanguageUseViewProps> = ({ moduleId, exer
           {card(focused)}
         </div>
       ) : exercises.length === 0 ? (
-        <p className="rounded-2xl border border-line bg-surface p-10 text-center text-base leading-6 font-semibold text-ink">{t('srodki.empty')}</p>
+        <p className="card p-10 text-center text-base leading-6 font-semibold text-ink">{t('srodki.empty')}</p>
       ) : (
         <div className="grid gap-8">{exercises.map(card)}</div>
       )}

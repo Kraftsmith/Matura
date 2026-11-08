@@ -145,7 +145,7 @@ export const FlashcardsHubView: React.FC<{ modules: MaturaModule[] }> = ({ modul
       </div>
 
       {shown.length === 0 ? (
-        <div className="rounded-2xl border border-line bg-surface p-10 text-center">
+        <div className="card p-10 text-center">
           <p className="mb-4 text-base leading-6 font-semibold text-ink">{t('fiszki.filterEmpty')}</p>
           <Button variant="secondary" onClick={() => selectFilter('all')}>
             {t('fiszki.showAll')}
@@ -294,7 +294,7 @@ export const ReviewSession: React.FC<{ modules: MaturaModule[] }> = ({ modules }
       <div className="grid gap-4">
         <BackToDecks />
         {heading}
-        <div className="rounded-2xl border border-line bg-surface p-10 text-center">
+        <div className="card p-10 text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-tint text-primary">
             <Sparkles className="h-8 w-8" />
           </div>

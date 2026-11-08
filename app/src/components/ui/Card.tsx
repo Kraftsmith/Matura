@@ -10,7 +10,7 @@ const pads = { none: '', md: 'p-5', lg: 'p-6 sm:p-8' };
 export const Card: React.FC<CardProps> = ({ as = 'div', padding = 'md', className = '', children, ...rest }) => {
   const Tag = as;
   return (
-    <Tag className={`rounded-2xl border border-line bg-surface ${pads[padding]} ${className}`} {...rest}>
+    <Tag className={`card ${pads[padding]} ${className}`} {...rest}>
       {children}
     </Tag>
   );

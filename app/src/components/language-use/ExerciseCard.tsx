@@ -69,7 +69,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({ moduleId, exercise, 
   const bodyProps = { answers, phase, onChange: setAnswers, onCheck: check, showTranslations };
 
   return (
-    <article className="grid gap-5 rounded-2xl border border-line bg-surface p-6 sm:p-8">
+    <article className="grid gap-5 card p-6 sm:p-8">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="grid min-w-0 gap-2">
           <h3 className="text-xl leading-7 font-semibold">

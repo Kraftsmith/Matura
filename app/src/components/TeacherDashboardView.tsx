@@ -33,7 +33,7 @@ const StudentCard: React.FC<{ student: UserProfile; summary: UserSummary; module
   const { t, uiLang } = useSettings();
   const locale = uiLang === 'en' ? 'en-GB' : 'pl-PL';
   return (
-    <article className="grid gap-4 rounded-2xl border border-line bg-surface p-5">
+    <article className="grid gap-4 card p-5">
       <div className="flex items-center gap-3">
         <Avatar initials={student.initials} size="lg" />
         <div className="min-w-0 flex-1">
@@ -131,7 +131,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ modu
 
       <section className="grid gap-4">
         <SectionTitle title={t('teacher.compare')} description={t('teacher.compareDesc')} />
-        <div className="overflow-x-auto rounded-2xl border border-line bg-surface">
+        <div className="overflow-x-auto card">
           <div className="min-w-[640px]">
             <div className="grid gap-4 border-b border-line-soft px-5 py-3 text-sm leading-5 text-ink-2" style={{ gridTemplateColumns: cols }}>
               <span>{t('dash.colTopic')}</span>

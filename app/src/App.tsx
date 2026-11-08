@@ -255,7 +255,7 @@ export function App() {
 
   return (
     <FlashcardDialogProvider teacherSignedIn={isTeacher ? true : undefined} signIn={null} onSignedOut={markSignedOut}>
-    <div className="flex min-h-screen flex-col bg-surface font-sans text-ink antialiased">
+    <div className="flex min-h-screen flex-col bg-page font-sans text-ink antialiased">
       <Navbar
         activeSection={activeSection}
         onOpenHandbook={() => setHandbookOpen(true)}

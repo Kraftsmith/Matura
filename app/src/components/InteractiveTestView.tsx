@@ -103,7 +103,7 @@ export const InteractiveTestView: React.FC<InteractiveTestViewProps> = ({ module
 
   return (
     <div className={embedded ? 'grid gap-6' : 'mx-auto grid max-w-4xl gap-8 px-4 py-6'}>
-      <div className="flex flex-col items-start justify-between gap-6 rounded-2xl border border-line bg-surface p-6 sm:p-8 md:flex-row md:items-center">
+      <div className="flex flex-col items-start justify-between gap-6 card p-6 sm:p-8 md:flex-row md:items-center">
         <div>
           {!embedded && (
             <>
@@ -176,7 +176,7 @@ export const InteractiveTestView: React.FC<InteractiveTestViewProps> = ({ module
                 const levelKey = q.level === 'Rozszerzony' ? 'level.Rozszerzony' : 'level.Podstawowy';
 
                 return (
-                  <div key={q.id} className={`rounded-2xl border bg-surface p-6 ${isChecked ? (isCorrect ? 'border-success' : 'border-error') : 'border-line'}`}>
+                  <div key={q.id} className={`card border p-6 ${isChecked ? (isCorrect ? 'border-success' : 'border-error') : 'border-line'}`}>
                     <div className="mb-4 flex items-start justify-between gap-4">
                       <div className="space-y-1">
                         <div className="flex flex-wrap items-center gap-2 text-sm text-ink-2">

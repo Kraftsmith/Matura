@@ -15,7 +15,7 @@ export const TeacherCardsPanel: React.FC<{ student: UserProfile; modules: Matura
   const cards = cardsOf(student.id);
   const topics = modules.filter((m) => cards[m.id]?.length);
 
-  if (topics.length === 0) return <p className="rounded-2xl border border-line bg-surface p-8 text-center text-base leading-6 text-ink-2">{t('lesson.tabEmpty')}</p>;
+  if (topics.length === 0) return <p className="card p-8 text-center text-base leading-6 text-ink-2">{t('lesson.tabEmpty')}</p>;
 
   return (
     <section className="grid gap-4">

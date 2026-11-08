@@ -35,20 +35,38 @@ export const Meter: React.FC<MeterProps> = ({ value, tone = 'primary', size = 's
   );
 };
 
+export type BadgeTone = 'cyan' | 'violet' | 'pink' | 'orange' | 'green';
+
+const badgeTones: Record<BadgeTone, string> = {
+  cyan: 'from-[#4FD1E0] to-[#1FAFC4]',
+  violet: 'from-[#C9A6F0] to-[#9B72D9]',
+  pink: 'from-[#F5A3C7] to-[#E06AA3]',
+  orange: 'from-[#FBBF9A] to-[#F08A5D]',
+  green: 'from-[#8FE0B0] to-[#3DBB7A]',
+};
+
+/** Round pastel badge behind a card icon. The one place a gradient is allowed: decoration of a title, never a status. */
+export const IconBadge: React.FC<{ tone?: BadgeTone; children: React.ReactNode; className?: string }> = ({ tone = 'cyan', children, className = '' }) => (
+  <span aria-hidden className={`grid h-11 w-11 shrink-0 place-items-center rounded-full bg-linear-to-br text-white ${badgeTones[tone]} ${className}`}>
+    {children}
+  </span>
+);
+
 /** Big number with a caption, for the dashboard summary row. */
 export const StatTile: React.FC<{
   value: React.ReactNode;
   label: React.ReactNode;
   hint?: React.ReactNode;
   icon?: React.ReactNode;
+  tone?: BadgeTone;
   className?: string;
-}> = ({ value, label, hint, icon, className = '' }) => (
-  <div className={`grid gap-1 rounded-2xl border border-line bg-surface p-5 ${className}`}>
-    <div className="flex items-center gap-2 text-sm leading-5 text-ink-2">
-      {icon}
-      <span>{label}</span>
+}> = ({ value, label, hint, icon, tone = 'cyan', className = '' }) => (
+  <div className={`grid content-start gap-3 card p-5 ${className}`}>
+    <div className="flex items-start justify-between gap-3">
+      <span className="text-lg leading-6 font-semibold text-ink">{label}</span>
+      {icon && <IconBadge tone={tone}>{icon}</IconBadge>}
     </div>
-    <div className="text-3xl leading-10 font-semibold tabular-nums text-ink">{value}</div>
+    <div className="text-4xl leading-10 font-semibold tabular-nums text-ink">{value}</div>
     {hint && <div className="text-sm leading-5 text-ink-2">{hint}</div>}
   </div>
 );

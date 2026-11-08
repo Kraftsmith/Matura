@@ -85,7 +85,7 @@ const NewNote: React.FC<{ studentId: string; studentName: string; modules: Matur
   };
 
   return (
-    <div className="grid gap-3 rounded-2xl border border-line bg-surface p-5">
+    <div className="grid gap-3 card p-5">
       <TextArea
         label={nt('notes.newLabel')}
         placeholder={nt('notes.placeholder', { name: studentName })}

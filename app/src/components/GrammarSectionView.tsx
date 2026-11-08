@@ -66,7 +66,7 @@ export const GrammarSectionView: React.FC<GrammarSectionViewProps> = ({ moduleId
           {rules.map((rule) => {
             const n = tasksPerRule[rule.id] ?? 0;
             return (
-              <article key={rule.id} id={ruleAnchor(rule.id)} className="grid gap-4 scroll-mt-24 rounded-2xl border border-line bg-surface p-6 sm:p-7">
+              <article key={rule.id} id={ruleAnchor(rule.id)} className="grid gap-4 scroll-mt-24 card p-6 sm:p-7">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="grid gap-1">
                     <span className="text-sm text-ink-2">
