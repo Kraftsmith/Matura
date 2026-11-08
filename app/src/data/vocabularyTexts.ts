@@ -18,7 +18,7 @@ export const vocabularyTextsByModule: Record<string, VocabularyText[]> = {
         alt: 'Two friends meeting at a railway station: a tall man with a beard and a young woman with shoulder-length hair and freckles.',
       },
       paragraphs: [
-        'When Tom stepped off the train, I recognised him at once, even though we had not seen each other for ten years. He was still **broad-shouldered** and **well-built**, but his hair, once jet-black, had started **going grey** at the temples. He looked **in his mid-thirties**, which of course he was.',
+        'When Tom stepped off the train, I recognised him at once, even though we had not seen each other for ten years. He was still **broad-shouldered** and **well-built**, and he had grown a short beard, but his hair, once jet-black, had started **going grey** at the temples. He looked **in his mid-thirties**, which of course he was.',
         'He was dressed casually, in a slightly **scruffy** jacket and worn jeans, yet somehow he looked **impeccable**, the way some people always do. The small **birthmark** above his left eyebrow was still there, and so was his **cheeky** smile.',
         '"You haven\'t changed a bit," he said. "Same **freckles**, same **shoulder-length** hair." That was not quite true, but it was nice to hear. People say I **take after** my mother, and the older I get, the stronger the **resemblance** becomes.',
       ],
@@ -82,9 +82,9 @@ export const vocabularyTextsByModule: Record<string, VocabularyText[]> = {
         alt: 'A student opening an envelope with exam results in a school corridor while friends wait with anxious and happy faces.',
       },
       paragraphs: [
-        'The morning the exam results arrived, Marek was so **apprehensive** that he could not eat breakfast. He sat at the kitchen table with his **arms folded**, **frowning** at the envelope as if it might bite him. His mother tried to make small talk, but he just **shrugged**.',
-        'When he finally opened it, he **burst into tears**, and for a moment his mother was convinced the news was bad. In fact, he was **ecstatic**: he had passed with the highest mark in his year. Relief and joy came all at once, and he felt completely **overwhelmed**.',
-        'His sister, who had been **down in the dumps** all week after a quarrel with her boyfriend, **blushed** when he hugged her. "I told you so," she said. For once, the two of them **saw eye to eye**.',
+        'On the morning the exam results arrived, Marek was so **apprehensive** that he could not eat breakfast. At school he waited in the corridor with his friends. Tomek stood next to him with his **arms folded**, **frowning** at the envelope as if it might bite him. When Ania asked what mark he expected, Marek just **shrugged**.',
+        'When he finally opened it, he **burst into tears**, and for a moment his friends were convinced the news was bad. In fact, he was **ecstatic**: he had passed with the highest mark in his year. Relief and joy came all at once, and he felt completely **overwhelmed**.',
+        'Not everyone was celebrating. Kuba, who had been **down in the dumps** all week because he had failed, sat alone on a bench staring at the floor. Marek **blushed** when the others started clapping, then went over and sat down beside him. "You will pass in September, and I will help you revise," he said. Kuba, who usually disagreed with Marek about everything, nodded. For once, the two of them **saw eye to eye**.',
       ],
       glossary: [
         { term: 'apprehensive', pos: 'adjective', definition: 'worried that something bad might happen', polish: 'pełen obaw, zaniepokojony', russian: 'встревоженный, опасающийся' },
@@ -214,7 +214,7 @@ export const vocabularyTextsByModule: Record<string, VocabularyText[]> = {
         alt: 'A young woman carrying a box into a small bright attic flat with a sloping ceiling and a view of city rooftops.',
       },
       paragraphs: [
-        'Last month I moved into my first **rented** flat. It is a tiny **attic** apartment in a **terraced house** near the university, and the **rent** takes almost half of my student budget. Still, I love it: the living room is **cosy**, the kitchen is **well-equipped**, and there is even a small **balcony** overlooking the courtyard.',
+        'Last month I moved into my first **rented** flat. It is a tiny **attic** apartment in a **terraced house** near the university, and the **rent** takes almost half of my student budget. Still, I love it: the living room is **cosy**, the kitchen is **well-equipped**, and there is even a small **balcony** overlooking the street.',
         'The **neighbourhood** is lively, with a bakery, a tram stop and a park **within walking distance**. The only drawback is the **landlord**, who insists on inspecting the flat every month. My parents keep asking whether I do the **household chores**. I tell them the truth: I **do the washing-up** every evening, but **vacuuming** happens only when guests are expected.',
       ],
       glossary: [
