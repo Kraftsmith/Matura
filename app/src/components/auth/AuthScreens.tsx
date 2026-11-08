@@ -14,8 +14,8 @@ const linkClass = 'text-sm leading-5 font-semibold text-primary hover:underline'
 
 export const AuthShell: React.FC<{ title: string; children?: React.ReactNode }> = ({ title, children }) => (
   <div className="flex min-h-screen flex-col items-center bg-surface px-4 py-10 font-sans text-ink antialiased">
-    <span className="text-[22px] leading-none font-bold tracking-tight text-primary">
-      matura<span className="text-ink">english</span>
+    <span className="text-[22px] leading-none font-semibold tracking-tight text-ink">
+      matura<span className="text-primary">english</span>
     </span>
     <main className="mt-8 grid w-full max-w-[400px] gap-5">
       <h1 className="text-2xl leading-8 font-semibold">{title}</h1>

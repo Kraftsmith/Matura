@@ -16,7 +16,7 @@ export const Card: React.FC<CardProps> = ({ as = 'div', padding = 'md', classNam
   );
 };
 
-/** Row inside a list Card: divided rows, blue marker on the left for the active one (Coursera module list). */
+/** Row inside a list Card: divided rows, accent marker on the left for the active one. */
 export const ListRow: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { active?: boolean }> = ({
   active, className = '', children, ...rest
 }) => (

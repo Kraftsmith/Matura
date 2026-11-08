@@ -6,15 +6,15 @@ import {
 import type { OptionState } from './ui';
 
 const colorTokens: { name: string; token: string; hex: string; use: string }[] = [
-  { name: 'Primary', token: 'primary', hex: '#0056D2', use: 'przyciski, linki, aktywna zakładka' },
-  { name: 'Primary hover', token: 'primary-hover', hex: '#00419E', use: 'stan hover przycisku' },
-  { name: 'Primary tint', token: 'primary-tint', hex: '#EBF3FF', use: 'tło aktywnego wiersza, hover secondary' },
+  { name: 'Primary', token: 'primary', hex: '#1E3F8A', use: 'przyciski, linki, aktywna zakładka' },
+  { name: 'Primary hover', token: 'primary-hover', hex: '#162F68', use: 'stan hover przycisku' },
+  { name: 'Primary tint', token: 'primary-tint', hex: '#E8EDF8', use: 'tło aktywnego wiersza, hover secondary' },
   { name: 'Ink', token: 'ink', hex: '#0D0F12', use: 'tekst główny' },
   { name: 'Ink 2', token: 'ink-2', hex: '#48546E', use: 'tekst pomocniczy, obramowanie pól' },
   { name: 'Ink 3', token: 'ink-3', hex: '#6B7589', use: 'placeholder, disabled' },
   { name: 'Line', token: 'line', hex: '#D9DEE6', use: 'obramowanie kart' },
-  { name: 'Hero', token: 'hero', hex: '#F0F6F9', use: 'pas nagłówka modułu, hover wiersza' },
-  { name: 'Chip', token: 'chip', hex: '#DAE1ED', use: 'neutralne etykiety, disabled' },
+  { name: 'Hero', token: 'hero', hex: '#F6F5F0', use: 'pas nagłówka modułu, hover wiersza' },
+  { name: 'Chip', token: 'chip', hex: '#E4E6EC', use: 'neutralne etykiety, disabled' },
   { name: 'Success', token: 'success', hex: '#1E7F3C', use: 'poprawna odpowiedź, opanowane' },
   { name: 'Error', token: 'error', hex: '#C62828', use: 'błędna odpowiedź, koniec czasu' },
   { name: 'Warning', token: 'warning', hex: '#8A5A00', use: 'pułapki egzaminacyjne' },
@@ -102,7 +102,7 @@ export const DesignSystemShowcase: React.FC = () => {
       </section>
 
       <section className="grid gap-5">
-        <SectionTitle title="Typografia" description="Source Sans 3. Nagłówki 600, tekst 400, bez wagi 900 i bez wersalików z trackingiem." />
+        <SectionTitle title="Typografia" description="IBM Plex Sans. Nagłówki 600, tekst 400, bez wagi 900 i bez wersalików z trackingiem." />
         <Card className="grid gap-4">
           <p className="text-4xl leading-12 font-semibold">Nagłówek strony 36/48</p>
           <p className="text-2xl leading-8 font-semibold">Nagłówek sekcji 24/32</p>
@@ -335,7 +335,7 @@ export const DesignSystemShowcase: React.FC = () => {
           <ul className="grid list-disc gap-2 pl-5">
             <li>Jeden przycisk primary na ekran. Reszta to secondary lub ghost.</li>
             <li>Kolor semantyczny tylko dla wyniku ucznia: poprawnie, błędnie, opanowane. Nigdy jako dekoracja.</li>
-            <li>Karty: promień 16 px, obramowanie 1 px line, bez cienia. Przyciski i pola: promień 8 px i 4 px.</li>
+            <li>Karty: promień 16 px, obramowanie 1 px line, bez cienia. Przyciski i pola: promień 8 px i 4 px. Etykiety: promień 6 px, nie pigułki.</li>
             <li>Ikony lucide 16–20 px w kolorze tekstu, zawsze obok etykiety tekstowej.</li>
             <li>Bez wersalików z trackingiem, bez wagi 900, bez gradientów, bez animate-pulse.</li>
             <li>Minimalny rozmiar tekstu 12 px, tekst pomocniczy 14 px w kolorze ink-2.</li>

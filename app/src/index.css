@@ -1,16 +1,17 @@
 @import "tailwindcss";
 
 /*
-  Design tokens. Reference: Coursera (coursera.org) course page.
-  One accent (primary blue), one cool neutral scale, three semantic colors
-  used only for real learner status, never for decoration.
+  Design tokens. The layout discipline comes from course platforms such as Coursera
+  (one accent, flat cards, no shadows), but the voice is our own: IBM Plex Sans,
+  a deep navy accent, a warm paper band and square labels.
+  Three semantic colors are used only for real learner status, never for decoration.
 */
 @theme {
-  --font-sans: "Source Sans 3", "Source Sans Pro", Arial, sans-serif;
+  --font-sans: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
 
-  --color-primary: #0056D2;
-  --color-primary-hover: #00419E;
-  --color-primary-tint: #EBF3FF;
+  --color-primary: #1E3F8A;
+  --color-primary-hover: #162F68;
+  --color-primary-tint: #E8EDF8;
 
   --color-ink: #0D0F12;
   --color-ink-2: #48546E;
@@ -18,8 +19,8 @@
 
   --color-line: #D9DEE6;
   --color-line-soft: #E6E9EF;
-  --color-hero: #F0F6F9;
-  --color-chip: #DAE1ED;
+  --color-hero: #F6F5F0;
+  --color-chip: #E4E6EC;
   --color-surface: #FFFFFF;
 
   --color-success: #1E7F3C;
@@ -29,6 +30,7 @@
   --color-warning: #8A5A00;
   --color-warning-tint: #FFF6E0;
 
+  --radius-md: 6px;   /* labels (chips) */
   --radius-lg: 8px;   /* buttons, fields, option cards */
   --radius-2xl: 16px; /* cards, panels */
 }
