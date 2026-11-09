@@ -332,7 +332,7 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({ moduleId, texts,
   const sortedList = [...vocabulary].sort((a, b) => a.english.localeCompare(b.english));
 
   return (
-    <div className="mx-auto grid max-w-4xl gap-8 px-4 py-6">
+    <div className="grid gap-8 py-6">
       {teacherSignedIn && <LessonBar student={lessonStudent} onChoose={chooseStudent} />}
       <SelectionCardBar moduleId={moduleId} texts={texts} targetUserId={lessonStudent} />
       <SectionTitle

@@ -64,7 +64,7 @@ export const PictureDescriptionView: React.FC<PictureDescriptionViewProps> = ({ 
   }, [timerActive, timerSeconds]);
 
   return (
-    <div className="max-w-5xl mx-auto py-6 px-4 space-y-8">
+    <div className="py-6 space-y-8">
       {/* Title & CKE Guidance Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-line pb-4">
         <div>

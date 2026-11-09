@@ -44,7 +44,7 @@ export const GrammarSectionView: React.FC<GrammarSectionViewProps> = ({ moduleId
     level === 'R' ? t('gram.levelR') : level === 'P' ? t('gram.levelP') : t('gram.levelPR');
 
   return (
-    <div className="mx-auto grid max-w-4xl gap-10 px-4 py-6">
+    <div className="grid gap-10 py-6">
       <section className="grid gap-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>

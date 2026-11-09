@@ -102,7 +102,7 @@ export const InteractiveTestView: React.FC<InteractiveTestViewProps> = ({ module
   const visible = (q: TestQuestion) => !onlyIncorrectFilter || (checkedIds[q.id] && !isQuestionCorrect(q));
 
   return (
-    <div className={embedded ? 'grid gap-6' : 'mx-auto grid max-w-4xl gap-8 px-4 py-6'}>
+    <div className={embedded ? 'grid gap-6' : 'grid gap-8 py-6'}>
       <div className="flex flex-col items-start justify-between gap-6 card p-6 sm:p-8 md:flex-row md:items-center">
         <div>
           {!embedded && (

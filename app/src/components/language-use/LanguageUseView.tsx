@@ -42,7 +42,7 @@ export const LanguageUseView: React.FC<LanguageUseViewProps> = ({ moduleId, exer
   );
 
   return (
-    <div className="mx-auto grid max-w-4xl gap-8 px-4 py-6">
+    <div className="grid gap-8 py-6">
       <SectionTitle
         title={`${t('srodki.title')}: ${moduleTitle}`}
         description={t('srodki.desc', { n: exercises.length, word: t(`plural.exercise${pluralForm(exercises.length)}`) })}

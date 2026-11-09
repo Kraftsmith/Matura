@@ -263,7 +263,7 @@ export function App() {
         onSectionChange={handleSectionChange}
       />
 
-      <div className="mx-auto flex w-full max-w-7xl flex-1">
+      <div className="flex w-full flex-1">
         <Sidebar
           modules={allModules}
           currentModuleId={activeSection === 'dashboard' || inFiszkiModule ? null : currentModuleId}

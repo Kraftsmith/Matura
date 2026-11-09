@@ -90,7 +90,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onOpenHandbook, o
 
   return (
     <header className="sticky top-0 z-40 bg-surface shadow-card">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+      <div className="flex h-16 items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2">
           <button
             type="button"

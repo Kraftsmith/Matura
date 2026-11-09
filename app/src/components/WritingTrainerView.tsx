@@ -33,7 +33,7 @@ export const WritingTrainerView: React.FC<WritingTrainerViewProps> = ({ moduleId
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-6 px-4 space-y-8">
+    <div className="py-6 space-y-8">
       {/* Header */}
       <div>
         <span className="text-xs font-semibold text-primary">
