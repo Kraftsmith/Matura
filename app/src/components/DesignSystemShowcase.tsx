@@ -6,13 +6,17 @@ import {
 import type { OptionState } from './ui';
 
 const colorTokens: { name: string; token: string; hex: string; use: string }[] = [
-  { name: 'Primary', token: 'primary', hex: '#17818F', use: 'przyciski, linki, aktywna zakładka' },
-  { name: 'Primary hover', token: 'primary-hover', hex: '#126975', use: 'stan hover przycisku' },
-  { name: 'Primary tint', token: 'primary-tint', hex: '#E3F3F5', use: 'tło aktywnego wiersza, hover secondary' },
-  { name: 'Ink', token: 'ink', hex: '#2B2F36', use: 'tekst główny' },
-  { name: 'Ink 2', token: 'ink-2', hex: '#5F6773', use: 'tekst pomocniczy, obramowanie pól' },
+  { name: 'Primary', token: 'primary', hex: '#17818F', use: 'przyciski, linki, aktywna zakładka, akcent w nagłówku' },
+  { name: 'Primary hover', token: 'primary-hover', hex: '#126975', use: 'stan hover przycisku primary' },
+  { name: 'Primary tint', token: 'primary-tint', hex: '#E3F3F5', use: 'przycisk secondary, tło aktywnego wiersza' },
+  { name: 'Primary tint 2', token: 'primary-tint-2', hex: '#CDE7EB', use: 'hover przycisku secondary' },
+  { name: 'Ink', token: 'ink', hex: '#1E2228', use: 'tekst główny, nagłówki' },
+  { name: 'Ink 2', token: 'ink-2', hex: '#5B6470', use: 'tekst pomocniczy, obramowanie pól' },
   { name: 'Ink 3', token: 'ink-3', hex: '#8B929C', use: 'placeholder, disabled' },
-  { name: 'Page', token: 'page', hex: '#E9ECF0', use: 'tło strony pod kartami' },
+  { name: 'Surface', token: 'surface', hex: '#FFFFFF', use: 'karta w aplikacji, biała sekcja na stronie' },
+  { name: 'Tile', token: 'tile', hex: '#F4F6F9', use: 'szara płytka na białej sekcji (utility tile)' },
+  { name: 'Page', token: 'page', hex: '#E9ECF0', use: 'tło aplikacji pod białymi kartami' },
+  { name: 'Band', token: 'band', hex: '#E8E7F1', use: 'lawendowy pas: najwyżej jedna sekcja na stronie' },
   { name: 'Side', token: 'side', hex: '#3C4249', use: 'ciemny panel boczny' },
   { name: 'Line', token: 'line', hex: '#DFE3E8', use: 'obramowanie pól, podziały w kartach' },
   { name: 'Hero', token: 'hero', hex: '#F5F6F8', use: 'pas nagłówka modułu, hover wiersza' },
@@ -79,10 +83,10 @@ export const DesignSystemShowcase: React.FC = () => {
   return (
     <div className="mx-auto grid max-w-5xl gap-12 pb-12">
       <div className="grid gap-2">
-        <h2 className="text-3xl leading-10 font-semibold">Design system</h2>
+        <h2 className="text-3xl leading-10 font-medium">Design system</h2>
         <p className="max-w-[72ch] text-ink-2">
-          Komponenty interfejsu Matura English. Jeden kolor akcentu, jedna skala szarości, kolory semantyczne tylko dla
-          rzeczywistego wyniku ucznia. Wszystkie elementy pochodzą z <code className="rounded bg-chip px-1 text-sm">src/components/ui</code>.
+          Komponenty interfejsu Matura English. Wzorzec: home.pl. Duże, lekkie nagłówki, jeden kolor akcentu, jedna skala
+          szarości, powierzchnie bez obramowań, kolory semantyczne tylko dla rzeczywistego wyniku ucznia. Wszystkie elementy pochodzą z <code className="rounded bg-chip px-1 text-sm">src/components/ui</code>.
         </p>
       </div>
 
@@ -104,20 +108,45 @@ export const DesignSystemShowcase: React.FC = () => {
       </section>
 
       <section className="grid gap-5">
-        <SectionTitle title="Typografia" description="Nunito. Nagłówki 700, tekst 400, bez wagi 900 i bez wersalików z trackingiem." />
+        <SectionTitle title="Typografia" description="Figtree (krewny Azo Sans z home.pl). Tytuł strony 500, tytuł sekcji i karty 600, tekst 400. Nic nie jest grubsze niż 700, bez wersalików z trackingiem." />
         <Card className="grid gap-4">
-          <p className="text-4xl leading-12 font-semibold">Nagłówek strony 36/48</p>
-          <p className="text-2xl leading-8 font-semibold">Nagłówek sekcji 24/32</p>
-          <p className="text-xl leading-7 font-semibold">Nagłówek karty 20/28</p>
+          <p className="text-4xl leading-12 font-medium heading-tight">Nagłówek strony 36/48, waga 500</p>
+          <p className="text-2xl leading-8 font-semibold">Nagłówek sekcji 24/32, waga 600</p>
+          <p className="text-xl leading-7 font-semibold">Nagłówek karty 20/28, waga 600</p>
           <p className="text-base leading-6">Tekst podstawowy 16/24. He moved to Madrid three years ago and still lives there.</p>
           <p className="text-sm leading-5 text-ink-2">Tekst pomocniczy 14/20 w kolorze ink-2: podpisy, metadane, podpowiedzi pod polem.</p>
           <p className="text-xs leading-4 text-ink-2">Najmniejszy rozmiar 12/16, tylko w małych etykietach.</p>
         </Card>
+        <Spec label="Nagłówek dwukolorowy: pierwsza linia w akcencie, reszta w ink. Tylko na stronie publicznej, raz na ekran.">
+          <Card className="grid gap-2">
+            <p className="text-4xl leading-12 font-medium heading-tight">
+              <span className="block text-primary">14 tematów z Informatora CKE</span>
+              <span className="block">ćwiczysz tak, jak sprawdza je egzamin</span>
+            </p>
+          </Card>
+        </Spec>
+      </section>
+
+      {/* 1b. Surfaces */}
+      <section className="grid gap-5">
+        <SectionTitle title="Powierzchnie" description="Dwa rodzaje paneli, oba z promieniem 16 px i bez obramowania. Karta: biała z miękkim cieniem na szarej stronie aplikacji. Płytka: jasnoszara bez cienia na białej sekcji strony." />
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card className="grid gap-1">
+            <p className="font-semibold">Karta (card)</p>
+            <p className="text-sm text-ink-2">Utility <code className="rounded bg-chip px-1 text-xs">card</code>: bg-surface, shadow-card. W aplikacji każdy panel treści.</p>
+          </Card>
+          <div className="rounded-2xl bg-surface p-4">
+            <Card tone="tile" className="grid gap-1">
+              <p className="font-semibold">Płytka (tile)</p>
+              <p className="text-sm text-ink-2">Utility <code className="rounded bg-chip px-1 text-xs">tile</code>: bg-tile, bez cienia. Na stronie publicznej: kroki, cechy, cennik.</p>
+            </Card>
+          </div>
+        </div>
       </section>
 
       {/* 2. Buttons */}
       <section className="grid gap-5">
-        <SectionTitle title="Przyciski" description="Trzy warianty jednego koloru. Na ekranie jeden przycisk primary. Ikony tylko obok tekstu, nigdy zamiast niego." />
+        <SectionTitle title="Przyciski" description="Trzy warianty jednego koloru. Primary pełny, secondary to podkładka w odcieniu akcentu bez obramowania (jak „Zamów teraz” na home.pl), ghost bez tła. Na ekranie jeden przycisk primary. Ikony tylko obok tekstu, nigdy zamiast niego." />
         <Card className="grid gap-6">
           <Spec label="Warianty">
             <div className="flex flex-wrap items-center gap-3">
@@ -337,9 +366,10 @@ export const DesignSystemShowcase: React.FC = () => {
           <ul className="grid list-disc gap-2 pl-5">
             <li>Jeden przycisk primary na ekran. Reszta to secondary lub ghost.</li>
             <li>Kolor semantyczny tylko dla wyniku ucznia: poprawnie, błędnie, opanowane. Nigdy jako dekoracja.</li>
-            <li>Karty: klasa card, promień 20 px, miękki cień, bez obramowania, na szarym tle strony. Przyciski i pola: promień 10 px i 4 px. Etykiety: pigułki.</li>
+            <li>Powierzchnie: card (biała, cień) w aplikacji, tile (szara, bez cienia) na stronie. Promień 16 px, bez obramowania. Przyciski i pola: promień 8 px i 4 px. Etykiety: pigułki.</li>
+            <li>Nagłówki duże i lekkie: tytuł strony 500, sekcja 600, tracking -0.01em. Akcent kolorem tylko w pierwszej linii nagłówka na stronie publicznej.</li>
             <li>Ikony lucide 16–20 px w kolorze tekstu, zawsze obok etykiety tekstowej.</li>
-            <li>Bez wersalików z trackingiem, bez wagi 900, bez animate-pulse. Gradient tylko w okrągłej plakietce ikony (IconBadge) na kartach podsumowania.</li>
+            <li>Bez wersalików z trackingiem, bez wagi 800–900, bez animate-pulse. Gradient tylko w okrągłej plakietce ikony (IconBadge) na kartach podsumowania.</li>
             <li>Minimalny rozmiar tekstu 12 px, tekst pomocniczy 14 px w kolorze ink-2.</li>
           </ul>
         </Card>

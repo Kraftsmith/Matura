@@ -274,7 +274,7 @@ export const ProfilePage: React.FC = () => {
 
   return (
     <div className="mx-auto grid w-full max-w-2xl gap-5">
-      <h1 className="text-3xl leading-10 font-semibold">{t('profile.title')}</h1>
+      <h1 className="text-3xl leading-10 font-medium">{t('profile.title')}</h1>
       <DataBlocks />
       {user.role === 'teacher' && <StudentsBlock />}
       <AccountBlock />

@@ -71,7 +71,7 @@ export const ModuleHeader: React.FC<ModuleHeaderProps> = ({ module, activeSectio
           </span>
         </nav>
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <h1 className="text-3xl leading-10 font-semibold sm:text-4xl sm:leading-12">
+          <h1 className="text-3xl leading-10 font-medium sm:text-4xl sm:leading-12">
             {module.titlePl} <span className="font-normal text-ink-2">({module.titleEn})</span>
           </h1>
           <CopyLinkButton rest={shareRest} variant="secondary" />

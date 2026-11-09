@@ -64,7 +64,7 @@ const features = [
     <div class="wrap grid items-center gap-10 py-16 lg:grid-cols-[1.1fr_1fr] lg:py-24">
       <div>
         <Countdown />
-        <h1 class="display mt-5">Przygotuj się do matury z angielskiego tak, jak sprawdza ją CKE</h1>
+        <h1 class="display mt-5"><span class="text-primary">Przygotuj się do matury z angielskiego</span> tak, jak sprawdza ją CKE</h1>
         <p class="lead mt-5">{allModules.length} tematów, ćwiczenia jak w arkuszu, opis ilustracji w 6 krokach i fiszki, które pamiętają, czego nie umiesz.</p>
         <div class="mt-8 flex flex-wrap items-center gap-4">
           <a href={appLink('register?src=landing-hero')} class="rounded-lg bg-primary px-6 py-3 text-base font-bold text-white hover:bg-primary-hover" data-event="cta_register" data-block="hero">Zacznij za darmo</a>
@@ -105,7 +105,7 @@ const features = [
           ['Ćwicz jak w arkuszu', 'Transformacje, słowotwórstwo, minidialogi, opis ilustracji w 6 krokach. Od razu widzisz, co i dlaczego jest źle.'],
           ['Widzisz postęp', 'Każdy temat ma swój pasek, każde słowo, którego nie znasz, trafia do fiszek.'],
         ].map(([h, t], i) => (
-          <li class="relative rounded-2xl bg-hero p-6">
+          <li class="tile relative p-6">
             <span class="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary text-lg font-bold text-white">{i + 1}</span>
             <h3 class="text-lg font-bold">{h}</h3>
             <p class="mt-1 text-ink-2">{t}</p>

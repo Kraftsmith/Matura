@@ -16,7 +16,7 @@ One Vercel project, root directory `app`, one host:
 - `npm run build` alone builds only the app into `dist/app`.
 - `npm run dev` serves the app at `http://localhost:5173/app/` (the base path applies in development too).
 - The app's `public/` is copied to the root of `dist/` by the site build (`site/scripts/copy-public.mjs`), so absolute paths in the data (`/images/vocab/…`) and the fonts in `public/fonts` work from both places.
-- Fonts: Nunito is served from `/fonts/` (no Google Fonts). In plain `npm run dev` of the app alone the files are under `/app/fonts/`, so the browser falls back to the system font; the deployed site serves them from the root.
+- Fonts: Figtree is served from `/fonts/` (no Google Fonts). In plain `npm run dev` of the app alone the files are under `/app/fonts/`, so the browser falls back to the system font; the deployed site serves them from the root.
 - `index.html` carries `noindex` and `vercel.json` adds `X-Robots-Tag: noindex` for `/app/`: the public pages are the site's.
 - `APP_URL` is the origin of the deployment (the site's root). Mail links to the app are `${APP_URL}/app/#verify/…`; links to site pages (`/potwierdz?token=…`) are `${APP_URL}` plus the path.
 - The old addresses `#regulamin` and `#prywatnosc` forward to `/regulamin` and `/polityka-prywatnosci` on the site.

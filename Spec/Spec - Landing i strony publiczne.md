@@ -28,7 +28,7 @@
 | Открытый контент | Нет. Решение 7 спеки регистрации: «без сессии виден только экран входа». Открытый вопрос 2 там же: оставить ли часть открытой | [Регистрация пользователя.md §3, §17](Регистрация%20пользователя.md) |
 | Хостинг | Vercel, тариф Hobby, `angelskimatura.vercel.app`. **12 функций из 12** заняты в `app/api`. Домена нет, имени продукта нет | [Регистрация пользователя.md §19](Регистрация%20пользователя.md), [Концепция.md §12](../Social%20Media/Концепция.md) |
 | Контент | 14 тем CKE, 19 текстов с упражнениями, 56 упражнений Środki językowe, правила грамматики с тестами, описания фото по 6 шагам, тренажёр письма, колоды фишек. Всё в TypeScript-данных, адрес у каждого элемента | [modulesData.ts](../app/src/data/modulesData.ts), [vocabularyTexts.ts](../app/src/data/vocabularyTexts.ts), [languageUseExercises.ts](../app/src/data/languageUseExercises.ts) |
-| Дизайн | Nunito с Google Fonts, токены в `index.css`: акцент `#17818F`, серая страница, карточки с тенью, тёмная боковая панель | [index.css](../app/src/index.css), [index.html](../app/index.html) |
+| Дизайн | Figtree с Google Fonts, токены в `index.css`: акцент `#17818F`, серая страница, карточки с тенью, тёмная боковая панель | [index.css](../app/src/index.css), [index.html](../app/index.html) |
 | Иллюстрации | 18 плоских векторных картинок к текстам, один стиль | [Illustrations for Antigravity.md](Illustrations%20for%20Antigravity.md), `app/public/images/vocab/` |
 | Языки | Интерфейс `pl`/`en`, переводы слов `pl`/`ru` | [i18n.ts](../app/src/i18n.ts) |
 | Воронка из соцсетей | Описана: видео → ссылка на бесплатное упражнение → бесплатный слой (1–2 модуля) → платный слой; до запуска оплаты вместо продукта лист ожидания | [Концепция.md §9](../Social%20Media/Концепция.md) |
@@ -61,8 +61,8 @@
 | 11 | Факты об экзамене | Только из официальных материалов CKE (Informator, arkusze, sprawozdania) со ссылкой и датой «stan na». Никаких «100% zdawalności» | Тон концепции: спокойная уверенность, не обещаем результат. Ошибка в баллах роняет доверие родителя |
 | 12 | Имя и домен | В спеке заглушки `{Nazwa}` и `maturaenglish.pl`. Без них этап 0 не закрывается | Решение владельца, критерии в [Концепция.md §4](../Social%20Media/Концепция.md) |
 | 13 | Языки сайта | На запуске только польский. Адреса сразу без префикса для `pl`, с резервом `/ru/…` и `/en/…` на вторую очередь; `hreflang` появится вместе с ними | Основной рынок польский. Русская версия для семей мигрантов — отдельная очередь, но структура адресов не должна меняться |
-| 14 | Дизайн | Та же система, что в приложении: Nunito, токены, карточки. Для сайта: крупнее типографика, иллюстрации из набора Antigravity, скриншоты приложения | Блог, сайт и продукт должны выглядеть одним целым ([Концепция.md §7](../Social%20Media/Концепция.md)) |
-| 15 | Шрифт | Nunito **самостоятельно хостится** на сайте и в приложении, не с Google Fonts | Скорость (нет третьего домена в критическом пути) и RODO: загрузка с серверов Google передаёт им IP посетителя |
+| 14 | Дизайн | Та же система, что в приложении: Figtree, токены, карточки. Для сайта: крупнее типографика, иллюстрации из набора Antigravity, скриншоты приложения | Блог, сайт и продукт должны выглядеть одним целым ([Концепция.md §7](../Social%20Media/Концепция.md)) |
+| 15 | Шрифт | Figtree **самостоятельно хостится** на сайте и в приложении, не с Google Fonts | Скорость (нет третьего домена в критическом пути) и RODO: загрузка с серверов Google передаёт им IP посетителя |
 | 16 | Обратный отсчёт | На лендинге «Do matury {rok}: {n} dni», дата из конфига сайта | Создаёт срочность без паники; дата меняется раз в год |
 | 17 | Приложение для поисковика | `maturaenglish.pl/app/` закрыт: `<meta name="robots" content="noindex">` в его `index.html`, `Disallow: /app/` в `robots.txt` сайта | Внутри нет ничего индексируемого сверх того, что уже есть на сайте, а экран входа в выдаче вредит |
 
@@ -437,7 +437,7 @@ Frontmatter: `title`, `description`, `date`, `updated`, `author`, `tags` (час
 - `/app/`: `noindex` в `index.html` приложения, `Disallow: /app/` и `Disallow: /api/` в `robots.txt` сайта (решение 17).
 - Переадресации `301`: `angelskimatura.vercel.app/*` → `maturaenglish.pl/app/*` (с сохранением `#`: он не доходит до сервера, браузер переносит сам); `www.maturaenglish.pl` → `maturaenglish.pl`; старые адреса при смене структуры — в таблице `site/redirects.json`, из неё собирается `vercel.json`.
 - Скорость: Lighthouse на телефоне ≥ 95 по Performance, SEO, Accessibility, Best Practices для `/`, страницы темы и статьи; LCP ≤ 2,5 с, CLS ≤ 0,1, INP ≤ 200 мс в Vercel Speed Insights через месяц после запуска.
-- Шрифт Nunito в `woff2`, `font-display: swap`, два начертания (400, 700) плюс курсив 400 только там, где он нужен; `<link rel="preload">` для основного.
+- Шрифт Figtree в `woff2`, `font-display: swap`, два начертания (400, 700) плюс курсив 400 только там, где он нужен; `<link rel="preload">` для основного.
 - Google Search Console и Bing Webmaster: домен подтверждён, карта сайта отправлена, в первую неделю проверены ошибки индексации.
 - Один аналитический скрипт, без менеджеров тегов.
 
@@ -528,7 +528,7 @@ create unique index leads_email_subscribe on leads (lower(email)) where kind = '
 ## 12. Что меняется в приложении
 
 1. **Путь `/app/`.** `base: '/app/'` в `vite.config.ts`, сборка в `dist/app`. Адреса после `#` не меняются; `shareLink` уже строит ссылку от `origin + pathname`, поэтому «Kopiuj link» даст `maturaenglish.pl/app/#…` без правок. `APP_URL` → `https://maturaenglish.pl`, ссылки в письмах → `{APP_URL}/app/#verify/…`.
-2. **Для поисковика:** `<meta name="robots" content="noindex">`, `<title>` → «{Nazwa}: aplikacja»; Nunito локально (решение 15).
+2. **Для поисковика:** `<meta name="robots" content="noindex">`, `<title>` → «{Nazwa}: aplikacja»; Figtree локально (решение 15).
 3. `#regulamin` и `#prywatnosc`: вместо заглушек переадресация на `/regulamin` и `/polityka-prywatnosci` сайта; ссылки на форме регистрации и в профиле ведут туда напрямую, в новой вкладке.
 4. Экран входа и регистрации: ссылка «← Strona główna» → `/`.
 5. Регистрация принимает `?src=`, `?next=` и `?role=` (вопросы 6 и 7 в §18); `src` сохраняется в `users.signup_source`.
@@ -624,7 +624,7 @@ site/                     — Astro, собирается в ../app/dist
 ## 15. Дизайн
 
 - Токены из `index.css` без изменений: `primary #17818F`, `ink`, `page`, `surface`, `radius-2xl` для карточек, `shadow-card`. Фон сайта `hero` (`#F5F6F8`) и белые секции попеременно; тёмный подвал цветом `side`.
-- Типографика крупнее приложения: H1 44/52 px на десктопе и 32/38 на телефоне, 700; H2 32 px; текст 18 px. Nunito.
+- Типографика крупнее приложения: H1 44/52 px на десктопе и 32/38 на телефоне, 700; H2 32 px; текст 18 px. Figtree.
 - Кнопки, чипы, поля, аккордеон — те же компоненты `ui`, что в приложении (импорт из `app/src/components/ui`), чтобы переход с сайта в открытую тему не ощущался сменой продукта.
 - Иллюстрации: набор Antigravity, тот же стиль. Для §6.4 и §6.8 нужны 4 новые (бриф по образцу [Illustrations for Antigravity.md](Illustrations%20for%20Antigravity.md), задача 2.4).
 - Скриншоты приложения: тестовый аккаунт с заполненным прогрессом, ширина 1440, без личных данных; обновляются при каждом заметном изменении интерфейса (список в `site/public/screens/README.md`).
@@ -708,7 +708,7 @@ site/                     — Astro, собирается в ../app/dist
 
 ### Этап 1. Каркас сайта
 
-- [x] 1.1. `site/` на Astro: статический вывод, React, Tailwind, sitemap; импорт токенов из `app/src/index.css`; Nunito локально.
+- [x] 1.1. `site/` на Astro: статический вывод, React, Tailwind, sitemap; импорт токенов из `app/src/index.css`; Figtree локально.
 - [x] 1.2. `Base.astro`: шапка, подвал, мета-теги, JSON-LD `Organization`/`WebSite`, генерация `og:image`.
 - [x] 1.3. `site.config.ts` с фактами об экзамене и источниками (вопрос 12); компонент `<Fact>`.
 - [x] 1.4. Компоненты: `Countdown`, `TopicGrid`, `Faq`, `Pricing`, `Breadcrumbs`, карточки.
@@ -751,7 +751,7 @@ site/                     — Astro, собирается в ../app/dist
 
 ### Этап 7. Приложение и домен
 
-- [x] 7.1. `base: '/app/'`, сборка в `dist/app`, общая команда сборки с сайтом; `noindex`, новый `<title>`, Nunito локально.
+- [x] 7.1. `base: '/app/'`, сборка в `dist/app`, общая команда сборки с сайтом; `noindex`, новый `<title>`, Figtree локально.
 - [x] 7.2. `#regulamin`/`#prywatnosc` → переадресация на сайт; ссылка «Strona główna» на экранах входа.
 - [ ] 7.3. `APP_URL = https://maturaenglish.pl`, домен на проект, письма с домена и ссылки с `/app/#`; `user:create` для учителя, Maria и Evgeny (шаг 4.6 спеки регистрации).
 - [x] 7.4. `users.signup_source` и `?role=` на регистрации (вопросы 6, 7).
@@ -773,7 +773,7 @@ site/                     — Astro, собирается в ../app/dist
 - **Сайт:** `site/` на Astro 7, 228 статических страниц: лендинг, `/tematy` и все 14 тем с деревом разделов и элементов (обзор, 6 разделов, каждый текст, упражнение, правило, тест), хаб `/matura-z-angielskiego` с пятью подстраницами (в том числе `wypowiedz-pisemna` из очереди 2), `/dla-rodzicow`, `/dla-nauczycieli` (очередь 2, сделана сразу, потому что дёшево), `/cennik`, `/o-nas`, `/kontakt`, `/regulamin` и `/polityka-prywatnosci` (черновики с пометкой), блог с пятью статьями, `/potwierdz`, `/wypisz`, `/404`, `sitemap-index.xml`, `robots.txt`.
 - **Открытая тема** работает через островки из компонентов приложения (`site/src/islands/*`), прогресс гостя в `matura.guest.v1` через `GuestProgressProvider` (`app/src/guest/`), общие операции прогресса вынесены в `app/src/progressOps.ts`. Тест `app/src/guest/ssr.test.ts` рендерит каждый раздел темы в Node и проверяет, что объяснений нет в HTML. Перенос в аккаунт добавлен в `progress.tsx` рядом с переносом старого `localStorage`.
 - **Закрытые темы** показывают начало содержимого и `AccessWall` по §8.6; JSON-LD `LearningResource` с `isAccessibleForFree`. Страницы правил грамматики статические (без островка) у всех тем; у открытой темы правило целиком, у закрытой — резюме и один пример. `…/gramatyka/test` каноникализирован на `…/gramatyka`, `…/fiszki` — на `…/slownictwo`.
-- **Приложение** под `/app/` (`base`, `outDir dist/app`), `noindex`, Nunito локально из `app/public/fonts` с `@font-face` в общем `tokens.css`; токены вынесены из `index.css` в `tokens.css`, сайт импортирует тот же файл. `#regulamin`/`#prywatnosc` пересылают на сайт; регистрация и вход принимают `src`, `next`, `role`; `users.signup_source`.
+- **Приложение** под `/app/` (`base`, `outDir dist/app`), `noindex`, Figtree локально из `app/public/fonts` с `@font-face` в общем `tokens.css`; токены вынесены из `index.css` в `tokens.css`, сайт импортирует тот же файл. `#regulamin`/`#prywatnosc` пересылают на сайт; регистрация и вход принимают `src`, `next`, `role`; `users.signup_source`.
 - **Форма** живёт в `app/api/account.ts` (`lead-subscribe`, `lead-confirm`, `lead-unsubscribe`, `contact`), таблица `leads` с отдельным токеном отписки; письма `leadConfirm` и `contactCopy`. `APP_URL` теперь origin сайта, ссылки приложения в письмах — `/app/#…`.
 - **Картинки:** 18 иллюстраций по 1,2–2,8 МБ PNG сжаты в WebP по 50–240 КБ, фото описания тоже; данные указывают на `.webp`, PNG остаются исходниками для брифа Antigravity, `check-vocab-images.mjs` это учитывает. Скриншоты для лендинга сняты с открытой темы на самом сайте (`site/src/assets/screens`) и оптимизируются Astro при сборке.
 - **Сборка:** один проект Vercel с корнем `app`; `npm run build:all` = сайт в `dist/` + приложение в `dist/app/`; `vercel.json` с `cleanUrls`, `X-Robots-Tag: noindex` для `/app/`, кэшем шрифтов.

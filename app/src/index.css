@@ -9,7 +9,11 @@
     font-size: 16px;
     line-height: 24px;
   }
-  h1, h2, h3, h4 {
+  h1, h2 {
+    @apply font-medium text-ink heading-tight;
+    text-wrap: balance;
+  }
+  h3, h4 {
     @apply font-semibold text-ink;
     text-wrap: balance;
   }

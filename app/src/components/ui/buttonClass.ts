@@ -9,7 +9,8 @@ const base =
 
 const variants: Record<ButtonVariant, string> = {
   primary: 'border-primary bg-primary text-white hover:border-primary-hover hover:bg-primary-hover',
-  secondary: 'border-primary bg-surface text-primary hover:bg-primary-tint',
+  /* Tinted, no outline: the "Zamów teraz" button of home.pl in our accent. */
+  secondary: 'border-transparent bg-primary-tint text-primary hover:bg-primary-tint-2',
   ghost: 'border-transparent bg-transparent text-primary hover:bg-primary-tint disabled:bg-transparent disabled:border-transparent',
 };
 

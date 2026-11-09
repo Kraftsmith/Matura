@@ -18,7 +18,11 @@
     font-size: 17px;
     line-height: 1.6;
   }
-  h1, h2, h3, h4 {
+  h1, h2 {
+    @apply font-medium text-ink heading-tight;
+    text-wrap: balance;
+  }
+  h3, h4 {
     @apply font-semibold text-ink;
     text-wrap: balance;
   }
@@ -28,7 +32,7 @@
   }
 }
 
-/* Nunito @font-face rules live in app/src/tokens.css (shared); the files are in app/public/fonts. */
+/* Figtree @font-face rules live in app/src/tokens.css (shared); the files are in app/public/fonts. */
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; }
@@ -38,13 +42,14 @@
 .rotate-y-180 { transform: rotateY(180deg); }
 
 /* Marketing type scale: larger than the app's. Utilities, so pages and other rules can @apply them. */
-@utility display { @apply text-4xl leading-tight font-bold sm:text-5xl sm:leading-[1.1]; }
+/* Large and light, as on home.pl: weight 500, not 700. */
+@utility display { @apply text-4xl leading-tight font-medium heading-tight sm:text-5xl sm:leading-[1.1]; }
 @utility lead { @apply text-lg text-ink-2 sm:text-xl; }
-@utility section-title { @apply text-2xl font-bold sm:text-3xl; }
+@utility section-title { @apply text-2xl font-medium heading-tight sm:text-[2rem] sm:leading-10; }
 @utility wrap { @apply mx-auto w-full max-w-[1120px] px-4 sm:px-6; }
 
-.prose-site :is(h2) { @apply mt-10 mb-3 text-2xl font-bold sm:text-3xl; }
-.prose-site :is(h3) { @apply mt-8 mb-2 text-xl font-bold; }
+.prose-site :is(h2) { @apply mt-10 mb-3 text-2xl font-medium heading-tight sm:text-3xl; }
+.prose-site :is(h3) { @apply mt-8 mb-2 text-xl font-semibold; }
 .prose-site :is(p, li) { @apply text-ink-2; }
 .prose-site :is(p) { @apply my-3; }
 .prose-site :is(ul, ol) { @apply my-3 ml-5 list-disc; }

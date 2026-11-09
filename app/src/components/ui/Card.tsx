@@ -3,14 +3,16 @@ import React from 'react';
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   as?: 'div' | 'section' | 'article';
   padding?: 'none' | 'md' | 'lg';
+  /** `card`: white with a shadow, on the grey page. `tile`: pale grey, no shadow, on a white section. */
+  tone?: 'card' | 'tile';
 }
 
 const pads = { none: '', md: 'p-5', lg: 'p-6 sm:p-8' };
 
-export const Card: React.FC<CardProps> = ({ as = 'div', padding = 'md', className = '', children, ...rest }) => {
+export const Card: React.FC<CardProps> = ({ as = 'div', padding = 'md', tone = 'card', className = '', children, ...rest }) => {
   const Tag = as;
   return (
-    <Tag className={`card ${pads[padding]} ${className}`} {...rest}>
+    <Tag className={`${tone} ${pads[padding]} ${className}`} {...rest}>
       {children}
     </Tag>
   );

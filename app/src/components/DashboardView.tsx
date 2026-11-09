@@ -101,7 +101,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         )}
         <div className="flex items-center gap-3">
           <Avatar initials={user.initials} size="lg" />
-          <h1 className="text-3xl leading-10 font-semibold sm:text-4xl sm:leading-12">
+          <h1 className="text-3xl leading-10 font-medium sm:text-4xl sm:leading-12">
             {teacherView ? `${t('dash.titleFor')}: ${user.name}` : `${t('dash.title')}, ${user.name}`}
           </h1>
         </div>

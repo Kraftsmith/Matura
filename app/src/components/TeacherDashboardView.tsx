@@ -108,7 +108,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({ modu
         <p className="text-sm text-ink-2">{t('dash.subtitle')}</p>
         <div className="flex items-center gap-3">
           <Users className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl leading-10 font-semibold sm:text-4xl sm:leading-12">{t('teacher.title')}</h1>
+          <h1 className="text-3xl leading-10 font-medium sm:text-4xl sm:leading-12">{t('teacher.title')}</h1>
         </div>
         <p className="mt-2 max-w-[72ch] text-base leading-6 text-ink-2">{t('teacher.intro', { n: students.length, p: GRAMMAR_PASS_SCORE })}</p>
         {headerAction && <div className="mt-4 flex flex-wrap items-center gap-3">{headerAction}</div>}

@@ -40,7 +40,7 @@ const StudentLessonsPage: React.FC = () => {
       <div className="-mx-4 -mt-4 bg-hero px-4 pt-6 pb-6 sm:-mx-6 sm:-mt-6 sm:px-6 lg:-mx-8 lg:-mt-8 lg:px-8">
         <div className="flex items-center gap-3">
           <CalendarDays className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl leading-10 font-semibold sm:text-4xl sm:leading-12">{t('zaj.title')}</h1>
+          <h1 className="text-3xl leading-10 font-medium sm:text-4xl sm:leading-12">{t('zaj.title')}</h1>
         </div>
         {upcoming[0] && <p className="mt-2 text-base leading-6 text-ink-2">{t('zaj.next', { when: formatMoment(upcoming[0].startsAt, locale) })}</p>}
       </div>
