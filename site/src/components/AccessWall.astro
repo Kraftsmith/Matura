@@ -1,0 +1,45 @@
+---
+/**
+ * Below the visible part of a closed topic's page (Spec - Landing §8.6). Static; no overlay.
+ */
+import { openModules } from '../../site.config';
+import { accessOf, allModules, loginLink, moduleById, registerLink } from '../lib/content';
+
+interface Props {
+  moduleId: string;
+  /** App route to return to after signing in, e.g. "praca/srodki/praca-sj-1". */
+  next: string;
+}
+const { moduleId, next } = Astro.props;
+const access = accessOf(moduleId);
+const open = moduleById(openModules[0]!);
+---
+
+{access !== 'open' && (
+  <aside class="card mt-8 border border-primary/30 p-6" aria-labelledby="dostep">
+    {access === 'free-account' ? (
+      <>
+        <h2 id="dostep" class="text-xl font-bold">Ten temat otwiera darmowe konto</h2>
+        <p class="mt-2 text-ink-2">Załóż darmowe konto, a zobaczysz ten temat w całości: teksty z lukami, ćwiczenia środków językowych, test, opis ilustracji i fiszki. Postęp zapisze się na koncie.</p>
+        <div class="mt-4 flex flex-wrap gap-3">
+          <a href={registerLink('wall', next)} class="rounded-lg bg-primary px-5 py-2.5 font-bold text-white hover:bg-primary-hover" data-event="cta_register" data-block="wall">Załóż darmowe konto</a>
+          <a href={loginLink(next)} class="rounded-lg border border-line px-5 py-2.5 font-bold text-ink hover:bg-hero">Mam konto: zaloguj się</a>
+        </div>
+      </>
+    ) : (
+      <>
+        <h2 id="dostep" class="text-xl font-bold">Ten temat jest w pełnym dostępie</h2>
+        <p class="mt-2 text-ink-2">Kup dostęp, a otworzysz wszystkie {allModules.length} tematów: teksty z lukami, ćwiczenia środków językowych, testy, opis ilustracji i fiszki. Postęp zapisze się na koncie.</p>
+        <div class="mt-4 flex flex-wrap gap-3">
+          <a href="/cennik" class="rounded-lg bg-primary px-5 py-2.5 font-bold text-white hover:bg-primary-hover" data-event="pricing_view" data-block="wall">Zobacz cennik</a>
+          <a href={loginLink(next)} class="rounded-lg border border-line px-5 py-2.5 font-bold text-ink hover:bg-hero">Mam konto: zaloguj się</a>
+        </div>
+      </>
+    )}
+    {open && (
+      <p class="mt-4 text-sm text-ink-2">
+        Temat „{open.titlePl}” możesz przejść w całości bez logowania: <a href={`/tematy/${open.id}`} class="font-semibold text-primary hover:underline">otwórz „{open.titlePl}”</a>.
+      </p>
+    )}
+  </aside>
+)}

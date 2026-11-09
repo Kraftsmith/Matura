@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SettingsContext } from './settings-context';
 import type { TranslationLang } from './types';
 import { dictionaries, format, type I18nKey, type UiLang } from './i18n';
@@ -24,11 +24,24 @@ const readStoredUiLang = (): UiLang => {
   }
 };
 
+/**
+ * Both languages start as Polish and the stored choice arrives in an effect: the same component is rendered
+ * to HTML for the public site, where there is no browser, and that HTML must match the first client render.
+ */
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [translationLang, setLang] = useState<TranslationLang>(readStored);
-  const [uiLang, setUiLangState] = useState<UiLang>(readStoredUiLang);
+  const [translationLang, setLang] = useState<TranslationLang>('pl');
+  const [uiLang, setUiLangState] = useState<UiLang>('pl');
+  const loaded = useRef(false);
 
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect
+    setLang(readStored());
+    setUiLangState(readStoredUiLang());
+    loaded.current = true;
+  }, []);
+
+  useEffect(() => {
+    if (!loaded.current) return;
     try {
       window.localStorage.setItem(STORAGE_KEY, translationLang);
     } catch {
@@ -37,6 +50,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [translationLang]);
 
   useEffect(() => {
+    if (!loaded.current) return;
     try {
       window.localStorage.setItem(UI_LANG_KEY, uiLang);
     } catch {

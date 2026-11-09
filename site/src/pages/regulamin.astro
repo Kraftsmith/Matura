@@ -1,0 +1,24 @@
+---
+import Page from '../layouts/Page.astro';
+import { SITE_NAME } from '../../site.config';
+
+const crumbs = [{ name: 'Regulamin', href: '/regulamin' }];
+---
+
+<Page title="Regulamin" description={`Regulamin serwisu ${SITE_NAME}: zasady korzystania z konta, materiałów i pełnego dostępu.`} crumbs={crumbs} isArticle={false} updated="2026-11-09">
+  <p class="rounded-2xl bg-warning-tint p-4 text-warning"><strong>Wersja robocza.</strong> Ostateczny tekst regulaminu przygotowuje właściciel serwisu z prawnikiem (Spec - Landing, zadanie 0.5). Poniższy zarys pokazuje strukturę i nie jest jeszcze dokumentem wiążącym.</p>
+  <h2>1. Postanowienia ogólne</h2>
+  <p>Serwis {SITE_NAME} udostępnia materiały do przygotowania do egzaminu maturalnego z języka angielskiego. Właścicielem i administratorem serwisu jest [dane podmiotu].</p>
+  <h2>2. Konto</h2>
+  <p>Konto może założyć osoba, która ukończyła 16 lat. Rejestracja wymaga podania imienia, adresu e-mail i hasła oraz potwierdzenia adresu. Użytkownik może w każdej chwili usunąć konto w profilu; dane są wtedy usuwane.</p>
+  <h2>3. Zakres bezpłatny i pełny dostęp</h2>
+  <p>Część materiałów jest dostępna bez konta lub z bezpłatnym kontem, zgodnie z informacją w cenniku. Pełny dostęp jest usługą płatną; warunki płatności, okres dostępu i zasady rezygnacji zostaną opisane w tym punkcie przed uruchomieniem sprzedaży.</p>
+  <h2>4. Nauczyciel i klasa</h2>
+  <p>Użytkownik z kontem nauczyciela widzi imię, e-mail, postępy i odpowiedzi tylko tych uczniów, którzy sami dołączyli do jego klasy. Uczeń może opuścić klasę w każdej chwili.</p>
+  <h2>5. Własność intelektualna</h2>
+  <p>Teksty, ćwiczenia i grafiki w serwisie są chronione prawem autorskim. Dozwolone jest korzystanie na własny użytek edukacyjny.</p>
+  <h2>6. Reklamacje</h2>
+  <p>Reklamacje można składać przez formularz kontaktowy. Odpowiadamy w ciągu 14 dni.</p>
+  <h2>7. Zmiany regulaminu</h2>
+  <p>O zmianach informujemy e-mailem i w serwisie z wyprzedzeniem.</p>
+</Page>

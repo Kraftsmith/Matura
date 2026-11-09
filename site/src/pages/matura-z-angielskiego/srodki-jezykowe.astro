@@ -1,0 +1,52 @@
+---
+import Page from '../../layouts/Page.astro';
+import Fact from '../../components/Fact.astro';
+import Sources from '../../components/Sources.astro';
+import { openModules } from '../../../site.config';
+import { EXERCISE_TYPE_LABEL, exercisesOf, moduleById, topicPath, totals } from '../../lib/content';
+
+const open = moduleById(openModules[0]!)!;
+const sample = exercisesOf(open.id);
+const crumbs = [
+  { name: 'Matura z angielskiego', href: '/matura-z-angielskiego' },
+  { name: 'Środki językowe', href: '/matura-z-angielskiego/srodki-jezykowe' },
+];
+---
+
+<Page title="Środki językowe na maturze z angielskiego: typy zadań i jak je ćwiczyć" heading="Znajomość środków językowych: co to za część i jak ją ćwiczyć" description="Zadania zamknięte i otwarte: transformacje, słowotwórstwo, tłumaczenie fragmentów, minidialogi, dopasowanie. Co każde z nich sprawdza i skąd biorą się błędy." crumbs={crumbs} updated="2026-11-09" lead="To część arkusza, której uczniowie boją się najbardziej, i jednocześnie ta, w której najłatwiej zyskać punkty: każde zadanie sprawdza konkretny, wyuczalny węzeł języka.">
+  <h2>Ile to punktów</h2>
+  <p>Na poziomie podstawowym <Fact id="ppLanguage" /> z <Fact id="ppPoints" />. Na poziomie rozszerzonym tyle samo punktów, ale zadania są otwarte i trudniejsze. W obu wypadkach błąd ortograficzny w zadaniu otwartym oznacza utratę punktu.</p>
+
+  <h2>Typy zadań</h2>
+  <table>
+    <thead><tr><th>Zadanie</th><th>Co sprawdza</th><th>Typowa pułapka</th></tr></thead>
+    <tbody>
+      <tr><td>Wybór wielokrotny w tekście</td><td>Kolokacje, przyimki, formy czasownika w kontekście</td><td>Czytanie tylko zdania z luką, bez zdania przed i po</td></tr>
+      <tr><td>Minidialogi</td><td>Funkcje językowe: reakcja w sytuacji</td><td>Wybór odpowiedzi poprawnej gramatycznie, ale niepasującej do sytuacji</td></tr>
+      <tr><td>Dopasowanie</td><td>Reakcje na wypowiedzi, zwroty grzecznościowe</td><td>Zostawienie trudnej pary na koniec bez eliminacji</td></tr>
+      <tr><td>Bank słów (uzupełnianie luk)</td><td>Słownictwo i formy wyrazów</td><td>Słowo dodatkowe, które pasuje znaczeniowo, ale nie gramatycznie</td></tr>
+      <tr><td>Słowotwórstwo</td><td>Przedrostki, przyrostki, zmiana części mowy</td><td>Pominięcie przeczenia (<em>un-, dis-, im-</em>), gdy zdanie go wymaga</td></tr>
+      <tr><td>Transformacje ze słowem kluczem</td><td>Parafraza: strona bierna, mowa zależna, tryby warunkowe, inwersja</td><td>Zmiana znaczenia zdania albo przekroczenie limitu słów</td></tr>
+      <tr><td>Tłumaczenie fragmentów</td><td>Struktury, których nie ma w polskim: czasy, przedimki, konstrukcje</td><td>Tłumaczenie słowo po słowie zamiast strukturą</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Jedna zasada na całą część</h2>
+  <p>Zadanie środków językowych prawie nigdy nie sprawdza „czy znasz słowo”. Sprawdza, czy rozpoznajesz <strong>węzeł</strong>: że po <em>suggest</em> idzie <em>-ing</em>, że <em>since</em> ciągnie za sobą Present Perfect, że <em>hardly</em> na początku zdania wymusza inwersję. Takich węzłów jest kilkanaście; nauka ich schematów daje więcej niż tysiąc słówek z listy.</p>
+
+  <h2>Jak ćwiczyć</h2>
+  <ol>
+    <li>Rozwiązuj zadania tego samego typu seriami: po dziesięciu transformacjach widać, które struktury się powtarzają.</li>
+    <li>Po każdym błędzie czytaj wyjaśnienie i zapisz węzeł, nie odpowiedź.</li>
+    <li>Wracaj do tych samych zadań po tygodniu: jeśli wynik rośnie, węzeł jest opanowany.</li>
+  </ol>
+
+  <h2>Przykład: temat „{open.titlePl}”</h2>
+  <p>Ćwiczenia środków językowych w tym temacie, otwarte bez logowania:</p>
+  <ul>
+    {sample.map((e, i) => <li><a href={topicPath(open.id, 'srodki', e.id)}>Ćwiczenie {i + 1}: {EXERCISE_TYPE_LABEL[e.type]}</a>, {e.functionLabel}</li>)}
+  </ul>
+  <p>Łącznie mamy {totals.exercises} takich ćwiczeń w {totals.topics} tematach, każde z wyjaśnieniem po sprawdzeniu.</p>
+
+  <Sources ids={['ppLanguage', 'ppPoints']} />
+</Page>

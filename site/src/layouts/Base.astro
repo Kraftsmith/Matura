@@ -1,0 +1,65 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE_NAME } from '../../site.config';
+import { absolute, clamp, organization, pageTitle, webSite } from '../lib/seo';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Canonical path; defaults to the current page. */
+  path?: string;
+  /** Extra schema.org objects for this page (already without @context). */
+  jsonLd?: Record<string, unknown>[];
+  ogImage?: string;
+  noindex?: boolean;
+  /** Pages of a topic get the dark footer only; the sidebar takes the rest. */
+  bodyClass?: string;
+}
+
+const { title, description, path, jsonLd = [], ogImage, noindex = false, bodyClass = '' } = Astro.props;
+const canonicalPath = path ?? (Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '') || '/');
+const canonical = absolute(canonicalPath);
+const fullTitle = pageTitle(title);
+const desc = clamp(description, 155);
+const image = absolute(ogImage ?? '/og-default.png');
+const graph = { '@context': 'https://schema.org', '@graph': [organization(), webSite(), ...jsonLd] };
+---
+
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={desc} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preload" href="/fonts/nunito-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/nunito-latin-ext.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:locale" content="pl_PL" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={desc} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={image} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={desc} />
+    <meta name="twitter:image" content={image} />
+    <script type="application/ld+json" set:html={JSON.stringify(graph)} />
+    <slot name="head" />
+  </head>
+  <body class={`flex min-h-screen flex-col font-sans ${bodyClass}`}>
+    <a href="#tresc" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-surface focus:px-4 focus:py-2 focus:shadow-card">Przejdź do treści</a>
+    <Header />
+    <main id="tresc" class="flex-1">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

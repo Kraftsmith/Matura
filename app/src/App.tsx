@@ -18,106 +18,24 @@ import { WritingTrainerView } from './components/WritingTrainerView';
 import { GrammarHandbookModal } from './components/GrammarHandbookModal';
 import { DesignSystemShowcase } from './components/DesignSystemShowcase';
 import { ProfilePage } from './components/ProfilePage';
+import { HomeworkBanner } from './components/schedule/HomeworkBanner';
 import { ChevronRight } from 'lucide-react';
 import { useProgress } from './useProgress';
 import { EXERCISE_PASS_SCORE } from './progress-context';
 import { useUser } from './useUser';
 import { useSettings } from './useSettings';
+import { useSchedule } from './useSchedule';
 import { useTeacherCards } from './useTeacherCards';
 import { deckCounts, deckOf } from './decks';
-import { routeOf } from './userRoute';
+import { myHomeworkProgress } from './homework';
+import { useNow } from './useNow';
+import { DEFAULT_MODULE, DEFAULT_SECTION, REVIEW_ITEM, TEACHER_FILTER_ITEM, isStandalone, pageTargets, parseHash, toHash, type Route } from './routing';
 
 // Loaded only for the role the server gave: a learner's browser never receives this code.
 const TeacherStudentPage = lazy(() => import('./components/notes/TeacherStudentPage'));
 const TeacherClassPage = lazy(() => import('./components/notes/TeacherClassPage'));
-
-const moduleSections: SectionType[] = ['opis-foto', 'gramatyka', 'slownictwo', 'srodki', 'pisanie', 'fiszki'];
-/** Section shown when a module is opened without an explicit section (the first tab). */
-const DEFAULT_SECTION: SectionType = moduleSections[0];
-const standaloneSections: SectionType[] = ['dashboard', 'fiszki-hub', 'design-system', 'profile'];
-const validSections: SectionType[] = [...moduleSections, ...standaloneSections];
-const DEFAULT_MODULE = allModules[0].id;
-
-/** Old links: the test used to be its own tab, now it lives at the bottom of the grammar section. */
-const legacySections: Record<string, SectionType> = { test: 'gramatyka' };
-
-/** Second segment of #fiszki: the review across all decks. No module has this id. */
-const REVIEW_ITEM = 'powtorka';
-/** Item of a deck address: the deck opened on the cards from the teacher. */
-const TEACHER_FILTER_ITEM = 'od-nauczyciela';
-
-interface Route {
-  moduleId: string;
-  section: SectionType;
-  /** Dashboard only: a learner's id when the teacher opens that learner's page. */
-  viewUserId?: string;
-  /** One item inside the section: a vocabulary text id, a grammar rule id, "test", an exercise id or a flashcard id. */
-  item?: string;
-  /** The deck was opened inside the Fiszki module, not from its topic. */
-  fromHub?: boolean;
-}
-
-const isStandalone = (s: SectionType) => standaloneSections.includes(s);
-
-/**
- * URL scheme: #<moduleId>/<section>[/<item>], e.g. #praca/opis-foto,
- * #czlowiek/slownictwo/czl-txt-2 (one text), #czlowiek/srodki/czl-sj-2 (one exercise), #czlowiek/gramatyka/test.
- * Also accepted: #<section> (default module), #<moduleId> (first tab), #design-system, #profile,
- * #dashboard/<studentId> (teacher looking at one learner, /fiszki opens their cards),
- * #fiszki (all decks), #fiszki/powtorka (review of all decks), #fiszki/<moduleId>[/<cardId>] (one deck).
- * An empty hash opens the dashboard.
- */
-/** Keeps the item only if it exists in that module's section; unknown items fall back to the whole section. */
-const validItem = (moduleId: string, section: SectionType, item?: string): string | undefined => {
-  if (!item) return undefined;
-  if (section === 'slownictwo') return (vocabularyTextsByModule[moduleId] ?? []).some((t) => t.id === item) ? item : undefined;
-  if (section === 'srodki') return (languageUseExercisesByModule[moduleId] ?? []).some((e) => e.id === item) ? item : undefined;
-  if (section === 'gramatyka') {
-    const module = allModules.find((m) => m.id === moduleId);
-    return item === 'test' || module?.grammarRules.some((r) => r.id === item) ? item : undefined;
-  }
-  if (section === 'fiszki') {
-    // Own and teacher's cards are not known here; FlashcardsView opens on the first card if the id is gone.
-    const module = allModules.find((m) => m.id === moduleId);
-    return item === TEACHER_FILTER_ITEM || /^[ut]-/.test(item) || module?.flashcards.some((c) => c.id === item) ? item : undefined;
-  }
-  return undefined;
-};
-
-const parseHash = (hash: string): Route => {
-  const raw = routeOf(hash);
-  const [a, rawB, c] = raw.split('/');
-  const b = rawB && legacySections[rawB] ? legacySections[rawB] : rawB;
-  const isModule = (id: string) => allModules.some((m) => m.id === id);
-  const isSection = (s: string): s is SectionType => validSections.includes(s as SectionType);
-
-  if (!raw || a === 'dashboard') {
-    // Whether this learner is in the class is known only after the server answers.
-    return { moduleId: DEFAULT_MODULE, section: 'dashboard', viewUserId: b, item: b && c === 'fiszki' ? c : undefined };
-  }
-  if (a === 'fiszki') {
-    if (b === REVIEW_ITEM) return { moduleId: DEFAULT_MODULE, section: 'fiszki-hub', item: REVIEW_ITEM };
-    if (b && isModule(b)) return { moduleId: b, section: 'fiszki', fromHub: true, item: validItem(b, 'fiszki', c) };
-    return { moduleId: DEFAULT_MODULE, section: 'fiszki-hub' };
-  }
-  if (a === 'design-system') return { moduleId: DEFAULT_MODULE, section: 'design-system' };
-  if (a === 'profile') return { moduleId: DEFAULT_MODULE, section: 'profile' };
-  if (isModule(a)) {
-    const section = b && isSection(b) && !isStandalone(b) ? b : DEFAULT_SECTION;
-    return { moduleId: a, section, item: validItem(a, section, c) };
-  }
-  const a2 = legacySections[a] ?? a;
-  if (isSection(a2)) return { moduleId: DEFAULT_MODULE, section: a2 };
-  return { moduleId: DEFAULT_MODULE, section: 'dashboard' };
-};
-
-const toHash = (r: Route): string => {
-  if (r.section === 'dashboard') return r.viewUserId ? `dashboard/${r.viewUserId}${r.item ? `/${r.item}` : ''}` : 'dashboard';
-  if (r.section === 'fiszki-hub') return r.item ? `fiszki/${r.item}` : 'fiszki';
-  if (r.fromHub) return r.item ? `fiszki/${r.moduleId}/${r.item}` : `fiszki/${r.moduleId}`;
-  if (isStandalone(r.section)) return r.section;
-  return r.item ? `${r.moduleId}/${r.section}/${r.item}` : `${r.moduleId}/${r.section}`;
-};
+const CalendarPage = lazy(() => import('./components/schedule/CalendarPage'));
+const StudentLessonsPage = lazy(() => import('./components/schedule/StudentLessonsPage'));
 
 export function App() {
   const [route, setRoute] = useState<Route>(() => parseHash(window.location.hash));
@@ -126,6 +44,8 @@ export function App() {
   const { user, students, classLoaded, markSignedOut } = useUser();
   const { t } = useSettings();
   const { state: progress, setCardStatus, saveTestResult, saveExerciseResult, touchModule } = useProgress();
+  const schedule = useSchedule();
+  const now = useNow();
   const isTeacher = user.role === 'teacher';
 
   const { cardsOf, setLive } = useTeacherCards();
@@ -140,6 +60,11 @@ export function App() {
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
+  const navigate = useCallback((next: Route) => {
+    setRoute(next);
+    window.location.hash = toHash(next);
+  }, []);
+
   // Keep the address bar canonical (e.g. "#test" becomes "#czlowiek/gramatyka"): every page has its own shareable link.
   useEffect(() => {
     // Only the teacher can look at another learner's page; for a student the extra segment is dropped.
@@ -147,6 +72,12 @@ export function App() {
     const canonical = `#${toHash(shown)}`;
     if (window.location.hash !== canonical) window.history.replaceState(null, '', canonical);
   }, [route, isTeacher]);
+
+  // The calendar is the teacher's, the lessons page the learner's: the other role lands on its dashboard.
+  useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect
+    if ((activeSection === 'kalendarz' && !isTeacher) || (activeSection === 'zajecia' && isTeacher)) navigate({ moduleId: DEFAULT_MODULE, section: 'dashboard' });
+  }, [activeSection, isTeacher, navigate]);
 
   // Remember the module the learner worked in last, so the dashboard can offer "Kontynuuj".
   useEffect(() => {
@@ -158,11 +89,6 @@ export function App() {
     setLive(activeSection === 'slownictwo' || activeSection === 'fiszki' || activeSection === 'fiszki-hub');
   }, [activeSection, setLive]);
 
-  const navigate = useCallback((next: Route) => {
-    setRoute(next);
-    window.location.hash = toHash(next);
-  }, []);
-
   const handleSectionChange = (section: SectionType) => navigate({ moduleId: currentModuleId, section });
   const handleModuleChange = (moduleId: string) => navigate({ moduleId, section: DEFAULT_SECTION });
   const handleOpenFromDashboard = (moduleId: string, section: SectionType) => navigate({ moduleId, section });
@@ -171,6 +97,9 @@ export function App() {
   const handleOpenHub = () => navigate({ moduleId: DEFAULT_MODULE, section: 'fiszki-hub' });
   const handleOpenStudent = (userId: string) => navigate({ moduleId: DEFAULT_MODULE, section: 'dashboard', viewUserId: userId });
   const handleBackToClass = () => navigate({ moduleId: DEFAULT_MODULE, section: 'dashboard' });
+  const handleOpenLesson = useCallback((id: string) => navigate({ moduleId: DEFAULT_MODULE, section: 'kalendarz', lessonId: id }), [navigate]);
+  const handleCalendar = useCallback((day: string | undefined, lessonId?: string) => navigate({ moduleId: DEFAULT_MODULE, section: 'kalendarz', item: day, lessonId }), [navigate]);
+  const handleOpenSchedule = () => navigate({ moduleId: DEFAULT_MODULE, section: isTeacher ? 'kalendarz' : 'zajecia' });
 
   const currentModule = allModules.find((m) => m.id === currentModuleId) || allModules[0];
   const currentProgress = progress.modules[currentModule.id];
@@ -204,6 +133,20 @@ export function App() {
     return map;
   }, [progress]);
 
+  // The learner's "Zajęcia" row: open items of homework still in time, and whether anything is overdue.
+  const scheduleRow = useMemo(() => {
+    if (isTeacher) return { label: t('cal.title'), active: activeSection === 'kalendarz' };
+    if (schedule.myLessons.length === 0 && schedule.myHomework.length === 0) return undefined;
+    let open = 0;
+    let overdue = false;
+    for (const h of schedule.myHomework) {
+      const p = myHomeworkProgress(h, progress, now);
+      if (p.overdue) overdue = true;
+      else if (!p.complete) open += p.total - p.done;
+    }
+    return { label: t('zaj.title'), active: activeSection === 'zajecia', hint: open > 0 ? t('hw.sidebarCount', { n: open }) : undefined, alert: overdue };
+  }, [isTeacher, activeSection, schedule.myLessons, schedule.myHomework, progress, now, t]);
+
   const handleScoreSave = (score: number) => saveTestResult(currentModule.id, score);
 
   const currentExercises = languageUseExercisesByModule[currentModule.id] ?? [];
@@ -225,13 +168,14 @@ export function App() {
             initialTab={route.item ? 'cards' : undefined}
             onOpen={handleOpenFromDashboard}
             onOpenDeck={handleOpenDeck}
+            onOpenLesson={handleOpenLesson}
             onBackToClass={handleBackToClass}
             onSignedOut={markSignedOut}
           />
         </Suspense>
       ) : (
         <Suspense fallback={null}>
-          <TeacherClassPage modules={allModules} students={students} onOpenStudent={handleOpenStudent} onSignedOut={markSignedOut} />
+          <TeacherClassPage modules={allModules} students={students} onOpenStudent={handleOpenStudent} onOpenLesson={handleOpenLesson} onSignedOut={markSignedOut} />
         </Suspense>
       )
     ) : (
@@ -253,6 +197,8 @@ export function App() {
     />
   );
 
+  const banner = !isTeacher && (inModulePage || route.fromHub) ? <HomeworkBanner targets={pageTargets(route)} /> : null;
+
   return (
     <FlashcardDialogProvider teacherSignedIn={isTeacher ? true : undefined} signIn={null} onSignedOut={markSignedOut}>
     <div className="flex min-h-screen flex-col bg-page font-sans text-ink antialiased">
@@ -266,7 +212,7 @@ export function App() {
       <div className="flex w-full flex-1">
         <Sidebar
           modules={allModules}
-          currentModuleId={activeSection === 'dashboard' || inFiszkiModule ? null : currentModuleId}
+          currentModuleId={isStandalone(activeSection) || inFiszkiModule ? null : currentModuleId}
           masteredCardsMap={masteredCardsMap}
           deckSizeMap={deckSizeMap}
           reviewCount={reviewCount}
@@ -275,9 +221,12 @@ export function App() {
           showProgress={!isTeacher}
           dashboardLabel={t('side.myProgress')}
           showDashboard={!isTeacher}
+          dashboardActive={activeSection === 'dashboard'}
+          scheduleRow={scheduleRow}
           onSelectModule={handleModuleChange}
           onSelectDashboard={handleBackToClass}
           onSelectFiszki={handleOpenHub}
+          onSelectSchedule={handleOpenSchedule}
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
         />
@@ -309,7 +258,21 @@ export function App() {
             />
           )}
 
+          {banner}
+
           {dashboard}
+
+          {activeSection === 'kalendarz' && isTeacher && (
+            <Suspense fallback={null}>
+              <CalendarPage day={route.item} lessonId={route.lessonId} onNavigate={handleCalendar} onSignedOut={markSignedOut} />
+            </Suspense>
+          )}
+
+          {activeSection === 'zajecia' && !isTeacher && (
+            <Suspense fallback={null}>
+              <StudentLessonsPage />
+            </Suspense>
+          )}
 
           {activeSection === 'fiszki-hub' && (route.item === REVIEW_ITEM ? <ReviewSession modules={allModules} /> : <FlashcardsHubView modules={allModules} />)}
 

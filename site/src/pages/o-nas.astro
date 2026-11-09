@@ -1,0 +1,29 @@
+---
+import Page from '../layouts/Page.astro';
+import { SITE_NAME } from '../../site.config';
+import { allModules, totals } from '../lib/content';
+
+const crumbs = [{ name: 'O nas', href: '/o-nas' }];
+---
+
+<Page title={`O nas: kto robi ${SITE_NAME} i jak uczymy`} heading="Kto to robi i jak uczymy" description="Metodyk, który widzi angielski jako system, i egzamin, który sprawdza konkretne węzły tego systemu. Skąd biorą się nasze materiały i czego nie obiecujemy." crumbs={crumbs} updated="2026-11-09" isArticle={false}>
+  <h2>Pomysł</h2>
+  <p>Matura nie sprawdza dwóch tysięcy słów i pięćdziesięciu reguł. Sprawdza kilkanaście węzłów systemu języka przez znane typy zadań. Jeśli uczeń widzi strukturę, przestaje zakuwać rozproszone reguły i przygotowuje się do tego, co naprawdę jest sprawdzane. {SITE_NAME} pokazuje tę strukturę po kawałku, temat po temacie, zadanie po zadaniu.</p>
+
+  <h2>Kto</h2>
+  <p>Za produktem stoi metodyk języka angielskiego, który zna język jako system i egzamin od środka. Materiały powstają na podstawie Informatora CKE, arkuszy z poprzednich lat i sprawozdań z egzaminu, a potem są sprawdzane w pracy z uczniami.</p>
+
+  <h2>Skąd materiały</h2>
+  <ul>
+    <li>Zakresy tematyczne i typy zadań: Informator o egzaminie maturalnym z języka angielskiego (Formuła 2023), CKE.</li>
+    <li>Słownictwo: {totals.words} słów w {allModules.length} tematach, dobranych według podtematów z Informatora, z przykładami zdań.</li>
+    <li>Teksty z lukami: {totals.texts} własnych tekstów napisanych pod słownictwo każdego podtematu.</li>
+    <li>Ćwiczenia środków językowych: {totals.exercises} zadań w typach z arkusza, z wyjaśnieniami.</li>
+  </ul>
+
+  <h2>Czego nie obiecujemy</h2>
+  <p>Nie obiecujemy wyniku ani „zdasz na pewno”. Obiecujemy, że zrozumiesz, czego od Ciebie chcą, i że będziesz ćwiczyć to, co jest sprawdzane. Nie jesteśmy powiązani z Centralną Komisją Egzaminacyjną.</p>
+
+  <h2>Kontakt</h2>
+  <p>Pytania, błędy w materiałach, propozycje: <a href="/kontakt">napisz do nas</a>.</p>
+</Page>

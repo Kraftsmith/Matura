@@ -7,6 +7,8 @@ export interface TeacherNote {
   text: string;
   tag: NoteTag;
   moduleId?: string;
+  /** The lesson the note is about, when it was written from the calendar. */
+  lessonId?: string;
   pinned: boolean;
   createdAt: string;
   updatedAt: string;
@@ -16,6 +18,7 @@ export interface NoteDraft {
   text: string;
   tag: NoteTag;
   moduleId?: string;
+  lessonId?: string;
 }
 
 export type NotePatch = Partial<Pick<TeacherNote, 'text' | 'tag' | 'pinned'>> & { moduleId?: string | null };

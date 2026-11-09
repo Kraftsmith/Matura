@@ -1,0 +1,32 @@
+---
+import { examFacts, type ExamFactId } from '../../site.config';
+
+interface Props {
+  ids: ExamFactId[];
+}
+const { ids } = Astro.props;
+const facts = [...new Set(ids)].map((id) => examFacts[id]);
+const bySource = new Map<string, { url: string; checkedOn: string; labels: string[] }>();
+for (const f of facts) {
+  const entry = bySource.get(f.source) ?? { url: f.sourceUrl, checkedOn: f.checkedOn, labels: [] };
+  entry.labels.push(`${f.label}: ${f.value}`);
+  bySource.set(f.source, entry);
+}
+const formatDate = (iso: string) => new Date(`${iso}T00:00:00`).toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+
+<aside id="zrodla" class="mt-10 rounded-2xl border border-line bg-hero p-5 text-sm text-ink-2">
+  <h2 class="mb-2 text-base font-bold text-ink">Źródła</h2>
+  <ul class="space-y-3">
+    {[...bySource.entries()].map(([source, e]) => (
+      <li>
+        <a href={e.url} rel="noopener" target="_blank" class="font-semibold text-primary hover:underline">{source}</a>
+        <span> · stan na {formatDate(e.checkedOn)}</span>
+        <ul class="ml-4 mt-1 list-disc">
+          {e.labels.map((l) => <li>{l}</li>)}
+        </ul>
+      </li>
+    ))}
+  </ul>
+  <p class="mt-3">* Liczby o egzaminie pochodzą wyłącznie z oficjalnych materiałów CKE. Jeśli coś się zmieni, poprawiamy to w jednym miejscu i na wszystkich stronach.</p>
+</aside>

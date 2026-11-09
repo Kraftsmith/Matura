@@ -1,0 +1,31 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import TopicGrid from '../../components/TopicGrid.astro';
+import { allModules, totals } from '../../lib/content';
+import { openModules } from '../../../site.config';
+import { breadcrumbList } from '../../lib/seo';
+
+const title = `${allModules.length} tematów maturalnych z angielskiego: słownictwo i ćwiczenia`;
+const description = `Wszystkie tematy z Informatora CKE: od „Człowiek” po „Państwo i społeczeństwo”. ${totals.words} słówek, ${totals.texts} tekstów, ${totals.exercises} ćwiczeń i gramatyka z testem do każdego.`;
+const openTitle = allModules.find((m) => m.id === openModules[0])?.titlePl;
+---
+
+<Base title={title} description={description} jsonLd={[breadcrumbList([{ name: 'Tematy', href: '/tematy' }])]}>
+  <div class="wrap py-8">
+    <Breadcrumbs crumbs={[{ name: 'Tematy', href: '/tematy' }]} />
+    <h1 class="display mt-4">{allModules.length} tematów maturalnych z angielskiego</h1>
+    <p class="lead mt-3 max-w-3xl">
+      Te same zakresy tematyczne, które wymienia Informator CKE dla Formuły 2023. Każdy temat ma słownictwo w tekstach, ćwiczenia środków językowych, gramatykę z testem, opis ilustracji, zadanie pisemne i fiszki.
+      {openTitle && <> Temat „{openTitle}” jest otwarty w całości bez logowania.</>}
+    </p>
+    <div class="mt-8">
+      <TopicGrid variant="full" />
+    </div>
+    <section class="prose-site mt-12 max-w-3xl">
+      <h2>Dlaczego właśnie te tematy</h2>
+      <p>Egzamin maturalny z języka angielskiego sprawdza słownictwo i umiejętności w ramach zakresów tematycznych z podstawy programowej. Zadania w arkuszu, nagrania i tematy wypowiedzi pisemnych dotyczą tych zakresów, więc nauka „po tematach” jest nauką pod to, co naprawdę pojawia się na egzaminie.</p>
+      <p>Kolejność od „Człowiek” do „Państwo i społeczeństwo” odpowiada trudności: pierwsze tematy to codzienne sytuacje na poziomie B1, ostatnie wymagają słownictwa abstrakcyjnego i struktur z poziomu B2.</p>
+    </section>
+  </div>
+</Base>

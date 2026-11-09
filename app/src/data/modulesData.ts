@@ -74,7 +74,7 @@ const baseModules: MaturaModule[] = [
       }
     ],
     pictureDescription: {
-      imageSrc: '/images/matura_12_home.jpg',
+      imageSrc: '/images/matura_12_home.webp',
       imageAlt: 'Bright modern open-plan living room with a dining area',
       title: 'Nowoczesne wnętrze i życie domowe (Modern Home & Living Room)',
       situation: 'Mieszkańcy spędzają czas w przestronnym, zmodernizowanym salonie połączonym z jadalnią.',
@@ -238,7 +238,7 @@ const baseModules: MaturaModule[] = [
       }
     ],
     pictureDescription: {
-      imageSrc: '/images/matura_01_education.jpg',
+      imageSrc: '/images/matura_01_education.webp',
       imageAlt: 'Students studying together around a wooden table in library',
       title: 'Wspólna nauka w bibliotece (Collaborative Study in Library)',
       situation: 'Grupa licealistów przygotowuje się wspólnie do egzaminu wokół stołu w nowoczesnej bibliotece.',
@@ -359,7 +359,7 @@ const baseModules: MaturaModule[] = [
       }
     ],
     pictureDescription: {
-      imageSrc: '/images/matura_02_work.jpg',
+      imageSrc: '/images/matura_02_work.webp',
       imageAlt: 'Young professionals working on laptops in a wooden chalet',
       title: 'Praca zdalna w zespole (Remote Teamwork / Workation)',
       situation: 'Zespół młodych programistów i analityków pracuje wspólnie na laptopach w drewnianym domku podczas wyjazdu typu workation.',
@@ -463,7 +463,7 @@ const baseModules: MaturaModule[] = [
       }
     ],
     pictureDescription: {
-      imageSrc: '/images/matura_04_family.jpg',
+      imageSrc: '/images/matura_04_family.webp',
       imageAlt: 'Family cooking dinner together',
       title: 'Rodzinne przygotowywanie obiadu (Family Cooking)',
       situation: 'Wspólny obiad w gronie najbliższych tworzący ciepłe więzi rodzinne.',
@@ -567,7 +567,7 @@ const baseModules: MaturaModule[] = [
       }
     ],
     pictureDescription: {
-      imageSrc: '/images/matura_06_shopping.jpg',
+      imageSrc: '/images/matura_06_shopping.webp',
       imageAlt: 'People choosing fresh fruit at an open-air market',
       title: 'Wybór świeżych produktów (Fresh Produce Market)',
       situation: 'Klienci wybierają świeże owoce i warzywa na straganach targu miejskiego.',
@@ -671,7 +671,7 @@ const baseModules: MaturaModule[] = [
       }
     ],
     pictureDescription: {
-      imageSrc: '/images/matura_11_supermarket.jpg',
+      imageSrc: '/images/matura_11_supermarket.webp',
       imageAlt: 'Woman shopping with a cart in supermarket',
       title: 'Zakupy w supermarkecie (Supermarket Shopping)',
       situation: 'Klientka robi codzienne zakupy w dziale ze świeżymi artykułami.',
@@ -775,7 +775,7 @@ const baseModules: MaturaModule[] = [
       }
     ],
     pictureDescription: {
-      imageSrc: '/images/matura_03_travel.jpg',
+      imageSrc: '/images/matura_03_travel.webp',
       imageAlt: 'Backpacker traveler walking with a backpack',
       title: 'Wyprawa z plecakiem (Solo Backpacking Journey)',
       situation: 'Młody turysta przemierza pieszo malownicze, historyczne uliczki podczas samodzielnej wyprawy z plecakiem.',
@@ -879,7 +879,7 @@ const baseModules: MaturaModule[] = [
       }
     ],
     pictureDescription: {
-      imageSrc: '/images/matura_07_culture.jpg',
+      imageSrc: '/images/matura_07_culture.webp',
       imageAlt: 'Musical performance / cultural art event',
       title: 'Wydarzenie kulturalne i koncert (Live Cultural Performance)',
       situation: 'Artyści występują na żywo przed zaangażowaną publicznością podczas koncertu.',
@@ -983,7 +983,7 @@ const baseModules: MaturaModule[] = [
       }
     ],
     pictureDescription: {
-      imageSrc: '/images/matura_05_sport.jpg',
+      imageSrc: '/images/matura_05_sport.webp',
       imageAlt: 'Athletes running outdoors on stadium track',
       title: 'Bieg lekkoatletyczny na stadionie (Athletics Track Race)',
       situation: 'Lekkoatleci rywalizują na bieżni stadionu w pełnym skupieniu.',
@@ -1087,7 +1087,7 @@ const baseModules: MaturaModule[] = [
       }
     ],
     pictureDescription: {
-      imageSrc: '/images/matura_10_health.jpg',
+      imageSrc: '/images/matura_10_health.webp',
       imageAlt: 'Doctor examining patient in modern clinic',
       title: 'Wizyta lekarska w nowoczesnym gabinecie (Medical Consultation)',
       situation: 'Lekarz w białym fartuchu z empatią bada pacjenta w przyjaznym gabinecie.',
@@ -1191,7 +1191,7 @@ const baseModules: MaturaModule[] = [
       }
     ],
     pictureDescription: {
-      imageSrc: '/images/matura_08_technology.jpg',
+      imageSrc: '/images/matura_08_technology.webp',
       imageAlt: 'Scientist engineering robotic arm with monitors',
       title: 'Laboratorium robotyki i innowacji (Robotics Research Lab)',
       situation: 'Inżynier kalibruje zaawansowane ramię robotyczne przed ekranami z kodem i danymi.',
@@ -1295,7 +1295,7 @@ const baseModules: MaturaModule[] = [
       }
     ],
     pictureDescription: {
-      imageSrc: '/images/matura_09_environment.jpg',
+      imageSrc: '/images/matura_09_environment.webp',
       imageAlt: 'Eco volunteers cleaning coastal plastic trash',
       title: 'Wolontariat na rzecz czystego środowiska (Coastal Cleanup Action)',
       situation: 'Wolontariusze zbierają plastikowe odpady na wybrzeżu morskim.',
@@ -1399,7 +1399,7 @@ const baseModules: MaturaModule[] = [
       }
     ],
     pictureDescription: {
-      imageSrc: '/images/matura_city_tourists.png',
+      imageSrc: '/images/matura_city_tourists.webp',
       imageAlt: 'Citizens gathering in historic civic square',
       title: 'Obywatele na placu miejskim przed gmachem publicznym (Civic Gathering)',
       situation: 'Obywatele gromadzą się na placu przed gmachem instytucji publicznej, dyskutując o sprawach społecznych.',

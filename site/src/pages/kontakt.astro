@@ -1,0 +1,11 @@
+---
+import Page from '../layouts/Page.astro';
+import ContactForm from '../components/ContactForm';
+import { CONTACT_EMAIL } from '../../site.config';
+
+const crumbs = [{ name: 'Kontakt', href: '/kontakt' }];
+---
+
+<Page title="Kontakt" description="Napisz do nas: pytania o materiały, błędy, współpraca." crumbs={crumbs} isArticle={false} lead={`Najszybciej przez formularz. Możesz też napisać na ${CONTACT_EMAIL}.`}>
+  <ContactForm client:visible />
+</Page>

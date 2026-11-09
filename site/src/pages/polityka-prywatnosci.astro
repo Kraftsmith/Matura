@@ -1,0 +1,31 @@
+---
+import Page from '../layouts/Page.astro';
+import { SITE_NAME } from '../../site.config';
+
+const crumbs = [{ name: 'Polityka prywatności', href: '/polityka-prywatnosci' }];
+---
+
+<Page title="Polityka prywatności" description={`Jakie dane przetwarza ${SITE_NAME}, po co, jak długo i jakie masz prawa.`} crumbs={crumbs} isArticle={false} updated="2026-11-09">
+  <p class="rounded-2xl bg-warning-tint p-4 text-warning"><strong>Wersja robocza.</strong> Ostateczny tekst przygotowuje właściciel serwisu z prawnikiem. Poniższy zarys opisuje stan faktyczny przetwarzania i nie jest jeszcze dokumentem wiążącym.</p>
+  <h2>Administrator</h2>
+  <p>Administratorem danych jest [dane podmiotu], kontakt: formularz na stronie Kontakt.</p>
+  <h2>Jakie dane i po co</h2>
+  <table>
+    <thead><tr><th>Dane</th><th>Cel</th><th>Podstawa</th><th>Jak długo</th></tr></thead>
+    <tbody>
+      <tr><td>Imię, e-mail, hasło (hasz)</td><td>Konto i logowanie</td><td>Umowa</td><td>Do usunięcia konta</td></tr>
+      <tr><td>Postępy i odpowiedzi w zadaniach</td><td>Zapis nauki, pokazanie postępu</td><td>Umowa</td><td>Do usunięcia konta</td></tr>
+      <tr><td>Data matury, poziom, cel</td><td>Plan nauki</td><td>Umowa</td><td>Do usunięcia konta</td></tr>
+      <tr><td>E-mail w liście oczekujących</td><td>Informacja o starcie i nowościach</td><td>Zgoda</td><td>Do wypisania; adres niepotwierdzony usuwamy po 7 dniach</td></tr>
+      <tr><td>Wiadomość z formularza kontaktowego</td><td>Odpowiedź</td><td>Uzasadniony interes</td><td>12 miesięcy</td></tr>
+    </tbody>
+  </table>
+  <h2>Nauczyciel</h2>
+  <p>Jeśli dołączysz do klasy nauczyciela, zobaczy on Twoje imię, e-mail, postępy i odpowiedzi. Nauczyciel może prowadzić notatki dydaktyczne o uczniu. Możesz opuścić klasę w każdej chwili.</p>
+  <h2>Pliki cookie i analityka</h2>
+  <p>Serwis używa wyłącznie niezbędnego pliku cookie sesji po zalogowaniu. Statystyki odwiedzin zbieramy bez plików cookie i bez identyfikowania osób, dlatego nie wyświetlamy banera zgody.</p>
+  <h2>Odbiorcy danych</h2>
+  <p>Hosting i baza danych (Vercel, Neon), wysyłka e-maili (Resend). Dane nie są sprzedawane ani przekazywane do celów reklamowych.</p>
+  <h2>Twoje prawa</h2>
+  <p>Dostęp, sprostowanie, usunięcie, ograniczenie, przeniesienie danych, sprzeciw, cofnięcie zgody, skarga do Prezesa UODO. Konto i dane usuniesz samodzielnie w profilu; dane z profilu możesz pobrać jako plik.</p>
+</Page>

@@ -1,0 +1,82 @@
+---
+import { openModules, pricing } from '../../site.config';
+import { allModules, appLink, moduleById } from '../lib/content';
+
+interface Props {
+  /** The landing shows two cards; /cennik adds the "Bez konta" column and the table. */
+  full?: boolean;
+}
+const { full = false } = Astro.props;
+
+const openTitles = openModules.map((id) => moduleById(id)?.titlePl ?? id);
+const freeCount = pricing.freeAccountModules.length;
+const paid = pricing.monthly !== null || pricing.untilMatura !== null;
+const price = (n: number | null, period: string) => (n === null ? 'wkrótce' : `${n} ${pricing.currency} ${period}`);
+
+const check = '✓';
+const rows: [string, string, string, string][] = [
+  ['Tematy', `„${openTitles.join('”, „')}” w całości`, `${freeCount} ${freeCount === 1 ? 'temat' : freeCount < 5 ? 'tematy' : 'tematów'} w całości`, `${allModules.length} tematów`],
+  ['Postęp', 'tylko w tej przeglądarce', 'na koncie, na każdym urządzeniu', check],
+  ['Fiszki', `talia „${openTitles[0]}”`, 'wszystkie talie, powtórka', check],
+  ['Opis ilustracji, pisanie', `w „${openTitles[0]}”`, 'w darmowych tematach', 'we wszystkich tematach'],
+  ['Raport dla rodzica', '—', '—', 'wkrótce'],
+  ['Klasa nauczyciela', '—', check, check],
+];
+---
+
+<div class:list={['grid gap-4', full ? 'lg:grid-cols-3' : 'sm:grid-cols-2']}>
+  {full && (
+    <div class="card flex flex-col p-6">
+      <h3 class="text-lg font-bold">Bez konta</h3>
+      <p class="mt-1 text-3xl font-bold">0 zł</p>
+      <p class="mt-2 text-sm text-ink-2">Temat „{openTitles[0]}” w całości, bez logowania. Postęp zostaje w tej przeglądarce.</p>
+      <a href={`/tematy/${openModules[0]}`} class="mt-auto inline-block rounded-lg border border-line px-4 py-2.5 text-center font-bold text-ink hover:bg-hero">Otwórz temat</a>
+    </div>
+  )}
+  <div class="card flex flex-col p-6">
+    <h3 class="text-lg font-bold">Za darmo</h3>
+    <p class="mt-1 text-3xl font-bold">0 zł</p>
+    <p class="mt-2 text-sm text-ink-2">Konto, {freeCount} {freeCount === 1 ? 'temat' : freeCount < 5 ? 'tematy' : 'tematów'} w całości, fiszki ze wszystkich tematów i postęp zapisany na koncie.</p>
+    <a href={appLink('register?src=pricing')} class="mt-auto inline-block rounded-lg bg-primary px-4 py-2.5 text-center font-bold text-white hover:bg-primary-hover" data-event="cta_register" data-block="pricing">Zacznij za darmo</a>
+  </div>
+  <div class="card flex flex-col border-2 border-primary p-6">
+    <h3 class="text-lg font-bold">Pełny dostęp</h3>
+    {paid ? (
+      <p class="mt-1 text-3xl font-bold">{price(pricing.untilMatura, 'do matury')}</p>
+    ) : (
+      <p class="mt-1 text-3xl font-bold">wkrótce</p>
+    )}
+    {paid && pricing.monthly !== null && <p class="text-sm text-ink-2">albo {price(pricing.monthly, 'miesięcznie')}</p>}
+    <p class="mt-2 text-sm text-ink-2">Wszystkie {allModules.length} tematów, każdy tekst, ćwiczenie i test, a później raport dla rodzica.</p>
+    {paid ? (
+      <a href={appLink('register?src=pricing-paid')} class="mt-auto inline-block rounded-lg bg-primary px-4 py-2.5 text-center font-bold text-white hover:bg-primary-hover">Kup dostęp</a>
+    ) : (
+      <a href="/cennik#lista" class="mt-auto inline-block rounded-lg bg-primary px-4 py-2.5 text-center font-bold text-white hover:bg-primary-hover" data-event="pricing_notify">Powiadom mnie o starcie</a>
+    )}
+  </div>
+</div>
+
+{full && (
+  <div class="card mt-6 overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-line text-left">
+          <th class="px-4 py-3 font-semibold text-ink"></th>
+          <th class="px-4 py-3 font-semibold text-ink">Bez konta</th>
+          <th class="px-4 py-3 font-semibold text-ink">Za darmo</th>
+          <th class="px-4 py-3 font-semibold text-ink">Pełny dostęp</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr class="border-b border-line-soft last:border-0">
+            <th scope="row" class="px-4 py-3 text-left font-semibold text-ink">{r[0]}</th>
+            <td class="px-4 py-3 text-ink-2">{r[1]}</td>
+            <td class="px-4 py-3 text-ink-2">{r[2]}</td>
+            <td class="px-4 py-3 text-ink-2">{r[3]}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+)}

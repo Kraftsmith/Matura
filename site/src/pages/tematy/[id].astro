@@ -1,0 +1,113 @@
+---
+import Topic from '../../layouts/Topic.astro';
+import AccessWall from '../../components/AccessWall.astro';
+import { EXERCISE_TYPE_LABEL, accessOf, allModules, appHash, countsOf, exerciseItemCount, exercisesOf, paragraphHtml, textsOf, topicPath } from '../../lib/content';
+
+export const getStaticPaths = () => allModules.map((m) => ({ params: { id: m.id }, props: { moduleId: m.id } }));
+
+const { moduleId } = Astro.props as { moduleId: string };
+const m = allModules.find((x) => x.id === moduleId)!;
+const c = countsOf(m);
+const open = accessOf(moduleId) === 'open';
+const texts = textsOf(moduleId);
+const exercises = exercisesOf(moduleId);
+const firstText = texts[0];
+const firstRule = m.grammarRules[0];
+const words = m.vocabularyList.slice(0, 12);
+const title = `${m.titlePl}: słownictwo, gramatyka i ćwiczenia na maturę z angielskiego`;
+const description = `Temat „${m.titlePl}” z Informatora CKE: ${c.words} słów z przykładami, ${c.texts} tekstów z lukami, ${c.exercises} ćwiczeń środków językowych, opis ilustracji w 6 krokach. ${open ? 'Cały temat bez logowania.' : 'Konto za darmo.'}`;
+---
+
+<Topic moduleId={moduleId} title={title} description={description}>
+  <div class="paywall-teaser space-y-6">
+    <section class="card p-6">
+      <h2 class="text-xl font-bold">Czego wymaga CKE w tym temacie</h2>
+      <ul class="mt-3 grid gap-2 sm:grid-cols-2">
+        {m.subtopics.map((s) => (
+          <li class="flex gap-2 text-ink-2"><span class="text-primary" aria-hidden="true">•</span>{s}</li>
+        ))}
+      </ul>
+      <p class="mt-4 text-sm text-ink-2"><strong class="text-ink">Gramatyka tematu:</strong> {m.grammarSummary}</p>
+    </section>
+
+    <section class="card p-6">
+      <div class="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 class="text-xl font-bold">Słownictwo</h2>
+        <a href={topicPath(moduleId, 'slownictwo')} class="text-sm font-semibold text-primary hover:underline">Pełna lista: {c.words} słów →</a>
+      </div>
+      <dl class="mt-3 grid gap-x-6 gap-y-2 sm:grid-cols-2">
+        {words.map((w) => (
+          <div class="border-b border-line-soft py-1.5">
+            <dt class="font-bold text-ink">{w.english} <span class="ml-1 rounded bg-chip px-1 text-[10px] font-bold text-ink-2">{w.level}</span></dt>
+            <dd class="text-sm text-ink-2">{w.polish}<span class="block text-xs italic text-ink-3">{w.example}</span></dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+
+    {firstText && (
+      <section class="card overflow-hidden">
+        <img src={firstText.image.src} alt={firstText.image.alt} width="1200" height="800" loading="lazy" class="aspect-[3/2] w-full object-cover" />
+        <div class="p-6">
+          <p class="text-xs font-bold uppercase text-ink-3">Przykładowy tekst · {firstText.subtopic}</p>
+          <h2 class="text-xl font-bold">{firstText.title}</h2>
+          <div class="prose-site mt-3">
+            {firstText.paragraphs.map((p) => <p set:html={paragraphHtml(p)} />)}
+          </div>
+          <a href={topicPath(moduleId, 'slownictwo', firstText.id)} class="mt-4 inline-block font-semibold text-primary hover:underline">Ćwiczenie do tego tekstu →</a>
+        </div>
+      </section>
+    )}
+
+    <section class="card p-6">
+      <div class="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 class="text-xl font-bold">Środki językowe</h2>
+        <a href={topicPath(moduleId, 'srodki')} class="text-sm font-semibold text-primary hover:underline">Wszystkie ćwiczenia →</a>
+      </div>
+      <ul class="mt-3 divide-y divide-line-soft">
+        {exercises.map((e, i) => (
+          <li class="py-2">
+            <a href={topicPath(moduleId, 'srodki', e.id)} class="flex items-start justify-between gap-3 hover:text-primary">
+              <span><span class="font-bold">Ćwiczenie {i + 1}: {EXERCISE_TYPE_LABEL[e.type]}</span><span class="block text-sm text-ink-2">{e.functionLabel} · {e.instruction}</span></span>
+              <span class="whitespace-nowrap text-xs text-ink-3">{exerciseItemCount(e)} pkt · {e.level}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    {firstRule && (
+      <section class="card p-6">
+        <div class="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 class="text-xl font-bold">Gramatyka tematu</h2>
+          <a href={topicPath(moduleId, 'gramatyka')} class="text-sm font-semibold text-primary hover:underline">Reguły w całości i test →</a>
+        </div>
+        <h3 class="mt-3 font-bold">{firstRule.title} <span class="ml-1 rounded bg-chip px-1 text-[10px] font-bold text-ink-2">{firstRule.level}</span></h3>
+        <p class="mt-1 text-ink-2">{firstRule.ruleSummary}</p>
+        {m.grammarRules.length > 1 && (
+          <ul class="mt-3 list-disc pl-5 text-sm text-ink-2">
+            {m.grammarRules.slice(1).map((r) => <li><a href={topicPath(moduleId, 'gramatyka', r.id)} class="hover:text-primary hover:underline">{r.title}</a></li>)}
+          </ul>
+        )}
+      </section>
+    )}
+
+    <section class="card p-6">
+      <div class="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 class="text-xl font-bold">Opis ilustracji</h2>
+        <a href={topicPath(moduleId, 'opis-ilustracji')} class="text-sm font-semibold text-primary hover:underline">Sześć kroków i pytania →</a>
+      </div>
+      <div class="mt-3 grid gap-4 sm:grid-cols-[200px_1fr]">
+        <img src={m.pictureDescription.imageSrc} alt={m.pictureDescription.imageAlt} width="600" height="400" loading="lazy" class="aspect-[3/2] w-full rounded-lg object-cover" />
+        <div>
+          <p class="text-ink-2">{m.pictureDescription.situation}</p>
+          <ol class="mt-2 list-decimal pl-5 text-sm text-ink-2">
+            {m.pictureDescription.steps.map((s) => <li>{s.stepNamePl} <span class="text-ink-3">({s.stepName})</span></li>)}
+          </ol>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <AccessWall moduleId={moduleId} next={appHash(moduleId)} />
+</Topic>

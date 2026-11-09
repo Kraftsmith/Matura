@@ -3,7 +3,7 @@ import { addHit, hitCount } from './rateLimit.js';
 
 type Lang = 'pl' | 'en';
 
-export type MailKind = 'verify' | 'exists' | 'reset' | 'setPassword' | 'newEmail' | 'emailChanging' | 'passwordChanged' | 'accountDeleted' | 'invite';
+export type MailKind = 'verify' | 'exists' | 'reset' | 'setPassword' | 'newEmail' | 'emailChanging' | 'passwordChanged' | 'accountDeleted' | 'invite' | 'leadConfirm' | 'contactCopy';
 
 interface Template {
   subject: string;
@@ -27,6 +27,8 @@ const TEMPLATES: Record<Lang, Record<MailKind, Template>> = {
     passwordChanged: { subject: 'Hasło zostało zmienione', body: `Hasło do konta zostało zmienione. ${NOT_YOU.pl}` },
     accountDeleted: { subject: 'Konto usunięte', body: 'Twoje konto i wszystkie Twoje dane zostały usunięte.' },
     invite: { subject: 'Zaproszenie do klasy', body: 'Nauczyciel {teacher} zaprasza Cię do swojej klasy w Matura English. Po dołączeniu nauczyciel zobaczy Twoje imię, e-mail, postępy i odpowiedzi w zadaniach.', button: 'Dołącz do klasy' },
+    leadConfirm: { subject: 'Potwierdź zapis', body: 'Kliknij przycisk, aby potwierdzić zapis na wiadomości o starcie i nowościach. Link działa 24 godziny. Jeśli to nie Ty, zignoruj tę wiadomość.', button: 'Potwierdzam' },
+    contactCopy: { subject: 'Wiadomość z formularza kontaktowego', body: 'Od: {from}\n\n{message}' },
   },
   en: {
     verify: { subject: 'Confirm your email', body: 'Click the button to activate your account. The link works for 24 hours.', button: 'Confirm email' },
@@ -38,23 +40,36 @@ const TEMPLATES: Record<Lang, Record<MailKind, Template>> = {
     passwordChanged: { subject: 'Your password was changed', body: `The password of your account was changed. ${NOT_YOU.en}` },
     accountDeleted: { subject: 'Account deleted', body: 'Your account and all your data have been deleted.' },
     invite: { subject: 'Invitation to a class', body: 'Teacher {teacher} invites you to their class in Matura English. After joining, the teacher will see your name, email, progress and answers to tasks.', button: 'Join the class' },
+    leadConfirm: { subject: 'Confirm your subscription', body: 'Click the button to confirm that you want news about the launch and new features. The link works for 24 hours. If this was not you, ignore this message.', button: 'Confirm' },
+    contactCopy: { subject: 'Message from the contact form', body: 'From: {from}\n\n{message}' },
   },
 };
 
 const MAX_PER_HOUR = 3;
 
-/** Links come only from this setting: a forged Host header must never decide where a token goes. */
+/**
+ * Origin of the deployment: the public site at its root, the app under /app/. Links come only from this setting:
+ * a forged Host header must never decide where a token goes.
+ */
 export const appUrl = (): string => process.env.APP_URL ?? 'http://localhost:3000';
+
+/** A site path ("/potwierdz?token=…") is used as is; anything else is an address inside the app ("verify/<token>"). */
+const linkTo = (path: string): string => (path.startsWith('/') ? `${appUrl()}${path}` : `${appUrl()}/app/#${path}`);
 
 const isLocal = () => !process.env.VERCEL_ENV || process.env.VERCEL_ENV === 'development';
 
 const escapeHtml = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] as string);
 
-export const deliver = async (kind: MailKind, to: string, lang: string, path?: string, vars: Record<string, string> = {}): Promise<void> => {
+export interface MailOptions {
+  /** Answers go to this address instead of the sender: the contact form's copy. */
+  replyTo?: string;
+}
+
+export const deliver = async (kind: MailKind, to: string, lang: string, path?: string, vars: Record<string, string> = {}, options: MailOptions = {}): Promise<void> => {
   const raw = TEMPLATES[lang === 'en' ? 'en' : 'pl'][kind];
   // A name typed by a user goes into the mail: it must not become markup.
   const template = { ...raw, body: raw.body.replace(/\{(\w+)\}/g, (_, k: string) => escapeHtml(vars[k] ?? '')) };
-  const link = path ? `${appUrl()}/#${path}` : undefined;
+  const link = path ? linkTo(path) : undefined;
   const key = process.env.RESEND_API_KEY;
 
   if (!key) {
@@ -63,12 +78,12 @@ export const deliver = async (kind: MailKind, to: string, lang: string, path?: s
     return;
   }
 
-  const html = `<p>${template.body}</p>${link ? `<p><a href="${link}">${template.button}</a></p>` : ''}`;
+  const html = `<p>${template.body.replace(/\n/g, '<br>')}</p>${link ? `<p><a href="${link}">${template.button}</a></p>` : ''}`;
   const text = `${template.body}${link ? `\n\n${link}` : ''}`;
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json' },
-    body: JSON.stringify({ from: process.env.MAIL_FROM, to, subject: template.subject, html, text }),
+    body: JSON.stringify({ from: process.env.MAIL_FROM, to, subject: template.subject, html, text, ...(options.replyTo ? { reply_to: options.replyTo } : {}) }),
   });
   if (!res.ok) throw Object.assign(new Error('mail'), { code: `mail_${res.status}` });
 };
@@ -77,12 +92,12 @@ export const deliver = async (kind: MailKind, to: string, lang: string, path?: s
  * Sends after the response, so its timing does not show whether there was anything to send.
  * Over the limit the mail is silently skipped: our forms must not be a way to flood someone's inbox.
  */
-export const sendMail = (kind: MailKind, to: string, lang: string, path?: string, vars?: Record<string, string>): void => {
+export const sendMail = (kind: MailKind, to: string, lang: string, path?: string, vars?: Record<string, string>, options?: MailOptions): void => {
   const run = async () => {
     const limitKey = `mail:${to}`;
     if ((await hitCount(limitKey, 60)) >= MAX_PER_HOUR) return;
     await addHit(limitKey);
-    await deliver(kind, to, lang, path, vars);
+    await deliver(kind, to, lang, path, vars, options);
   };
   waitUntil(run().catch((e: { code?: string }) => console.error('mail_error', e.code ?? 'unknown')));
 };

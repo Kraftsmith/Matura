@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /app/
+Disallow: /api/
+Disallow: /potwierdz
+Disallow: /wypisz
+
+Sitemap: https://maturaenglish.pl/sitemap-index.xml

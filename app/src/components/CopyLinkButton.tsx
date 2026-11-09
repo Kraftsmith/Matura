@@ -3,6 +3,7 @@ import { Check, Link2 } from 'lucide-react';
 import { Button, type ButtonVariant } from './ui';
 import { useSettings } from '../useSettings';
 import { shareLink } from '../userRoute';
+import { AssignButton } from './schedule/AssignButton';
 
 interface CopyLinkButtonProps {
   /** Page route without the profile, e.g. "czlowiek/slownictwo/czl-txt-1". */
@@ -10,7 +11,7 @@ interface CopyLinkButtonProps {
   variant?: ButtonVariant;
 }
 
-/** Copies a profile-free link to a page or exercise, e.g. to send as homework. */
+/** Copies a profile-free link to a page or exercise, e.g. to send as homework. The teacher also gets "Zadaj" next to it. */
 export const CopyLinkButton: React.FC<CopyLinkButtonProps> = ({ rest, variant = 'ghost' }) => {
   const { t } = useSettings();
   const [copied, setCopied] = useState(false);
@@ -40,9 +41,12 @@ export const CopyLinkButton: React.FC<CopyLinkButtonProps> = ({ rest, variant = 
   };
 
   return (
-    <Button variant={variant} size="sm" onClick={copy} title={`${t('link.copyHint')}: ${url}`}>
-      {copied ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
-      {copied ? t('link.copied') : t('link.copy')}
-    </Button>
+    <>
+      <Button variant={variant} size="sm" onClick={copy} title={`${t('link.copyHint')}: ${url}`}>
+        {copied ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
+        {copied ? t('link.copied') : t('link.copy')}
+      </Button>
+      <AssignButton target={rest} variant={variant} />
+    </>
   );
 };

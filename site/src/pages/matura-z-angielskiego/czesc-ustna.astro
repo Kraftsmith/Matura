@@ -1,0 +1,58 @@
+---
+import Page from '../../layouts/Page.astro';
+import Fact from '../../components/Fact.astro';
+import Sources from '../../components/Sources.astro';
+import { openModules } from '../../../site.config';
+import { moduleById, topicPath } from '../../lib/content';
+
+const open = moduleById(openModules[0]!)!;
+const steps = open.pictureDescription.steps;
+const crumbs = [
+  { name: 'Matura z angielskiego', href: '/matura-z-angielskiego' },
+  { name: 'Część ustna', href: '/matura-z-angielskiego/czesc-ustna' },
+];
+---
+
+<Page title="Matura ustna z angielskiego: jak opisać obrazek i co ocenia komisja" heading="Matura ustna z angielskiego: trzy zadania i opis ilustracji w sześciu krokach" description="Rozmowa wstępna, odgrywanie roli, opis ilustracji z trzema pytaniami, materiał stymulujący. Jak wygląda każde zadanie i jak opisać obrazek krok po kroku." crumbs={crumbs} updated="2026-11-09" lead="Część ustna trwa około kwadransa, nie ma poziomu i ma własny próg zdania. Największy strach budzi opis ilustracji, a to zadanie da się rozpisać na sześć powtarzalnych kroków.">
+  <h2>Jak przebiega egzamin</h2>
+  <p>Egzamin trwa <Fact id="oralMinutes" /> i daje maksymalnie <Fact id="oralPoints" /> punktów. Próg to <Fact id="passThreshold" />. Składa się z rozmowy wstępnej i trzech zadań (<Fact id="oralTasks" />):</p>
+  <ol>
+    <li><strong>Rozmowa wstępna.</strong> Kilka pytań o Ciebie: szkoła, zainteresowania, plany. Nie jest punktowana za treść, ale rozgrzewa i wpływa na ocenę umiejętności językowych.</li>
+    <li><strong>Zadanie 1: rozmowa z odgrywaniem roli.</strong> Dostajesz sytuację i cztery punkty do omówienia; egzaminator gra drugą osobę. Liczy się odniesienie do każdego punktu i rozwinięcie go.</li>
+    <li><strong>Zadanie 2: opis ilustracji i trzy pytania.</strong> Opisujesz zdjęcie, a potem odpowiadasz na pytania: o interpretację szczegółu, o własne doświadczenie i o sytuację hipotetyczną lub przeszłą.</li>
+    <li><strong>Zadanie 3: wypowiedź na podstawie materiału stymulującego.</strong> Wybierasz jedną z dwóch lub trzech propozycji, uzasadniasz wybór i odrzucenie pozostałych, potem dwa pytania.</li>
+  </ol>
+  <p>Punkty są przyznawane osobno za treść każdego zadania i osobno za umiejętności językowe: zakres i poprawność środków, wymowę, płynność.</p>
+
+  <h2>Opis ilustracji w sześciu krokach</h2>
+  <p>Każda ilustracja da się opisać tym samym schematem. Oto kroki z zestawem zwrotów, na przykładzie tematu „{open.titlePl}”:</p>
+  <ol>
+    {steps.map((s) => (
+      <li>
+        <strong>{s.stepNamePl}</strong> ({s.stepName}). {s.description}
+        <span class="mt-1 flex flex-wrap gap-1.5">{s.recommendedPhrases.slice(0, 3).map((p) => <span class="rounded-full bg-chip px-2 py-0.5 text-xs text-ink">{p}</span>)}</span>
+      </li>
+    ))}
+  </ol>
+  <p>Kroki 1–4 to opis, który komisja chce usłyszeć w całości; kroki 5–6 pokazują, że umiesz spekulować i wyrażać opinię, czyli używać struktur z wyższej półki (<em>might be, seems to, if I were</em>).</p>
+
+  <h2>Trzy pytania po opisie</h2>
+  <ol>
+    <li><strong>O szczegół ze zdjęcia:</strong> „Why do you think the man is smiling?” Odpowiedź wymaga spekulacji: <em>He might be… because…</em></li>
+    <li><strong>O Twoje doświadczenie:</strong> „Do you prefer…?” Odpowiedź w czasie teraźniejszym z uzasadnieniem.</li>
+    <li><strong>O przeszłość lub hipotezę:</strong> „Tell me about a time when…” albo „What would you do if…?” Tu sprawdzane są czasy przeszłe lub tryb warunkowy.</li>
+  </ol>
+
+  <h2>Najczęstsze błędy</h2>
+  <ul>
+    <li>Wyliczanie przedmiotów zamiast opisu sytuacji: „There is a table, a chair, a window…”.</li>
+    <li>Brak czasu Present Continuous przy czynnościach.</li>
+    <li>Jednozdaniowe odpowiedzi na pytania: komisja czeka na rozwinięcie i przykład.</li>
+    <li>Cisza zamiast zwrotu wypełniającego: <em>Let me think… Well, as far as I can see…</em></li>
+  </ul>
+
+  <h2>Jak to ćwiczyć u nas</h2>
+  <p>W każdym temacie jest zdjęcie z sześcioma krokami, zwrotami do każdego kroku, trzema pytaniami i przykładowymi odpowiedziami. Spróbuj bez logowania: <a href={topicPath(open.id, 'opis-ilustracji')}>opis ilustracji w temacie „{open.titlePl}”</a>.</p>
+
+  <Sources ids={['oralMinutes', 'oralPoints', 'passThreshold', 'oralTasks']} />
+</Page>

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '../ui';
 import { useSettings } from '../../useSettings';
-import { publicPage } from '../../userRoute';
+import { publicPage, publicQuery } from '../../userRoute';
 import type { AccountUser } from '../../users';
-import { AuthShell, ForgotScreen, JoinScreen, LegalScreen, LoginScreen, RegisterScreen, ResetScreen, VerifyScreen } from './AuthScreens';
+import { AuthShell, ForgotScreen, JoinScreen, LoginScreen, RegisterScreen, ResetScreen, VerifyScreen } from './AuthScreens';
 import { OnboardingStep, TermsStep } from './FirstRun';
 import { RETURN_KEY } from './returnTo';
 
@@ -45,7 +45,11 @@ export const AuthGate: React.FC<AuthGateProps> = ({ status, expired, user, onSig
     if (needsLogin) rememberAddress(hash);
   }, [needsLogin, hash]);
 
-  if (route?.page === 'regulamin' || route?.page === 'prywatnosc') return <LegalScreen page={route.page} />;
+  // The legal texts are pages of the public site; the old app addresses only forward there.
+  if (route?.page === 'regulamin' || route?.page === 'prywatnosc') {
+    window.location.replace(route.page === 'regulamin' ? '/regulamin' : '/polityka-prywatnosci');
+    return null;
+  }
   if (route?.page === 'verify') return <VerifyScreen token={route.param ?? ''} onSignedIn={onSignedIn} />;
   if (route?.page === 'reset') return <ResetScreen token={route.param ?? ''} onSignedIn={onSignedIn} />;
 
@@ -62,9 +66,9 @@ export const AuthGate: React.FC<AuthGateProps> = ({ status, expired, user, onSig
 
   if (status === 'anon' || !user) {
     if (route?.page === 'forgot') return <ForgotScreen />;
-    if (route?.page === 'register') return <RegisterScreen />;
+    if (route?.page === 'register') return <RegisterScreen query={publicQuery(hash)} />;
     if (route?.page === 'join') return <RegisterScreen inviteCode={route.param} />;
-    return <LoginScreen expired={expired} onSignedIn={onSignedIn} />;
+    return <LoginScreen expired={expired} onSignedIn={onSignedIn} query={publicQuery(hash)} />;
   }
 
   if (route?.page === 'join') return <JoinScreen code={route.param ?? ''} user={user} onAccount={onAccount} />;

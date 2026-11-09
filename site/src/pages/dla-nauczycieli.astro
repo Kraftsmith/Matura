@@ -1,0 +1,29 @@
+---
+import Page from '../layouts/Page.astro';
+import { appLink, allModules, totals } from '../lib/content';
+
+const crumbs = [{ name: 'Dla nauczycieli', href: '/dla-nauczycieli' }];
+---
+
+<Page title="Dla nauczycieli i korepetytorów: klasa, kalendarz i zadania domowe online" heading="Klasa, kalendarz i zadania domowe w jednym miejscu" description="Zaproś uczniów linkiem, zadawaj prace domowe z linkami do konkretnych ćwiczeń, zobacz, co zrobili, zanim zaczniesz lekcję. Materiały do matury z angielskiego w 14 tematach CKE." crumbs={crumbs} updated="2026-11-09" lead="Przygotowujesz do matury kilku lub kilkunastu uczniów? Tu masz materiały w 14 tematach CKE i panel, który odpowiada na pytanie „co zadałem i czy zrobione” bez przeszukiwania notatek.">
+  <h2>Co jest</h2>
+  <ul>
+    <li><strong>Klasa z linku.</strong> Uczeń dołącza po jednym linku lub z zaproszenia e-mail; widzisz jego imię, postęp i odpowiedzi tylko wtedy, gdy sam dołączył.</li>
+    <li><strong>Strona ucznia.</strong> Data matury, poziom, cel, postęp po tematach, zapisane prace pisemne, Twoje prywatne notatki.</li>
+    <li><strong>Kalendarz zajęć.</strong> Zajęcia pojedyncze i cykliczne, indywidualne i grupowe; po zajęciach odnotowujesz, czy się odbyły i co robiliście.</li>
+    <li><strong>Zadania domowe z linkami.</strong> Każdy tekst, ćwiczenie i test ma własny adres. Zadanie z linkiem zalicza się samo, gdy uczeń je zrobi; zadania spoza serwisu uczeń odhacza sam.</li>
+    <li><strong>Fiszki od nauczyciela.</strong> W trakcie lekcji online zaznaczasz słowo w tekście i dodajesz je do talii ucznia; pojawia się u niego w kilkanaście sekund.</li>
+    <li><strong>Materiały.</strong> {totals.words} słów, {totals.texts} tekstów z lukami, {totals.exercises} ćwiczeń środków językowych, reguły z testami, opis ilustracji i zadania pisemne w {allModules.length} tematach.</li>
+  </ul>
+
+  <h2>Czego nie ma</h2>
+  <p>Rozliczeń i płatności od uczniów, czatu, automatycznego sprawdzania wypowiedzi pisemnych. Serwis nie prowadzi Twoich finansów; do tego służą inne narzędzia.</p>
+
+  <h2>Jak zacząć</h2>
+  <ol>
+    <li><a href={appLink('register?src=teachers&role=teacher')}>Załóż konto nauczyciela</a>.</li>
+    <li>Skopiuj link do klasy z profilu i wyślij uczniom.</li>
+    <li>Dodaj zajęcia w kalendarzu i zadaj pierwszą pracę domową z linkiem do ćwiczenia.</li>
+  </ol>
+  <p>Konto nauczyciela jest darmowe. Uczniowie korzystają na zasadach z <a href="/cennik">cennika</a>.</p>
+</Page>

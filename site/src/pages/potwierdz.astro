@@ -1,0 +1,35 @@
+---
+import Page from '../layouts/Page.astro';
+import { appLink } from '../lib/content';
+
+const crumbs = [{ name: 'Potwierdzenie zapisu', href: '/potwierdz' }];
+---
+
+<Page title="Potwierdzenie zapisu" description="Potwierdzenie adresu e-mail na liście oczekujących." crumbs={crumbs} isArticle={false} noindex>
+  <div id="status" class="card p-6" data-state="working">
+    <p data-working>Potwierdzamy adres…</p>
+    <div data-ok hidden>
+      <p class="text-xl font-bold text-ink">Gotowe. Napiszemy, kiedy wystartuje pełny dostęp.</p>
+      <a href={appLink('register?src=confirm')} class="mt-4 inline-block rounded-lg bg-primary px-5 py-2.5 font-bold text-white hover:bg-primary-hover">Zacznij za darmo już teraz</a>
+    </div>
+    <div data-bad hidden>
+      <p class="text-xl font-bold text-ink">Ten link nie działa albo już został użyty.</p>
+      <p class="mt-2 text-ink-2">Zapisz się ponownie na <a href="/cennik#lista" class="text-primary underline underline-offset-2">stronie cennika</a>, a wyślemy nowy link.</p>
+    </div>
+  </div>
+</Page>
+
+<script>
+  const box = document.getElementById('status')!;
+  const show = (which: 'ok' | 'bad') => {
+    box.querySelector('[data-working]')?.setAttribute('hidden', '');
+    box.querySelector(`[data-${which}]`)?.removeAttribute('hidden');
+  };
+  const token = new URLSearchParams(window.location.search).get('token');
+  if (!token) show('bad');
+  else {
+    fetch('/api/account?action=lead-confirm', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token }) })
+      .then((r) => show(r.ok ? 'ok' : 'bad'))
+      .catch(() => show('bad'));
+  }
+</script>

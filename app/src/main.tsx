@@ -6,6 +6,7 @@ import { SettingsProvider } from './settings'
 import { UserProvider } from './user'
 import { ProgressProvider } from './progress'
 import { TeacherCardsProvider } from './teacherCards'
+import { ScheduleProvider } from './scheduleProvider'
 import { validateLanguageUseExercises } from './data/languageUseExercises'
 
 if (import.meta.env.DEV) validateLanguageUseExercises().forEach((problem) => console.error(problem))
@@ -16,7 +17,9 @@ createRoot(document.getElementById('root')!).render(
       <UserProvider>
         <ProgressProvider>
           <TeacherCardsProvider>
-            <App />
+            <ScheduleProvider>
+              <App />
+            </ScheduleProvider>
           </TeacherCardsProvider>
         </ProgressProvider>
       </UserProvider>

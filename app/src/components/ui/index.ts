@@ -8,3 +8,4 @@ export * from './Card';
 export * from './Callout';
 export * from './Meter';
 export * from './Toast';
+export * from './Dialog';

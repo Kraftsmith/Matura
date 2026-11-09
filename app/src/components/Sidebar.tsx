@@ -1,7 +1,17 @@
 import React from 'react';
 import type { MaturaModule } from '../types';
-import { Layers, LayoutDashboard, X } from 'lucide-react';
+import { CalendarDays, Layers, LayoutDashboard, X } from 'lucide-react';
 import { useSettings } from '../useSettings';
+
+/** The "Kalendarz" row of the teacher, or the "Zajęcia" row of a learner with lessons or homework. */
+export interface ScheduleRow {
+  label: string;
+  active: boolean;
+  /** Second line, e.g. how many items are still to do. */
+  hint?: string;
+  /** Something is overdue. */
+  alert?: boolean;
+}
 
 interface SidebarProps {
   modules: MaturaModule[];
@@ -19,9 +29,13 @@ interface SidebarProps {
   dashboardLabel?: string;
   /** False for the teacher: their panel opens from the user menu instead. */
   showDashboard?: boolean;
+  dashboardActive: boolean;
+  /** Absent for a learner without lessons. */
+  scheduleRow?: ScheduleRow;
   onSelectModule: (moduleId: string) => void;
   onSelectDashboard: () => void;
   onSelectFiszki: () => void;
+  onSelectSchedule: () => void;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -50,14 +64,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
   showProgress = true,
   dashboardLabel,
   showDashboard = true,
+  dashboardActive,
+  scheduleRow,
   onSelectModule,
   onSelectDashboard,
   onSelectFiszki,
+  onSelectSchedule,
   isOpen,
   onClose,
 }) => {
   const { t } = useSettings();
-  const dashboardActive = currentModuleId === null && !fiszkiActive;
   return (
     <>
       {isOpen && <div className="fixed inset-0 z-40 bg-ink/40 lg:hidden" onClick={onClose} aria-hidden />}
@@ -100,6 +116,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <span className="block truncate">{dashboardLabel ?? t('side.myProgress')}</span>
             </span>
           </SideRow>
+          )}
+
+          {scheduleRow && (
+            <SideRow
+              active={scheduleRow.active}
+              aria-current={scheduleRow.active ? 'page' : undefined}
+              onClick={() => {
+                onSelectSchedule();
+                onClose();
+              }}
+            >
+              <span className="flex min-w-0 items-center gap-2">
+                <CalendarDays className="h-5 w-5 shrink-0 text-side-muted" />
+                <span className="min-w-0">
+                  <span className="flex items-center gap-2 truncate">
+                    {scheduleRow.label}
+                    {scheduleRow.alert && <span className="h-2 w-2 shrink-0 rounded-full bg-error" aria-label={t('hw.overdue')} />}
+                  </span>
+                  {scheduleRow.hint && <span className="block truncate text-sm font-normal text-side-muted">{scheduleRow.hint}</span>}
+                </span>
+              </span>
+            </SideRow>
           )}
 
           <SideRow

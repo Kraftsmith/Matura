@@ -5,6 +5,7 @@ import type { ClassStudent } from '../../users';
 import { DashboardView } from '../DashboardView';
 import { Button, Tabs, Toast } from '../ui';
 import { TeacherCardsPanel } from '../TeacherCardsPanel';
+import { StudentScheduleTabs } from '../schedule/StudentScheduleTabs';
 import { StudentPlanPanel } from './StudentPlanPanel';
 import { useSettings } from '../../useSettings';
 import { useUser } from '../../useUser';
@@ -31,7 +32,7 @@ const writeHidden = (hidden: boolean) => {
   }
 };
 
-type Tab = 'progress' | 'notes' | 'cards' | 'plan';
+type Tab = 'progress' | 'notes' | 'cards' | 'lessons' | 'homework' | 'plan';
 
 interface TeacherStudentPageProps {
   modules: MaturaModule[];
@@ -40,12 +41,13 @@ interface TeacherStudentPageProps {
   initialTab?: 'cards';
   onOpen: (moduleId: string, section: SectionType) => void;
   onOpenDeck: (moduleId: string) => void;
+  onOpenLesson: (lessonId: string) => void;
   onBackToClass: () => void;
   onSignedOut: () => void;
 }
 
 /** A learner's page as the teacher sees it. Exists only in the lazy chunk, loaded after the server confirmed the teacher. */
-const TeacherStudentPage: React.FC<TeacherStudentPageProps> = ({ modules, student, initialTab, onOpen, onOpenDeck, onBackToClass, onSignedOut }) => {
+const TeacherStudentPage: React.FC<TeacherStudentPageProps> = ({ modules, student, initialTab, onOpen, onOpenDeck, onOpenLesson, onBackToClass, onSignedOut }) => {
   const nt = useNotesStrings();
   const { t } = useSettings();
   const { cardsOf } = useTeacherCards();
@@ -119,6 +121,8 @@ const TeacherStudentPage: React.FC<TeacherStudentPageProps> = ({ modules, studen
               { id: 'progress', label: nt('notes.tabProgress') },
               ...(hidden ? [] : [{ id: 'notes' as const, label: nt('notes.tabNotes'), count: notes.length }]),
               { id: 'cards', label: t('lesson.tab'), count: cardCount },
+              { id: 'lessons', label: t('teacher.tabLessons') },
+              { id: 'homework', label: t('teacher.tabHomework') },
               { id: 'plan', label: t('profile.matura') },
             ]}
           />
@@ -126,6 +130,8 @@ const TeacherStudentPage: React.FC<TeacherStudentPageProps> = ({ modules, studen
         replacement={
           tab === 'cards' ? (
             <TeacherCardsPanel student={student} modules={modules} />
+          ) : tab === 'lessons' || tab === 'homework' ? (
+            <StudentScheduleTabs student={student} tab={tab} onOpenLesson={onOpenLesson} onSignedOut={onSignedOut} />
           ) : tab === 'plan' ? (
             <StudentPlanPanel student={student} onRemoved={onBackToClass} />
           ) : !hidden && tab === 'notes' ? (

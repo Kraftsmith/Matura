@@ -34,6 +34,13 @@ export const DELETE = guarded(async (req) => {
     await sql`update users set progress_meta = '{}' where id = ${studentId}`;
   } else {
     await sql`delete from teacher_students where teacher_id = ${teacher.id} and student_id = ${studentId}`;
+    // The learner leaves the lessons still ahead and the weekly series; past lessons and homework stay in the record.
+    await sql`
+      delete from lesson_participants p using lessons l
+      where p.lesson_id = l.id and p.student_id = ${studentId} and l.teacher_id = ${teacher.id} and l.status = 'planned' and l.starts_at > now()`;
+    await sql`
+      delete from lesson_series_students ss using lesson_series s
+      where ss.series_id = s.id and ss.student_id = ${studentId} and s.teacher_id = ${teacher.id}`;
   }
   return json({ ok: true });
 });

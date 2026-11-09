@@ -14,7 +14,7 @@ export const vocabularyTextsByModule: Record<string, VocabularyText[]> = {
       subtopic: 'Physical appearance',
       level: 'P',
       image: {
-        src: '/images/vocab/czlowiek-1-appearance.png',
+        src: '/images/vocab/czlowiek-1-appearance.webp',
         alt: 'Two friends meeting at a railway station: a tall man with a beard and a young woman with shoulder-length hair and freckles.',
       },
       paragraphs: [
@@ -47,7 +47,7 @@ export const vocabularyTextsByModule: Record<string, VocabularyText[]> = {
       subtopic: 'Personality and character',
       level: 'R',
       image: {
-        src: '/images/vocab/czlowiek-2-character.png',
+        src: '/images/vocab/czlowiek-2-character.webp',
         alt: 'Four teenagers of different personalities working together on a school project around a table.',
       },
       paragraphs: [
@@ -78,7 +78,7 @@ export const vocabularyTextsByModule: Record<string, VocabularyText[]> = {
       subtopic: 'Feelings, emotions and body language',
       level: 'R',
       image: {
-        src: '/images/vocab/czlowiek-3-emotions.png',
+        src: '/images/vocab/czlowiek-3-emotions.webp',
         alt: 'A student opening an envelope with exam results in a school corridor while friends wait with anxious and happy faces.',
       },
       paragraphs: [
@@ -109,7 +109,7 @@ export const vocabularyTextsByModule: Record<string, VocabularyText[]> = {
       subtopic: 'Personal details and stages of life',
       level: 'P',
       image: {
-        src: '/images/vocab/czlowiek-4-stages.png',
+        src: '/images/vocab/czlowiek-4-stages.webp',
         alt: 'A family timeline: a toddler, a teenager, a woman in her thirties with a baby, and an elderly man in a garden.',
       },
       paragraphs: [
@@ -140,7 +140,7 @@ export const vocabularyTextsByModule: Record<string, VocabularyText[]> = {
       subtopic: 'Interests, skills and role models',
       level: 'P',
       image: {
-        src: '/images/vocab/czlowiek-5-role-models.png',
+        src: '/images/vocab/czlowiek-5-role-models.webp',
         alt: 'A teenage girl at a workbench building a robot, with a poster of a famous woman scientist on the wall behind her.',
       },
       paragraphs: [
@@ -172,7 +172,7 @@ export const vocabularyTextsByModule: Record<string, VocabularyText[]> = {
       subtopic: 'Appearance, character and beliefs',
       level: 'R',
       image: {
-        src: '/images/vocab/czlowiek-6-beliefs.png',
+        src: '/images/vocab/czlowiek-6-beliefs.webp',
         alt: 'Two passengers on a city bus deep in conversation: a woman in her mid-fifties with a pearl necklace and a teenage boy in an orange hoodie, with a thought bubble showing a ladder and a crystal ball.',
       },
       paragraphs: [
@@ -210,7 +210,7 @@ export const vocabularyTextsByModule: Record<string, VocabularyText[]> = {
       subtopic: 'Types of housing, rooms and the neighbourhood',
       level: 'P',
       image: {
-        src: '/images/vocab/miejsce-zamieszkania-1-flat.png',
+        src: '/images/vocab/miejsce-zamieszkania-1-flat.webp',
         alt: 'A young woman carrying a box into a small bright attic flat with a sloping ceiling and a view of city rooftops.',
       },
       paragraphs: [
@@ -245,7 +245,7 @@ export const vocabularyTextsByModule: Record<string, VocabularyText[]> = {
       subtopic: 'School life, exams and assessment',
       level: 'P',
       image: {
-        src: '/images/vocab/edukacja-1-exams.png',
+        src: '/images/vocab/edukacja-1-exams.webp',
         alt: 'A school library in the evening: students revising with notes, laptops and coffee cups, one of them yawning.',
       },
       paragraphs: [
@@ -281,7 +281,7 @@ export const vocabularyTextsByModule: Record<string, VocabularyText[]> = {
       subtopic: 'Job hunting, working conditions and careers',
       level: 'R',
       image: {
-        src: '/images/vocab/praca-1-interview.png',
+        src: '/images/vocab/praca-1-interview.webp',
         alt: 'A nervous young man in a suit waiting outside a glass office, holding a folder with his CV.',
       },
       paragraphs: [
@@ -316,7 +316,7 @@ export const vocabularyTextsByModule: Record<string, VocabularyText[]> = {
       subtopic: 'Family, relationships and celebrations',
       level: 'P',
       image: {
-        src: '/images/vocab/zycie-prywatne-1-celebration.png',
+        src: '/images/vocab/zycie-prywatne-1-celebration.webp',
         alt: 'Three generations of a family around a long table in a garden celebrating a grandmother\'s birthday.',
       },
       paragraphs: [
@@ -349,7 +349,7 @@ export const vocabularyTextsByModule: Record<string, VocabularyText[]> = {
       subtopic: 'Food, diets and eating habits',
       level: 'P',
       image: {
-        src: '/images/vocab/zywienie-1-cooking.png',
+        src: '/images/vocab/zywienie-1-cooking.webp',
         alt: 'A student kitchen with a pot of vegetable soup on the stove, a chopping board with fresh vegetables and a shopping list.',
       },
       paragraphs: [
@@ -383,7 +383,7 @@ export const vocabularyTextsByModule: Record<string, VocabularyText[]> = {
       subtopic: 'Shops, online shopping and consumer rights',
       level: 'R',
       image: {
-        src: '/images/vocab/zakupy-1-online.png',
+        src: '/images/vocab/zakupy-1-online.webp',
         alt: 'Split scene: on the left a woman shops online on a sofa surrounded by parcels, on the right a man tries on a jacket in a small high-street shop.',
       },
       paragraphs: [
@@ -417,7 +417,7 @@ export const vocabularyTextsByModule: Record<string, VocabularyText[]> = {
       subtopic: 'Travel, accommodation and sightseeing',
       level: 'R',
       image: {
-        src: '/images/vocab/podroze-1-backpacking.png',
+        src: '/images/vocab/podroze-1-backpacking.webp',
         alt: 'Two backpackers consulting a paper map at a mountain crossroads, with a small village and a lake in the valley below.',
       },
       paragraphs: [
@@ -451,7 +451,7 @@ export const vocabularyTextsByModule: Record<string, VocabularyText[]> = {
       subtopic: 'Music, film, theatre and the arts',
       level: 'R',
       image: {
-        src: '/images/vocab/kultura-1-festival.png',
+        src: '/images/vocab/kultura-1-festival.webp',
         alt: 'An open-air music festival at dusk: a stage with lights, a crowd with raised hands and festival tents in the background.',
       },
       paragraphs: [
@@ -487,7 +487,7 @@ export const vocabularyTextsByModule: Record<string, VocabularyText[]> = {
       subtopic: 'Sports, training and competitions',
       level: 'P',
       image: {
-        src: '/images/vocab/sport-1-marathon.png',
+        src: '/images/vocab/sport-1-marathon.webp',
         alt: 'A city half-marathon: a tired runner near the finish line cheered on by spectators holding signs, with a clock above the finish.',
       },
       paragraphs: [
@@ -521,7 +521,7 @@ export const vocabularyTextsByModule: Record<string, VocabularyText[]> = {
       subtopic: 'Illnesses, symptoms and a healthy lifestyle',
       level: 'P',
       image: {
-        src: '/images/vocab/zdrowie-1-doctor.png',
+        src: '/images/vocab/zdrowie-1-doctor.webp',
         alt: 'A doctor\'s surgery: a teenage boy with a scarf and a thermometer talking to a friendly doctor at a desk.',
       },
       paragraphs: [
@@ -556,7 +556,7 @@ export const vocabularyTextsByModule: Record<string, VocabularyText[]> = {
       subtopic: 'Computers, the internet and new technologies',
       level: 'R',
       image: {
-        src: '/images/vocab/nauka-technika-1-detox.png',
+        src: '/images/vocab/nauka-technika-1-detox.webp',
         alt: 'A teenager putting a smartphone into a drawer, with a desk lamp, a paper notebook and a window with a sunset behind.',
       },
       paragraphs: [
@@ -590,7 +590,7 @@ export const vocabularyTextsByModule: Record<string, VocabularyText[]> = {
       subtopic: 'Nature, climate and environmental protection',
       level: 'R',
       image: {
-        src: '/images/vocab/przyroda-1-bees.png',
+        src: '/images/vocab/przyroda-1-bees.webp',
         alt: 'A wildflower meadow at the edge of a town with beehives, a beekeeper in a white suit and wind turbines on the horizon.',
       },
       paragraphs: [
@@ -625,7 +625,7 @@ export const vocabularyTextsByModule: Record<string, VocabularyText[]> = {
       subtopic: 'Politics, elections and civic engagement',
       level: 'R',
       image: {
-        src: '/images/vocab/panstwo-spoleczenstwo-1-election.png',
+        src: '/images/vocab/panstwo-spoleczenstwo-1-election.webp',
         alt: 'A polling station in a school gym: an eighteen-year-old putting a ballot into a box while volunteers check lists at a table.',
       },
       paragraphs: [

@@ -1,0 +1,85 @@
+/*
+  Design tokens. Reference: the home.pl customer panel. A grey page, white cards
+  with a soft shadow and no border, a dark charcoal sidebar, a rounded typeface
+  (Nunito), one teal accent and pastel gradient badges for the dashboard icons only.
+  The semantic colors are used only for real learner status, never for decoration.
+*/
+@theme {
+  --font-sans: "Nunito", "Segoe UI", Arial, sans-serif;
+
+  --color-primary: #17818F;
+  --color-primary-hover: #126975;
+  --color-primary-tint: #E3F3F5;
+
+  --color-ink: #2B2F36;
+  --color-ink-2: #5F6773;
+  --color-ink-3: #8B929C;
+
+  --color-line: #DFE3E8;
+  --color-line-soft: #ECEFF2;
+  --color-hero: #F5F6F8;
+  --color-page: #E9ECF0;          /* behind the cards */
+  --color-chip: #E6E9ED;
+  --color-surface: #FFFFFF;
+
+  --color-side: #3C4249;          /* sidebar */
+  --color-side-2: #30353B;        /* sidebar: active row, hover */
+  --color-side-text: #ECEEF1;
+  --color-side-muted: #A9B0B8;
+  --color-side-line: #4A5058;
+
+  --color-success: #1E8A4C;
+  --color-success-tint: #E6F5EC;
+  --color-error: #D23F3F;
+  --color-error-tint: #FDEBEB;
+  --color-warning: #A86400;
+  --color-warning-tint: #FFF3DF;
+
+  --radius-lg: 10px;  /* buttons, fields, option cards */
+  --radius-2xl: 20px; /* cards, panels */
+
+  --shadow-card: 0 2px 12px rgba(43, 47, 54, 0.07), 0 1px 2px rgba(43, 47, 54, 0.05);
+}
+
+/* A white panel on the grey page: the one way to draw a card. */
+@utility card {
+  @apply rounded-2xl bg-surface shadow-card;
+}
+
+/*
+  Nunito, served from this host (no Google Fonts: speed and RODO). Variable files, one per subset and style;
+  the site serves /fonts/ from its root, so the app finds them when deployed under /app/. In plain `npm run dev`
+  of the app alone the browser falls back to the system font.
+*/
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("/fonts/nunito-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("/fonts/nunito-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Nunito";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/nunito-italic-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Nunito";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/nunito-italic-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}

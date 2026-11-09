@@ -1,0 +1,53 @@
+---
+import Page from '../../layouts/Page.astro';
+import Fact from '../../components/Fact.astro';
+import Sources from '../../components/Sources.astro';
+import { matura } from '../../../site.config';
+import { allModules, appLink, topicPath } from '../../lib/content';
+import { openModules } from '../../../site.config';
+
+const crumbs = [{ name: 'Matura z angielskiego', href: '/matura-z-angielskiego' }];
+const title = `Jak wygląda matura z angielskiego ${matura.year}: części, punkty, progi`;
+const description = 'Poziom podstawowy i rozszerzony, część pisemna i ustna, ile punktów za co i co znaczy „zdana”. Na podstawie Informatora CKE.';
+const sub = [
+  ['/matura-z-angielskiego/punkty-i-progi', 'Punkty i progi', 'Ile punktów trzeba, jak liczy się wynik procentowy i co z poziomem rozszerzonym.'],
+  ['/matura-z-angielskiego/czesc-ustna', 'Część ustna', 'Rozmowa wstępna, trzy zadania, opis ilustracji w sześciu krokach.'],
+  ['/matura-z-angielskiego/srodki-jezykowe', 'Środki językowe', 'Typy zadań, które sprawdzają gramatykę i słowotwórstwo, i jak je ćwiczyć.'],
+  ['/matura-z-angielskiego/wypowiedz-pisemna', 'Wypowiedź pisemna', 'E-mail, wpis na blogu, rozprawka: cztery kryteria oceny.'],
+  ['/matura-z-angielskiego/terminy', `Terminy ${matura.year}`, 'Kiedy jest egzamin i co sprawdzić w harmonogramie CKE.'],
+];
+---
+
+<Page title={title} description={description} crumbs={crumbs} updated="2026-11-09" lead="Matura z języka angielskiego w Formule 2023 to egzamin obowiązkowy na poziomie podstawowym i, do wyboru, dodatkowy na poziomie rozszerzonym. Oto, z czego się składa i co w każdej części jest naprawdę sprawdzane.">
+  <h2>Dwa poziomy</h2>
+  <p><strong>Poziom podstawowy</strong> zdaje każdy maturzysta, który wybrał angielski jako język obowiązkowy. Część pisemna trwa <Fact id="ppMinutes" />, można zdobyć <Fact id="ppPoints" /> punktów, a do zdania potrzeba <Fact id="passThreshold" />. Do tego dochodzi część ustna, bez określania poziomu, też z progiem <Fact id="passThreshold" />.</p>
+  <p><strong>Poziom rozszerzony</strong> jest dodatkowy: część pisemna trwa <Fact id="prMinutes" />, daje <Fact id="prPoints" /> punktów i nie ma progu zdawalności. Wynik liczy się do rekrutacji na studia.</p>
+
+  <h2>Cztery części arkusza</h2>
+  <table>
+    <thead><tr><th>Część</th><th>Punkty (PP)</th><th>Co jest sprawdzane</th></tr></thead>
+    <tbody>
+      <tr><td>Rozumienie ze słuchu</td><td><Fact id="ppListening" /></td><td>Wychwycenie informacji, intencji i kontekstu w nagraniach.</td></tr>
+      <tr><td>Rozumienie tekstów pisanych</td><td><Fact id="ppReading" /></td><td>Główna myśl, szczegóły, spójność tekstu, dobór zdań do luk.</td></tr>
+      <tr><td>Znajomość środków językowych</td><td><Fact id="ppLanguage" /></td><td>Gramatyka i słownictwo w zadaniach zamkniętych i otwartych.</td></tr>
+      <tr><td>Wypowiedź pisemna</td><td><Fact id="ppWriting" /></td><td>Tekst użytkowy (<Fact id="ppWritingWords" />) oceniany według czterech kryteriów.</td></tr>
+    </tbody>
+  </table>
+  <p>Na poziomie rozszerzonym części są te same, ale zadania trudniejsze, a wypowiedź pisemna ma <Fact id="prWritingWords" /> i jest rozprawką, artykułem albo listem formalnym.</p>
+
+  <h2>Część ustna</h2>
+  <p>Trwa <Fact id="oralMinutes" /> i składa się z rozmowy wstępnej oraz trzech zadań: rozmowy z odgrywaniem roli, opisu ilustracji z trzema pytaniami i wypowiedzi na podstawie materiału stymulującego. Maksymalnie <Fact id="oralPoints" /> punktów: za treść każdego zadania i osobno za umiejętności językowe. <a href="/matura-z-angielskiego/czesc-ustna">Jak wygląda każde zadanie →</a></p>
+
+  <h2>Zakresy tematyczne</h2>
+  <p>Słownictwo, nagrania, teksty i tematy wypowiedzi mieszczą się w <Fact id="topics" /> zakresach tematycznych z podstawy programowej. To według nich uczymy: <a href="/tematy">lista {allModules.length} tematów</a>, każdy ze słownictwem, ćwiczeniami, gramatyką i opisem ilustracji.</p>
+
+  <h2>Co dalej</h2>
+  <ul>
+    {sub.map(([href, name, text]) => <li><a href={href}><strong>{name}</strong></a>: {text}</li>)}
+  </ul>
+
+  <h2>Jak to ćwiczyć u nas</h2>
+  <p>Zacznij od tematu <a href={topicPath(openModules[0]!)}>„Człowiek”</a>, otwartego w całości bez logowania. Potem <a href={appLink('register?src=matura-hub')}>załóż darmowe konto</a>, żeby postęp zapisywał się na koncie.</p>
+
+  <Sources ids={['ppMinutes', 'ppPoints', 'passThreshold', 'prMinutes', 'prPoints', 'ppListening', 'ppReading', 'ppLanguage', 'ppWriting', 'ppWritingWords', 'prWritingWords', 'oralMinutes', 'oralPoints', 'topics']} />
+</Page>

@@ -1,0 +1,46 @@
+---
+import Page from '../../layouts/Page.astro';
+import Fact from '../../components/Fact.astro';
+import Sources from '../../components/Sources.astro';
+import { matura } from '../../../site.config';
+
+const crumbs = [
+  { name: 'Matura z angielskiego', href: '/matura-z-angielskiego' },
+  { name: 'Punkty i progi', href: '/matura-z-angielskiego/punkty-i-progi' },
+];
+const title = 'Ile punktów trzeba na maturze z angielskiego: próg 30% i jak liczy się wynik';
+---
+
+<Page title={title} heading="Ile punktów trzeba na maturze z angielskiego" description="Próg zdawalności, liczba punktów w każdej części, wynik procentowy i czym różni się poziom rozszerzony. Liczby z Informatora CKE." crumbs={crumbs} updated="2026-11-09" lead="Najkrótsza odpowiedź: na poziomie podstawowym trzeba zdobyć co najmniej 30% punktów w części pisemnej i osobno 30% w części ustnej. Poniżej, co to znaczy w praktyce.">
+  <h2>Próg zdania</h2>
+  <p>Część pisemna na poziomie podstawowym ma <Fact id="ppPoints" /> punktów. Próg to <Fact id="passThreshold" />, czyli 18 punktów. Część ustna ma <Fact id="oralPoints" /> punktów i własny próg <Fact id="passThreshold" />, czyli 9 punktów. Obie części trzeba zdać osobno: świetny wynik pisemny nie ratuje niezdanej części ustnej.</p>
+
+  <h2>Skąd biorą się punkty</h2>
+  <table>
+    <thead><tr><th>Część pisemna (PP)</th><th>Punkty</th><th>Udział</th></tr></thead>
+    <tbody>
+      <tr><td>Rozumienie ze słuchu</td><td><Fact id="ppListening" /></td><td>25%</td></tr>
+      <tr><td>Rozumienie tekstów pisanych</td><td><Fact id="ppReading" /></td><td>33%</td></tr>
+      <tr><td>Znajomość środków językowych</td><td><Fact id="ppLanguage" /></td><td>22%</td></tr>
+      <tr><td>Wypowiedź pisemna</td><td><Fact id="ppWriting" /></td><td>20%</td></tr>
+    </tbody>
+  </table>
+  <p>Wniosek dla planu nauki: słuchanie i czytanie dają ponad połowę punktów, ale to one najczęściej „same się robią” u osób, które mają kontakt z angielskim. Środki językowe i wypowiedź pisemna to 25 punktów, które zależą od konkretnych, wyuczalnych rzeczy: typów zadań, zwrotów, kryteriów. Tam najłatwiej zyskać.</p>
+
+  <h2>Wynik procentowy</h2>
+  <p>Na świadectwie jest wynik w procentach i na skali centylowej. Procent to punkty podzielone przez maksimum; centyl mówi, jaki odsetek zdających miał wynik taki sam lub niższy. Uczelnie przeliczają procenty według własnych zasad, zwykle z większą wagą dla poziomu rozszerzonego.</p>
+
+  <h2>Poziom rozszerzony</h2>
+  <p>Arkusz rozszerzony ma <Fact id="prPoints" /> punktów i <Fact id="prMinutes" /> czasu. Nie ma progu: wynik 10% nie oznacza niezdanej matury, tylko niski wynik na świadectwie. Dlatego poziom rozszerzony opłaca się zdawać, jeśli kierunek studiów go wymaga lub premiuje.</p>
+
+  <h2>Jak sprawdzić, czy dziecko jest w okolicach progu</h2>
+  <ol>
+    <li>Rozwiązać jeden arkusz z poprzednich lat ze strony CKE, z zegarem.</li>
+    <li>Policzyć punkty według klucza, osobno dla każdej części.</li>
+    <li>Jeśli środki językowe lub wypowiedź są poniżej połowy punktów, zacząć od nich: to części, które poprawia się najszybciej.</li>
+  </ol>
+  <p>W naszych tematach każde ćwiczenie środków językowych i każdy test pokazuje wynik procentowy i zapisuje go na koncie, więc po kilku tygodniach widać, czy jest postęp. <a href="/dla-rodzicow">Jak to wygląda z perspektywy rodzica →</a></p>
+
+  <Sources ids={['ppPoints', 'passThreshold', 'oralPoints', 'ppListening', 'ppReading', 'ppLanguage', 'ppWriting', 'prPoints', 'prMinutes']} />
+  <p class="text-sm text-ink-3">Rok egzaminu: {matura.year}. Udziały procentowe policzyliśmy z liczby punktów.</p>
+</Page>

@@ -1,0 +1,44 @@
+---
+import Page from '../../layouts/Page.astro';
+import Fact from '../../components/Fact.astro';
+import Sources from '../../components/Sources.astro';
+import { openModules } from '../../../site.config';
+import { moduleById, topicPath } from '../../lib/content';
+
+const open = moduleById(openModules[0]!)!;
+const crumbs = [
+  { name: 'Matura z angielskiego', href: '/matura-z-angielskiego' },
+  { name: 'Wypowiedź pisemna', href: '/matura-z-angielskiego/wypowiedz-pisemna' },
+];
+---
+
+<Page title="Wypowiedź pisemna na maturze z angielskiego: e-mail, wpis na blogu, rozprawka" heading="Wypowiedź pisemna: formy, limity słów i cztery kryteria oceny" description="Jak wygląda zadanie pisemne na poziomie podstawowym i rozszerzonym, ile słów napisać i za co dokładnie są punkty." crumbs={crumbs} updated="2026-11-09" lead="Wypowiedź pisemna to jedyne zadanie, w którym sam decydujesz, co napiszesz. Dlatego jest najbardziej przewidywalne: kryteria są jawne, a formy powtarzają się od lat.">
+  <h2>Poziom podstawowy</h2>
+  <p>Jedno zadanie, <Fact id="ppWriting" />, tekst o długości <Fact id="ppWritingWords" />. Formy: e-mail, wpis na blogu, czasem list prywatny lub ogłoszenie. Zadanie podaje cztery punkty (tzw. „kropki”), do których trzeba się odnieść i każdy rozwinąć.</p>
+  <h2>Poziom rozszerzony</h2>
+  <p>Jedno zadanie do wyboru z dwóch, tekst o długości <Fact id="prWritingWords" />: rozprawka (za i przeciw albo z opinią), artykuł lub list formalny. Oceniane są dwa elementy tematu, które trzeba omówić.</p>
+
+  <h2>Cztery kryteria</h2>
+  <table>
+    <thead><tr><th>Kryterium</th><th>Co to znaczy</th><th>Jak nie stracić punktu</th></tr></thead>
+    <tbody>
+      <tr><td>Treść</td><td>Czy odniosłeś się do każdego punktu i go rozwinąłeś</td><td>Dwa zdania na punkt: informacja plus szczegół, powód lub przykład</td></tr>
+      <tr><td>Spójność i logika</td><td>Czy tekst ma początek, środek i koniec, a zdania się łączą</td><td>Akapity, spójniki (<em>however, that's why, as a result</em>), zwroty otwierające i zamykające</td></tr>
+      <tr><td>Zakres środków językowych</td><td>Czy używasz różnych struktur i słów, nie tylko prostych</td><td>Jedno zdanie warunkowe, jedna strona bierna, jeden czas perfect, kilka kolokacji z tematu</td></tr>
+      <tr><td>Poprawność</td><td>Ile jest błędów i czy utrudniają zrozumienie</td><td>Pisz strukturami, które znasz na pewno; sprawdź końcówki, przedimki i czasy po napisaniu</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Najczęstsze straty punktów</h2>
+  <ul>
+    <li>Tekst krótszy niż minimum: ocenia się tylko treść, reszta kryteriów dostaje zero.</li>
+    <li>Punkt zadania wspomniany jednym słowem, bez rozwinięcia.</li>
+    <li>Brak formy: e-mail bez zwrotu na początek i koniec, rozprawka bez tezy.</li>
+    <li>Przepisanie treści zadania zamiast własnych zdań.</li>
+  </ul>
+
+  <h2>Jak to ćwiczyć u nas</h2>
+  <p>W każdym temacie jest zadanie pisemne z punktami, zwrotami, planem i przykładową odpowiedzią. Edytor liczy słowa i pilnuje listy kontrolnej. Zobacz bez logowania: <a href={topicPath(open.id, 'pisanie')}>pisanie w temacie „{open.titlePl}”</a>.</p>
+
+  <Sources ids={['ppWriting', 'ppWritingWords', 'prWritingWords']} />
+</Page>

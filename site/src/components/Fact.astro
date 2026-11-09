@@ -1,0 +1,15 @@
+---
+/**
+ * A number about the exam, from site.config with its source. Pages never type these numbers directly
+ * (Spec - Landing §7.2); the footnote marker points at the <Sources> list of the page.
+ */
+import { examFacts, type ExamFactId } from '../../site.config';
+
+interface Props {
+  id: ExamFactId;
+}
+const { id } = Astro.props;
+const fact = examFacts[id];
+---
+
+<span data-fact={id}><strong class="text-ink">{fact.value}</strong><a href="#zrodla" class="ml-0.5 align-super text-[0.7em] text-primary no-underline" aria-label={`Źródło: ${fact.source}`}>*</a></span>

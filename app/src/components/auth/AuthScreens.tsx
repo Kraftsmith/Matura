@@ -4,6 +4,7 @@ import { Button, Callout, TextField } from '../ui';
 import { useSettings } from '../../useSettings';
 import type { AccountUser } from '../../users';
 import { RETURN_KEY } from './returnTo';
+import { safeNext, safeSource } from '../../userRoute';
 import { usePasswordError } from './usePasswordError';
 
 const RESEND_SECONDS = 60;
@@ -12,17 +13,35 @@ type SignedIn = (user: AccountUser) => void;
 
 const linkClass = 'text-sm leading-5 font-semibold text-primary hover:underline';
 
-export const AuthShell: React.FC<{ title: string; children?: React.ReactNode }> = ({ title, children }) => (
-  <div className="flex min-h-screen flex-col items-center bg-surface px-4 py-10 font-sans text-ink antialiased">
-    <span className="text-[22px] leading-none font-semibold tracking-tight text-ink">
-      matura<span className="text-primary">english</span>
-    </span>
-    <main className="mt-8 grid w-full max-w-[400px] gap-5">
-      <h1 className="text-2xl leading-8 font-semibold">{title}</h1>
-      {children}
-    </main>
-  </div>
-);
+/** Remembers the app address a public page asked to open after signing in (`#login?next=…`, `#register?next=…`). */
+const rememberNext = (query: URLSearchParams | undefined) => {
+  const next = safeNext(query?.get('next') ?? null);
+  if (!next) return;
+  try {
+    window.sessionStorage.setItem(RETURN_KEY, next);
+  } catch {
+    /* storage unavailable: the dashboard opens instead */
+  }
+};
+
+export const AuthShell: React.FC<{ title: string; children?: React.ReactNode }> = ({ title, children }) => {
+  const { t } = useSettings();
+  return (
+    <div className="flex min-h-screen flex-col items-center bg-surface px-4 py-10 font-sans text-ink antialiased">
+      <span className="text-[22px] leading-none font-semibold tracking-tight text-ink">
+        matura<span className="text-primary">english</span>
+      </span>
+      <main className="mt-8 grid w-full max-w-[400px] gap-5">
+        <h1 className="text-2xl leading-8 font-semibold">{title}</h1>
+        {children}
+      </main>
+      {/* The public site is the front door; the app lives under /app/ on the same host. */}
+      <a href="/" className="mt-10 text-sm leading-5 text-ink-2 hover:text-primary hover:underline">
+        ← {t('auth.home')}
+      </a>
+    </div>
+  );
+};
 
 /** The show button replaces a second "repeat password" field. */
 export const PasswordField: React.FC<React.ComponentProps<typeof TextField>> = (props) => {
@@ -49,11 +68,11 @@ export const TermsLabel: React.FC<{ checked: boolean; required?: boolean; onChan
       <input type="checkbox" required={required} className="mt-0.5 h-4 w-4 accent-primary" checked={checked} onChange={(e) => onChange(e.target.checked)} />
       <span>
         {t('auth.termsBefore')}{' '}
-        <a href="#regulamin" target="_blank" rel="noreferrer" className="font-semibold text-primary hover:underline">
+        <a href="/regulamin" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">
           {t('auth.terms')}
         </a>{' '}
         {t('auth.and')}{' '}
-        <a href="#prywatnosc" target="_blank" rel="noreferrer" className="font-semibold text-primary hover:underline">
+        <a href="/polityka-prywatnosci" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">
           {t('auth.privacy')}
         </a>
       </span>
@@ -84,8 +103,9 @@ const ResendButton: React.FC<{ email: string }> = ({ email }) => {
   );
 };
 
-export const LoginScreen: React.FC<{ expired: boolean; onSignedIn: SignedIn }> = ({ expired, onSignedIn }) => {
+export const LoginScreen: React.FC<{ expired: boolean; onSignedIn: SignedIn; query?: URLSearchParams }> = ({ expired, onSignedIn, query }) => {
   const { t } = useSettings();
+  useEffect(() => rememberNext(query), [query]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
@@ -139,8 +159,9 @@ export const LoginScreen: React.FC<{ expired: boolean; onSignedIn: SignedIn }> =
   );
 };
 
-export const RegisterScreen: React.FC<{ inviteCode?: string }> = ({ inviteCode }) => {
+export const RegisterScreen: React.FC<{ inviteCode?: string; query?: URLSearchParams }> = ({ inviteCode, query }) => {
   const { t, uiLang } = useSettings();
+  useEffect(() => rememberNext(query), [query]);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -150,7 +171,8 @@ export const RegisterScreen: React.FC<{ inviteCode?: string }> = ({ inviteCode }
   const [error, setError] = useState<string>();
   const [sentTo, setSentTo] = useState<string>();
   const [teacher, setTeacher] = useState<string>();
-  const [role, setRole] = useState<'student' | 'teacher'>('student');
+  // `#register?role=teacher` comes from the "Dla nauczycieli" page of the site.
+  const [role, setRole] = useState<'student' | 'teacher'>(query?.get('role') === 'teacher' ? 'teacher' : 'student');
   const passwordError = usePasswordError();
 
   useEffect(() => {
@@ -177,7 +199,7 @@ export const RegisterScreen: React.FC<{ inviteCode?: string }> = ({ inviteCode }
     setBusy(true);
     setError(undefined);
     try {
-      await register({ name, role: teacher ? 'student' : role, email, password, acceptedTerms: accepted, uiLang, inviteCode: teacher ? inviteCode : undefined, website });
+      await register({ name, role: teacher ? 'student' : role, email, password, acceptedTerms: accepted, uiLang, inviteCode: teacher ? inviteCode : undefined, src: safeSource(query?.get('src') ?? null), website });
       setSentTo(email);
     } catch (err) {
       setError(passwordError(err));
@@ -380,16 +402,6 @@ export const JoinScreen: React.FC<{ code: string; user: AccountUser; onAccount: 
         {t('auth.joinAccept')}
       </Button>
       {later}
-    </AuthShell>
-  );
-};
-
-/** The owner's texts go here; until then the page says so rather than inventing legal wording. */
-export const LegalScreen: React.FC<{ page: 'regulamin' | 'prywatnosc' }> = ({ page }) => {
-  const { t } = useSettings();
-  return (
-    <AuthShell title={t(page === 'regulamin' ? 'auth.termsTitle' : 'auth.privacyTitle')}>
-      <p className="text-base leading-6">{t('auth.legalPending')}</p>
     </AuthShell>
   );
 };

@@ -1,0 +1,57 @@
+---
+import Page from '../layouts/Page.astro';
+import Fact from '../components/Fact.astro';
+import Sources from '../components/Sources.astro';
+import LeadForm from '../components/LeadForm';
+import Faq from '../components/Faq.astro';
+import { openModules } from '../../site.config';
+import { allModules, appLink, moduleById, topicPath } from '../lib/content';
+import { faqPage } from '../lib/seo';
+
+const open = moduleById(openModules[0]!)!;
+const crumbs = [{ name: 'Dla rodziców', href: '/dla-rodzicow' }];
+const faq = [
+  { q: 'Czy muszę zakładać konto jako rodzic?', a: 'Nie. Konto zakłada uczeń; rodzic widzi postęp przez to konto. Osobny raport dla rodzica na e-mail jest w przygotowaniu, można zostawić adres poniżej.' },
+  { q: 'Jak zapłacę i czy mogę zrezygnować?', a: 'Pełny dostęp wystartuje w nadchodzących miesiącach. Będzie można zrezygnować w każdej chwili; szczegóły na stronie cennika, gdy ogłosimy ceny.' },
+  { q: 'Czy dziecko musi mieć 16 lat?', a: 'Tak, regulamin wymaga ukończonych 16 lat przy zakładaniu konta. Maturzyści spełniają ten warunek.' },
+  { q: 'Co z danymi dziecka?', a: 'Imię, e-mail, postępy i odpowiedzi w zadaniach. Konto można usunąć jednym przyciskiem w profilu; dane są wtedy usuwane od razu. Szczegóły w polityce prywatności.' },
+];
+---
+
+<Page title="Jak pomóc dziecku przygotować się do matury z angielskiego" heading="Jak pomóc dziecku zdać maturę z angielskiego, nie znając angielskiego" description="Jak sprawdzić, czy dziecko jest gotowe, czym systematyczna nauka różni się od korepetycji i co widać w postępie." crumbs={crumbs} updated="2026-11-09" jsonLd={[faqPage(faq)]} lead="Nie trzeba znać angielskiego, żeby wiedzieć, czy przygotowania idą dobrze. Trzeba wiedzieć, co egzamin sprawdza, i widzieć, co dziecko zrobiło.">
+  <h2>Czym matura różni się od „znania angielskiego”</h2>
+  <p>Dziecko może swobodnie oglądać seriale po angielsku i stracić punkty na maturze, bo egzamin sprawdza konkretne rzeczy w konkretnych formatach. Część pisemna na poziomie podstawowym to <Fact id="ppPoints" /> punktów w czterech częściach, próg to <Fact id="passThreshold" />. Osobno jest część ustna z własnym progiem. <a href="/matura-z-angielskiego">Jak wygląda egzamin →</a></p>
+  <p>Dwie części, w których najłatwiej zyskać i najłatwiej stracić, to <a href="/matura-z-angielskiego/srodki-jezykowe">znajomość środków językowych</a> i <a href="/matura-z-angielskiego/wypowiedz-pisemna">wypowiedź pisemna</a>: razem 25 punktów za rzeczy, których można się nauczyć w kilka miesięcy, jeśli ćwiczy się właściwe typy zadań.</p>
+
+  <h2>Jak sprawdzić, czy dziecko jest gotowe</h2>
+  <ol>
+    <li><strong>Czy przerobiło tematy?</strong> Egzamin obraca się wokół {allModules.length} zakresów tematycznych. W aplikacji każdy temat ma pasek postępu: zielone tematy są zrobione, puste czekają.</li>
+    <li><strong>Czy wraca do tego, czego nie umie?</strong> Słowa oznaczone „do powtórki” i wyniki testów poniżej 80% to lista rzeczy do nadrobienia. Jeśli lista maleje z tygodnia na tydzień, nauka działa.</li>
+    <li><strong>Czy ćwiczy regularnie?</strong> Data ostatniej aktywności mówi więcej niż deklaracje. Trzy krótkie sesje w tygodniu dają więcej niż jedna długa.</li>
+  </ol>
+
+  <h2>Korepetytor czy platforma</h2>
+  <table>
+    <thead><tr><th></th><th>Korepetytor</th><th>Tu</th><th>Razem</th></tr></thead>
+    <tbody>
+      <tr><td>Co dziecko robi</td><td>Godzina rozmowy i wyjaśnień w tygodniu</td><td>Ćwiczenia między spotkaniami, kiedy ma czas</td><td>Korepetytor tłumaczy, platforma utrwala</td></tr>
+      <tr><td>Co widzi rodzic</td><td>„Idzie dobrze”</td><td>Zrobione tematy, wyniki, data ostatniej aktywności</td><td>Rozmowa z korepetytorem o konkretach</td></tr>
+      <tr><td>Część ustna</td><td>Najlepsze miejsce na rozmowę</td><td>Schemat opisu ilustracji i pytania do ćwiczenia na głos</td><td>Dziecko przychodzi przygotowane</td></tr>
+      <tr><td>Koszt</td><td>Kilkadziesiąt złotych za godzinę</td><td>Darmowe konto; pełny dostęp wkrótce</td><td>Mniej godzin, lepiej wykorzystanych</td></tr>
+    </tbody>
+  </table>
+  <p>Nie namawiamy do rezygnacji z korepetytora. Namawiamy, żeby godzina z nim nie była jedyną godziną angielskiego w tygodniu, a Ty nie musiał(a) wierzyć na słowo.</p>
+
+  <h2>Co widać dziś, a co będzie</h2>
+  <p><strong>Dziś:</strong> przez konto dziecka widać postęp w każdym temacie, wyniki testów i ćwiczeń, fiszki do powtórki, datę matury i cel wpisane w profilu. Jeśli dziecko ma nauczyciela, nauczyciel widzi to samo i może zadawać prace domowe z linkami do konkretnych ćwiczeń.</p>
+  <p><strong>Wkrótce:</strong> raport dla rodzica na e-mail, raz w tygodniu, bez logowania: co zrobione, co zaległe, ile dni do egzaminu.</p>
+
+  <h2>Od czego zacząć</h2>
+  <p>Pokaż dziecku temat <a href={topicPath(open.id)}>„{open.titlePl}”</a>: jest otwarty w całości bez logowania. Jeśli przerobi go do końca, <a href={appLink('register?src=parents')}>darmowe konto</a> zapisze postęp i otworzy kolejne tematy. <a href="/cennik">Co jest za darmo, a co w pełnym dostępie →</a></p>
+
+  <h2>Raport dla rodzica</h2>
+  <LeadForm client:visible source="parents" defaultRole="parent" title="Powiadom mnie o raporcie dla rodzica" text="Jeden e-mail, gdy raport wystartuje. Żadnych innych wiadomości bez zgody." />
+
+  <Sources ids={['ppPoints', 'passThreshold']} />
+</Page>
+<Faq items={faq} title="Pytania rodziców" />

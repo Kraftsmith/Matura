@@ -1,0 +1,132 @@
+---
+/**
+ * Frame of every topic page (Spec - Landing §8.2): site header, topic header with the section tabs,
+ * the list of topics on the left, the page content, "Dalej" and breadcrumbs.
+ */
+import Base from './Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import GuestBar from '../islands/GuestBar';
+import { SECTION_LABEL, SITE_SECTIONS, accessOf, allModules, appHash, appLink, countsOf, loginLink, moduleById, neighbours, plural, registerLink, topicPath, type SiteSection } from '../lib/content';
+import { breadcrumbList, learningResource, type Crumb } from '../lib/seo';
+
+interface Props {
+  moduleId: string;
+  section?: SiteSection;
+  item?: string;
+  title: string;
+  description: string;
+  /** Name of the item for the breadcrumb, when the page is one text / exercise / rule. */
+  itemName?: string;
+  /** Overrides the canonical (the flashcards page points at the vocabulary page). */
+  canonicalPath?: string;
+  jsonLd?: Record<string, unknown>[];
+}
+
+const { moduleId, section, item, title, description, itemName, canonicalPath, jsonLd = [] } = Astro.props;
+const m = moduleById(moduleId);
+if (!m) throw new Error(`Unknown module ${moduleId}`);
+const access = accessOf(moduleId);
+const open = access === 'open';
+const path = topicPath(moduleId, section, item);
+const next = appHash(moduleId, section, item);
+const { prev, next: following } = neighbours(moduleId);
+const c = countsOf(m);
+
+const crumbs: Crumb[] = [{ name: 'Tematy', href: '/tematy' }, { name: m.titlePl, href: topicPath(moduleId) }];
+if (section) crumbs.push({ name: SECTION_LABEL[section], href: topicPath(moduleId, section) });
+if (item && itemName) crumbs.push({ name: itemName, href: path });
+
+const ld = [breadcrumbList(crumbs), learningResource({ title, description, url: path, free: open }), ...jsonLd];
+---
+
+<Base title={title} description={description} path={canonicalPath ?? path} jsonLd={ld}>
+  <div class="wrap pt-6">
+    <Breadcrumbs crumbs={crumbs} />
+  </div>
+
+  <div class="wrap mt-4 grid gap-8 lg:grid-cols-[240px_1fr]">
+    <aside class="hidden lg:block">
+      <nav aria-label="Tematy" class="card sticky top-20 p-2">
+        <p class="px-3 pb-2 pt-1 text-xs font-bold uppercase tracking-wide text-ink-3">14 tematów CKE</p>
+        <ul>
+          {allModules.map((t) => {
+            const a = accessOf(t.id);
+            const active = t.id === moduleId;
+            return (
+              <li>
+                <a href={topicPath(t.id)} class:list={['flex items-center justify-between gap-2 rounded-lg px-3 py-1.5 text-sm hover:bg-hero', active ? 'bg-primary-tint font-bold text-primary' : 'text-ink-2']} aria-current={active ? 'page' : undefined}>
+                  <span>{t.number}. {t.titlePl}</span>
+                  {a !== 'open' && <span class="text-[10px] font-bold uppercase text-ink-3" title={a === 'free-account' ? 'darmowe konto' : 'pełny dostęp'}>{a === 'free-account' ? 'konto' : '🔒'}</span>}
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+    </aside>
+
+    <div class="min-w-0">
+      <header class="card p-6">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p class="text-sm font-bold text-ink-3">Temat {m.number} z {allModules.length}</p>
+            <h1 class="text-3xl font-bold">{m.titlePl} <span class="text-lg font-semibold text-ink-3">({m.titleEn})</span></h1>
+            <p class="mt-1 text-ink-2">{m.shortDescription}</p>
+          </div>
+          <span class="rounded-full bg-chip px-3 py-1 text-sm font-bold text-ink-2">{m.badge}</span>
+        </div>
+        <nav class="mt-5 -mb-2 flex gap-1 overflow-x-auto no-scrollbar" aria-label="Działy tematu">
+          {SITE_SECTIONS.map((s) => (
+            <a
+              href={topicPath(moduleId, s)}
+              class:list={['whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold', s === section ? 'bg-primary text-white' : 'text-ink-2 hover:bg-hero']}
+              aria-current={s === section ? 'page' : undefined}
+            >
+              {SECTION_LABEL[s]}
+            </a>
+          ))}
+        </nav>
+      </header>
+
+      {open ? (
+        <div class="mt-4">
+          <GuestBar client:load registerHref={registerLink('open-topic', next)} loginHref={loginLink(next)} appHref={appLink(next)} />
+        </div>
+      ) : (
+        <p class="mt-4 rounded-2xl bg-warning-tint px-5 py-3 text-sm text-warning">
+          {access === 'free-account' ? 'Ten temat otwiera darmowe konto.' : 'Ten temat jest w pełnym dostępie.'}
+          {' '}Poniżej widzisz jego początek. <a href="#dostep" class="font-bold underline">Jak go otworzyć</a>
+        </p>
+      )}
+
+      <article class="mt-4">
+        <slot />
+      </article>
+
+      <nav class="mt-10 grid gap-3 sm:grid-cols-2" aria-label="Dalej">
+        {prev && (
+          <a href={topicPath(prev.id)} class="card p-4 hover:bg-hero">
+            <span class="text-xs font-bold uppercase text-ink-3">Poprzedni temat</span>
+            <span class="block font-bold">{prev.number}. {prev.titlePl}</span>
+          </a>
+        )}
+        {following && (
+          <a href={topicPath(following.id)} class="card p-4 text-right hover:bg-hero sm:col-start-2">
+            <span class="text-xs font-bold uppercase text-ink-3">Następny temat</span>
+            <span class="block font-bold">{following.number}. {following.titlePl}</span>
+          </a>
+        )}
+      </nav>
+
+      <section class="card mt-6 flex flex-wrap items-center justify-between gap-4 p-5">
+        <div>
+          <p class="font-bold">Ten temat w aplikacji</p>
+          <p class="text-sm text-ink-2">{plural(c.cards, 'fiszka', 'fiszki', 'fiszek')}, {plural(c.texts, 'tekst', 'teksty', 'tekstów')} z lukami, {plural(c.exercises, 'ćwiczenie', 'ćwiczenia', 'ćwiczeń')}, test gramatyczny. Postęp zapisany na koncie.</p>
+        </div>
+        <a href={open ? registerLink('topic-footer', next) : appLink(next)} class="rounded-lg bg-primary px-5 py-2.5 font-bold text-white hover:bg-primary-hover" data-event="cta_register" data-block="topic-footer">
+          {open ? 'Załóż darmowe konto' : 'Otwórz w aplikacji'}
+        </a>
+      </section>
+    </div>
+  </div>
+</Base>

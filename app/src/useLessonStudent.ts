@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useUser } from './useUser';
 
 const STORAGE_KEY = 'matura.lessonStudent';
@@ -23,7 +23,12 @@ const writeStudent = (id: string | undefined) => {
 /** Whose deck the teacher's new cards go to. Undefined means the teacher's own. */
 export const useLessonStudent = (enabled: boolean) => {
   const { students } = useUser();
-  const [student, setStudent] = useState(readStudent);
+  // Read in an effect, not in the initialiser: the same hook runs where the component is rendered to HTML without a browser.
+  const [student, setStudent] = useState<string | undefined>();
+  useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect
+    setStudent(readStudent());
+  }, []);
   const choose = useCallback((id: string | undefined) => {
     writeStudent(id);
     setStudent(id);

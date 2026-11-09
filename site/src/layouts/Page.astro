@@ -1,0 +1,38 @@
+---
+/** Plain article-like page: breadcrumbs, one H1, prose, optional sources. */
+import Base from './Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { article, breadcrumbList, type Crumb } from '../lib/seo';
+
+interface Props {
+  title: string;
+  /** H1 when it differs from the <title>. */
+  heading?: string;
+  description: string;
+  crumbs: Crumb[];
+  lead?: string;
+  updated?: string;
+  jsonLd?: Record<string, unknown>[];
+  /** Marks the page as an Article in schema.org. */
+  isArticle?: boolean;
+  noindex?: boolean;
+  wide?: boolean;
+}
+
+const { title, heading, description, crumbs, lead, updated, jsonLd = [], isArticle = true, noindex = false, wide = false } = Astro.props;
+const path = crumbs[crumbs.length - 1]?.href ?? '/';
+const ld = [breadcrumbList(crumbs), ...(isArticle ? [article({ title: heading ?? title, description, url: path, dateModified: updated })] : []), ...jsonLd];
+const formatDate = (iso: string) => new Date(`${iso}T00:00:00`).toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+
+<Base title={title} description={description} path={path} jsonLd={ld} noindex={noindex}>
+  <div class:list={['wrap py-8', !wide && 'max-w-3xl']}>
+    <Breadcrumbs crumbs={crumbs} />
+    <h1 class="display mt-4">{heading ?? title}</h1>
+    {lead && <p class="lead mt-4">{lead}</p>}
+    {updated && <p class="mt-2 text-sm text-ink-3">Ostatnia aktualizacja: {formatDate(updated)}</p>}
+    <div class="prose-site mt-6">
+      <slot />
+    </div>
+  </div>
+</Base>

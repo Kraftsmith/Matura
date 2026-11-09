@@ -1,0 +1,39 @@
+---
+import { allModules, accessOf, countsOf, plural, topicPath } from '../lib/content';
+
+interface Props {
+  /** Compact tiles on the landing, fuller cards on /tematy. */
+  variant?: 'compact' | 'full';
+}
+const { variant = 'compact' } = Astro.props;
+---
+
+<ul class:list={['grid gap-3', variant === 'compact' ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3']}>
+  {allModules.map((m) => {
+    const c = countsOf(m);
+    const access = accessOf(m.id);
+    return (
+      <li>
+        <a href={topicPath(m.id)} class="card flex h-full flex-col gap-2 p-4 transition hover:-translate-y-0.5 hover:shadow-lg">
+          <div class="flex items-start justify-between gap-2">
+            <span class="text-sm font-bold text-ink-3">{m.number}.</span>
+            <span class="rounded-full bg-chip px-2 py-0.5 text-xs font-bold text-ink-2">{m.badge}</span>
+          </div>
+          <h3 class="text-base font-bold text-ink">{m.titlePl}</h3>
+          <p class="text-xs text-ink-3">{m.titleEn}</p>
+          {variant === 'full' && <p class="text-sm text-ink-2">{m.shortDescription}</p>}
+          <p class="mt-auto pt-1 text-xs text-ink-2">
+            {plural(c.cards, 'fiszka', 'fiszki', 'fiszek')} · {plural(c.exercises, 'ćwiczenie', 'ćwiczenia', 'ćwiczeń')} · {plural(c.rules, 'reguła', 'reguły', 'reguł')}
+          </p>
+          {access === 'open' ? (
+            <span class="inline-flex w-fit rounded-full bg-success-tint px-2 py-0.5 text-xs font-bold text-success">Bez logowania</span>
+          ) : access === 'free-account' ? (
+            <span class="inline-flex w-fit rounded-full bg-primary-tint px-2 py-0.5 text-xs font-bold text-primary">Darmowe konto</span>
+          ) : (
+            <span class="inline-flex w-fit rounded-full bg-chip px-2 py-0.5 text-xs font-bold text-ink-2">Pełny dostęp</span>
+          )}
+        </a>
+      </li>
+    );
+  })}
+</ul>

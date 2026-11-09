@@ -1,0 +1,28 @@
+---
+import Page from '../layouts/Page.astro';
+
+const crumbs = [{ name: 'Wypisanie z listy', href: '/wypisz' }];
+---
+
+<Page title="Wypisanie z listy" description="Wypisanie adresu e-mail z listy oczekujących." crumbs={crumbs} isArticle={false} noindex>
+  <div id="status" class="card p-6">
+    <p data-working>Wypisujemy adres…</p>
+    <p data-ok hidden class="text-xl font-bold text-ink">Wypisano. Nie wyślemy już nic.</p>
+    <p data-bad hidden class="text-xl font-bold text-ink">Ten link nie działa. Napisz do nas przez <a href="/kontakt" class="text-primary underline underline-offset-2">formularz kontaktowy</a>, a wypiszemy adres ręcznie.</p>
+  </div>
+</Page>
+
+<script>
+  const box = document.getElementById('status')!;
+  const show = (which: 'ok' | 'bad') => {
+    box.querySelector('[data-working]')?.setAttribute('hidden', '');
+    box.querySelector(`[data-${which}]`)?.removeAttribute('hidden');
+  };
+  const token = new URLSearchParams(window.location.search).get('token');
+  if (!token) show('bad');
+  else {
+    fetch('/api/account?action=lead-unsubscribe', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token }) })
+      .then((r) => show(r.ok ? 'ok' : 'bad'))
+      .catch(() => show('bad'));
+  }
+</script>

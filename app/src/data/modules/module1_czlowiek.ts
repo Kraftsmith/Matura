@@ -345,7 +345,7 @@ export const module1Czlowiek: MaturaModule = {
   // OPIS ILUSTRACJI (PICTURE DESCRIPTION)
   // ==========================================
   pictureDescription: {
-    imageSrc: '/images/matura_04_family.jpg',
+    imageSrc: '/images/matura_04_family.webp',
     imageAlt: 'Young couple and a woman cooking and preparing food together in a modern kitchen',
     title: 'Wspólne gotowanie i relacje domowe (Cooking and Relationships)',
     situation: 'Młodzi ludzie wspólnie przygotowują posiłek w nowoczesnej, jasnej kuchni.',

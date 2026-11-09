@@ -38,6 +38,8 @@ export interface Registration {
   acceptedTerms: boolean;
   uiLang: string;
   inviteCode?: string;
+  /** Where the sign-up started (a page of the public site), for the monthly count; see Spec - Landing §11. */
+  src?: string;
   /** Hidden from people; only a bot fills it in. */
   website: string;
 }

@@ -45,7 +45,8 @@ Each module has four exercises in `app/src/data/languageUseExercises.ts`, keyed 
 
 ## Layout
 
-- `app/` — the web app (React 19, TypeScript, Vite, Tailwind 4).
+- `app/` — the web app (React 19, TypeScript, Vite, Tailwind 4), served under `/app/`; also the Vercel project root and the only `api/`.
+- `site/` — the public site (Astro, static): landing, the 14 topics with every text, exercise and rule as its own page, exam guide, pricing, blog. Builds into `app/dist`, the app builds into `app/dist/app`; `cd app && npm run build:all` builds both. Content comes from `app/src/data`; which topics are open without an account is `openModules` in `site/site.config.ts`. See `Spec/Spec - Landing i strony publiczne.md`.
 - `Spec/` — product spec, design system notes, illustration brief and prompt for Antigravity.
 - `Грамматика и лексика (…)`, `Устная часть (…)` — source material the modules are built from.
 

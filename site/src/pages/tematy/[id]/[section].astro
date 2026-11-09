@@ -1,0 +1,169 @@
+---
+import Topic from '../../../layouts/Topic.astro';
+import AccessWall from '../../../components/AccessWall.astro';
+import VocabularyIsland from '../../../islands/VocabularyIsland';
+import LanguageUseIsland from '../../../islands/LanguageUseIsland';
+import GrammarIsland from '../../../islands/GrammarIsland';
+import PictureIsland from '../../../islands/PictureIsland';
+import WritingIsland from '../../../islands/WritingIsland';
+import FlashcardsIsland from '../../../islands/FlashcardsIsland';
+import { openModules } from '../../../../site.config';
+import { EXERCISE_TYPE_LABEL, SECTION_LABEL, SITE_SECTIONS, accessOf, allModules, appHash, countsOf, exerciseItemCount, exercisesOf, levelLabel, stripMarks, textsOf, topicPath, type SiteSection } from '../../../lib/content';
+
+export const getStaticPaths = () =>
+  allModules.flatMap((m) => SITE_SECTIONS.map((section) => ({ params: { id: m.id, section }, props: { moduleId: m.id, section } })));
+
+const { moduleId, section } = Astro.props as { moduleId: string; section: SiteSection };
+const m = allModules.find((x) => x.id === moduleId)!;
+const c = countsOf(m);
+const open = accessOf(moduleId) === 'open';
+const allowed = [...openModules];
+const texts = textsOf(moduleId);
+const exercises = exercisesOf(moduleId);
+const next = appHash(moduleId, section);
+
+const TITLES: Record<SiteSection, [string, string]> = {
+  slownictwo: [`${m.titlePl}: słownictwo maturalne z angielskiego, ${c.words} słów i ${c.texts} tekstów`, `Słówka z tematu „${m.titlePl}” z tłumaczeniem i przykładem, teksty z lukami i ćwiczeniami. Zakres z Informatora CKE.`],
+  srodki: [`${m.titlePl}: środki językowe, ${c.exercises} ćwiczeń jak w arkuszu`, `Dopasowanie, bank słów i minidialogi z tematu „${m.titlePl}”. Te same typy zadań, co na maturze z angielskiego, z wyjaśnieniami po sprawdzeniu.`],
+  gramatyka: [`${m.titlePl}: gramatyka na maturę, ${c.rules} ${c.rules === 1 ? 'reguła' : 'reguły'} i test`, `${m.grammarSummary} Reguły z przykładami i pułapkami maturalnymi, po nich test z ${c.testQuestions} zadań.`],
+  'opis-ilustracji': [`${m.titlePl}: opis ilustracji na maturze ustnej w 6 krokach`, `Zdjęcie z tematu „${m.titlePl}”, sześć kroków opisu, trzy pytania egzaminatora z przykładowymi odpowiedziami. Zadanie 2 matury ustnej z angielskiego.`],
+  pisanie: [`${m.titlePl}: ${m.writingPrompt.type.toLowerCase()} na maturę z angielskiego`, `Zadanie pisemne z tematu „${m.titlePl}” (${levelLabel(m.writingPrompt.level)}, ${m.writingPrompt.wordLimit.min}–${m.writingPrompt.wordLimit.max} słów): plan, przydatne zwroty, przykładowa odpowiedź.`],
+  fiszki: [`${m.titlePl}: fiszki do matury z angielskiego, ${c.cards} słówek`, `Talia fiszek z tematu „${m.titlePl}”: słowo, wymowa, znaczenie po polsku i po angielsku, przykład. Powtórka tego, czego jeszcze nie umiesz.`],
+};
+const [title, description] = TITLES[section];
+---
+
+<Topic moduleId={moduleId} section={section} title={title} description={description} canonicalPath={section === 'fiszki' ? topicPath(moduleId, 'slownictwo') : undefined}>
+  <h2 class="sr-only">{SECTION_LABEL[section]}</h2>
+
+  {section === 'slownictwo' && (open ? (
+    <VocabularyIsland client:load moduleId={moduleId} allowedModules={allowed} />
+  ) : (
+    <div class="paywall-teaser space-y-6">
+      <section class="card p-6">
+        <h3 class="text-xl font-bold">Lista słów ({c.words})</h3>
+        <dl class="mt-3 grid gap-x-6 gap-y-2 sm:grid-cols-2">
+          {m.vocabularyList.slice(0, 12).map((w) => (
+            <div class="border-b border-line-soft py-1.5">
+              <dt class="font-bold">{w.english} <span class="ml-1 rounded bg-chip px-1 text-[10px] font-bold text-ink-2">{w.level}</span> <span class="text-xs font-normal text-ink-3">{w.category}</span></dt>
+              <dd class="text-sm text-ink-2">{w.polish}<span class="block text-xs italic text-ink-3">{w.example}</span></dd>
+            </div>
+          ))}
+        </dl>
+        {c.words > 12 && <p class="mt-3 text-sm text-ink-3">…i jeszcze {c.words - 12} słów w pełnym dostępie.</p>}
+      </section>
+      <section>
+        <h3 class="mb-3 text-xl font-bold">Teksty z lukami ({texts.length})</h3>
+        <ul class="grid gap-4 sm:grid-cols-2">
+          {texts.map((t) => (
+            <li class="card overflow-hidden">
+              <img src={t.image.src} alt={t.image.alt} width="1200" height="800" loading="lazy" class="aspect-[3/2] w-full object-cover" />
+              <div class="p-4">
+                <p class="text-xs font-bold uppercase text-ink-3">{t.subtopic} · {t.level}</p>
+                <h4 class="font-bold"><a href={topicPath(moduleId, 'slownictwo', t.id)} class="hover:text-primary">{t.title}</a></h4>
+                <p class="mt-1 text-sm text-ink-2">{stripMarks(t.paragraphs[0] ?? '')}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
+  ))}
+
+  {section === 'srodki' && (open ? (
+    <LanguageUseIsland client:load moduleId={moduleId} allowedModules={allowed} />
+  ) : (
+    <div class="paywall-teaser card p-6">
+      <h3 class="text-xl font-bold">Ćwiczenia ({exercises.length})</h3>
+      <ul class="mt-3 divide-y divide-line-soft">
+        {exercises.map((e, i) => (
+          <li class="py-3">
+            <a href={topicPath(moduleId, 'srodki', e.id)} class="block hover:text-primary">
+              <span class="font-bold">Ćwiczenie {i + 1}: {EXERCISE_TYPE_LABEL[e.type]}</span>
+              <span class="ml-2 rounded bg-chip px-1 text-[10px] font-bold text-ink-2">{e.level}</span>
+              <span class="block text-sm text-ink-2">{e.functionLabel}</span>
+              <span class="block text-sm text-ink-2">{e.instruction} · {exerciseItemCount(e)} {exerciseItemCount(e) === 1 ? 'punkt' : exerciseItemCount(e) < 5 ? 'punkty' : 'punktów'}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  ))}
+
+  {section === 'gramatyka' && (open ? (
+    <GrammarIsland client:load moduleId={moduleId} allowedModules={allowed} />
+  ) : (
+    <div class="paywall-teaser space-y-4">
+      {m.grammarRules.map((r) => (
+        <section class="card p-6">
+          <h3 class="text-xl font-bold"><a href={topicPath(moduleId, 'gramatyka', r.id)} class="hover:text-primary">{r.title}</a> <span class="ml-1 rounded bg-chip px-1 text-[10px] font-bold text-ink-2">{r.level}</span></h3>
+          <p class="mt-2 text-ink-2">{r.ruleSummary}</p>
+        </section>
+      ))}
+      <section class="card p-6">
+        <h3 class="text-xl font-bold"><a href={topicPath(moduleId, 'gramatyka', 'test')} class="hover:text-primary">Test gramatyczny</a></h3>
+        <p class="mt-2 text-ink-2">{c.testQuestions} zadań: {[...new Set(m.testQuestions.map((q) => q.type))].map((t) => ({ 'multiple-choice': 'wybór wielokrotny', 'word-formation': 'słowotwórstwo', 'key-word-transformation': 'transformacje ze słowem kluczem', translation: 'tłumaczenie fragmentów' })[t]).join(', ')}.</p>
+      </section>
+    </div>
+  ))}
+
+  {section === 'opis-ilustracji' && (open ? (
+    <PictureIsland client:load moduleId={moduleId} allowedModules={allowed} />
+  ) : (
+    <div class="paywall-teaser card overflow-hidden">
+      <img src={m.pictureDescription.imageSrc} alt={m.pictureDescription.imageAlt} width="1200" height="800" loading="lazy" class="aspect-[3/2] w-full object-cover" />
+      <div class="p-6">
+        <h3 class="text-xl font-bold">{m.pictureDescription.title}</h3>
+        <p class="mt-2 text-ink-2">{m.pictureDescription.situation}</p>
+        <h4 class="mt-5 font-bold">Sześć kroków opisu</h4>
+        <ol class="mt-2 list-decimal space-y-1 pl-5 text-ink-2">
+          {m.pictureDescription.steps.map((s, i) => (
+            <li>
+              <span class="font-semibold text-ink">{s.stepNamePl}</span> <span class="text-ink-3">({s.stepName})</span>
+              {i === 0 && (
+                <>
+                  <span class="block text-sm">{s.description}</span>
+                  <span class="mt-1 flex flex-wrap gap-1.5">{s.recommendedPhrases.map((p) => <span class="rounded-full bg-chip px-2 py-0.5 text-xs">{p}</span>)}</span>
+                </>
+              )}
+            </li>
+          ))}
+        </ol>
+        <h4 class="mt-5 font-bold">Pytania egzaminatora</h4>
+        <ol class="mt-2 list-decimal space-y-1 pl-5 text-ink-2">
+          {m.pictureDescription.examQuestions.map((q) => <li>{q.questionText} <span class="block text-sm text-ink-3">{q.questionTextPl}</span></li>)}
+        </ol>
+      </div>
+    </div>
+  ))}
+
+  {section === 'pisanie' && (open ? (
+    <WritingIsland client:load moduleId={moduleId} allowedModules={allowed} />
+  ) : (
+    <div class="paywall-teaser card p-6">
+      <p class="text-xs font-bold uppercase text-ink-3">{m.writingPrompt.type} · {levelLabel(m.writingPrompt.level)} · {m.writingPrompt.wordLimit.min}–{m.writingPrompt.wordLimit.max} słów</p>
+      <h3 class="text-xl font-bold">{m.writingPrompt.title}</h3>
+      <p class="mt-2 text-ink-2">{m.writingPrompt.taskPrompt}</p>
+      <p class="mt-3 text-sm text-ink-3">W pełnym dostępie: {m.writingPrompt.bulletPoints.length} punkty zadania, {m.writingPrompt.usefulPhrases.length} przydatnych zwrotów, plan i przykładowa odpowiedź, edytor z licznikiem słów.</p>
+    </div>
+  ))}
+
+  {section === 'fiszki' && (open ? (
+    <FlashcardsIsland client:load moduleId={moduleId} allowedModules={allowed} />
+  ) : (
+    <div class="paywall-teaser card p-6">
+      <h3 class="text-xl font-bold">Talia „{m.titlePl}”: {c.cards} fiszek</h3>
+      <ul class="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {m.flashcards.slice(0, 12).map((f) => (
+          <li class="rounded-lg border border-line p-3">
+            <p class="font-bold">{f.front}</p>
+            <p class="text-sm text-ink-2">{f.backMeaningPl}</p>
+          </li>
+        ))}
+      </ul>
+      {c.cards > 12 && <p class="mt-3 text-sm text-ink-3">…i jeszcze {c.cards - 12} fiszek w pełnym dostępie, z wymową, definicją po angielsku i przykładem.</p>}
+    </div>
+  ))}
+
+  <AccessWall moduleId={moduleId} next={next} />
+</Topic>

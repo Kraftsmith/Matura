@@ -1,0 +1,70 @@
+---
+import { SITE_NAME } from '../../site.config';
+import { appLink } from '../lib/content';
+
+const nav = [
+  { href: '/tematy', label: 'Tematy' },
+  { href: '/matura-z-angielskiego', label: 'Matura' },
+  { href: '/cennik', label: 'Cennik' },
+  { href: '/dla-rodzicow', label: 'Dla rodziców' },
+  { href: '/blog', label: 'Blog' },
+];
+const current = Astro.url.pathname.replace(/\.html$/, '');
+const isActive = (href: string) => current === href || current.startsWith(`${href}/`);
+---
+
+<header class="sticky top-0 z-40 border-b border-line-soft bg-surface/95 backdrop-blur">
+  <div class="wrap flex h-16 items-center justify-between gap-4">
+    <a href="/" class="flex items-center gap-2 text-lg font-bold text-ink" aria-label={`${SITE_NAME}: strona główna`}>
+      <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-white">MA</span>
+      <span class="hidden sm:inline">{SITE_NAME}</span>
+    </a>
+
+    <nav class="hidden items-center gap-1 md:flex" aria-label="Główna nawigacja">
+      {nav.map((n) => (
+        <a
+          href={n.href}
+          class:list={['rounded-lg px-3 py-2 text-sm font-semibold hover:bg-hero', isActive(n.href) ? 'text-primary' : 'text-ink-2']}
+          aria-current={isActive(n.href) ? 'page' : undefined}
+        >
+          {n.label}
+        </a>
+      ))}
+    </nav>
+
+    <div class="flex items-center gap-2">
+      <a href={appLink('login')} class="hidden rounded-lg px-3 py-2 text-sm font-semibold text-ink-2 hover:bg-hero sm:inline-block" data-event="cta_login">Zaloguj się</a>
+      <a href={appLink('register?src=header')} class="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary-hover" data-event="cta_register" data-block="header">Zacznij za darmo</a>
+      <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-lg text-ink-2 hover:bg-hero md:hidden" aria-expanded="false" aria-controls="menu-mobile" data-menu-toggle aria-label="Menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+      </button>
+    </div>
+  </div>
+
+  <nav id="menu-mobile" class="hidden border-t border-line-soft bg-surface md:hidden" aria-label="Menu" hidden>
+    <div class="wrap flex flex-col py-2">
+      {nav.map((n) => (
+        <a href={n.href} class="rounded-lg px-3 py-3 text-base font-semibold text-ink hover:bg-hero">{n.label}</a>
+      ))}
+      <a href="/dla-nauczycieli" class="rounded-lg px-3 py-3 text-base font-semibold text-ink-2 hover:bg-hero">Dla nauczycieli</a>
+      <a href={appLink('login')} class="rounded-lg px-3 py-3 text-base font-semibold text-ink-2 hover:bg-hero">Zaloguj się</a>
+    </div>
+  </nav>
+</header>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const menu = document.getElementById('menu-mobile');
+  toggle?.addEventListener('click', () => {
+    const open = menu?.hasAttribute('hidden');
+    if (!menu) return;
+    if (open) {
+      menu.removeAttribute('hidden');
+      menu.classList.remove('hidden');
+    } else {
+      menu.setAttribute('hidden', '');
+      menu.classList.add('hidden');
+    }
+    toggle.setAttribute('aria-expanded', String(open));
+  });
+</script>

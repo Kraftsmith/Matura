@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { BookOpen, Menu, Palette, Languages, LayoutDashboard, ChevronDown, Globe, LogOut, UserPlus, UserRound } from 'lucide-react';
+import { BookOpen, CalendarDays, Menu, Palette, Languages, LayoutDashboard, ChevronDown, Globe, LogOut, UserPlus, UserRound } from 'lucide-react';
 import { INVITE_SCROLL_KEY } from './ClassInvite';
 import type { SectionType, TranslationLang } from '../types';
 import type { UiLang } from '../i18n';
@@ -162,6 +162,22 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onOpenHandbook, o
                   >
                     <LayoutDashboard className="h-5 w-5 text-ink-2" />
                     {t('side.teacherPanel')}
+                  </button>
+                )}
+                {user.role === 'teacher' && (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setUserMenuOpen(false);
+                      onSectionChange('kalendarz');
+                    }}
+                    className={`flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left text-base leading-6 hover:bg-hero focus-visible:bg-hero focus-visible:outline-none ${
+                      activeSection === 'kalendarz' ? 'font-semibold text-primary' : 'text-ink'
+                    }`}
+                  >
+                    <CalendarDays className="h-5 w-5 text-ink-2" />
+                    {t('cal.title')}
                   </button>
                 )}
                 <a

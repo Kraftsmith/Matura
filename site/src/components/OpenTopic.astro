@@ -1,0 +1,44 @@
+---
+/** Landing §6.5: the topic that is open in full, section by section, with counts from the data. */
+import { openModules } from '../../site.config';
+import { countsOf, moduleById, plural as pl, topicPath } from '../lib/content';
+
+const m = moduleById(openModules[0]!);
+if (!m) throw new Error(`Open module ${openModules[0]} not found`);
+const c = countsOf(m);
+const plural = (n: number, one: string, few: string, many: string) => pl(n, one, few, many).replace(/^\d+ /, '');
+
+const rows = [
+  { section: 'slownictwo', label: 'Słownictwo', text: `${c.texts} ${plural(c.texts, 'tekst', 'teksty', 'tekstów')} z lukami, ${c.words} ${plural(c.words, 'słowo', 'słowa', 'słów')} z przykładami` },
+  { section: 'srodki', label: 'Środki językowe', text: `${c.exercises} ${plural(c.exercises, 'ćwiczenie', 'ćwiczenia', 'ćwiczeń')}: dopasowanie, bank słów, minidialogi` },
+  { section: 'gramatyka', label: 'Gramatyka', text: `${c.rules} ${plural(c.rules, 'reguła', 'reguły', 'reguł')} i test na koniec (${c.testQuestions} ${plural(c.testQuestions, 'zadanie', 'zadania', 'zadań')})` },
+  { section: 'opis-ilustracji', label: 'Opis ilustracji', text: 'zdjęcie, 6 kroków, 3 pytania egzaminatora' },
+  { section: 'pisanie', label: 'Pisanie', text: `${m.writingPrompt.type.toLowerCase()} z licznikiem słów i listą kontrolną` },
+  { section: 'fiszki', label: 'Fiszki', text: `talia ${c.cards} ${plural(c.cards, 'fiszki', 'fiszek', 'fiszek')}, powtórka tego, czego nie umiesz` },
+] as const;
+---
+
+<section class="wrap py-16" id="otwarty-temat">
+  <div class="grid items-start gap-8 lg:grid-cols-[1fr_1.2fr]">
+    <div>
+      <p class="mb-2 text-sm font-bold uppercase tracking-wide text-primary">Bez logowania</p>
+      <h2 class="section-title">Cały temat „{m.titlePl}” za darmo. Bez logowania.</h2>
+      <p class="lead mt-3">Nie pokazujemy wycinka. Pierwszy temat z Informatora CKE jest otwarty w całości: tak samo wygląda każdy z 14.</p>
+      <a href={topicPath(m.id)} class="mt-6 inline-block rounded-lg bg-primary px-6 py-3 text-base font-bold text-white hover:bg-primary-hover" data-event="guest_open" data-block="landing">Otwórz temat bez logowania</a>
+      <p class="mt-3 text-sm text-ink-2">Postęp zapisze się w tej przeglądarce. Załóż konto, a przeniesiemy go na konto.</p>
+    </div>
+    <ul class="card divide-y divide-line-soft">
+      {rows.map((r) => (
+        <li>
+          <a href={topicPath(m.id, r.section)} class="flex items-center justify-between gap-4 px-5 py-4 hover:bg-hero" data-event="guest_open" data-block="landing" data-section={r.section}>
+            <div>
+              <p class="font-bold text-ink">{r.label}</p>
+              <p class="text-sm text-ink-2">{r.text}</p>
+            </div>
+            <span aria-hidden="true" class="text-ink-3">→</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

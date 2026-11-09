@@ -7,10 +7,13 @@
     "dev": "vite",
     "dev:api": "vercel dev",
     "build": "tsc -b && vite build",
+    "build:site": "npm --prefix ../site run build",
+    "build:all": "npm run build:site && tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
     "db:migrate": "node --env-file=.env.local scripts/db-migrate.mjs",
-    "user:create": "node --env-file=.env.local scripts/user-create.mjs"
+    "user:create": "node --env-file=.env.local scripts/user-create.mjs",
+    "test": "vitest run"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",
@@ -30,6 +33,7 @@
     "oxlint": "^1.81.0",
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",
-    "vite": "^8.3.0"
+    "vite": "^8.3.0",
+    "vitest": "^5.1.0"
   }
 }

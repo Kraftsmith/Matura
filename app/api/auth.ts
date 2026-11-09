@@ -31,7 +31,7 @@ const register = async (req: Request) => {
   if (body.website) return accepted();
 
   const email = normalizeEmail(body.email);
-  const { name, password, acceptedTerms, uiLang, inviteCode, role } = body;
+  const { name, password, acceptedTerms, uiLang, inviteCode, role, src } = body;
   if (!email || !validName(name) || acceptedTerms !== true) return badRequest();
   // A teacher sees only learners who join their class, so anyone may sign up as one.
   if (role !== undefined && role !== 'student' && role !== 'teacher') return badRequest();
@@ -50,6 +50,8 @@ const register = async (req: Request) => {
   const lang = validUiLang(uiLang) ? uiLang : 'pl';
   const isTeacher = role === 'teacher';
   const invite = !isTeacher && typeof inviteCode === 'string' && inviteCode.length <= 64 ? inviteCode : null;
+  // Which page of the site the sign-up started on; a label, never free text.
+  const source = typeof src === 'string' && /^[a-z0-9.-]{1,40}$/.test(src) ? src : null;
   const passwordHash = await hashPassword(password as string);
   const [existing] = await sql`select id, email_verified_at, ui_lang from users where email = ${email}`;
 
@@ -61,10 +63,10 @@ const register = async (req: Request) => {
   const id = (existing?.id as string | undefined) ?? randomUUID();
   // A second sign-up on an unconfirmed address replaces the first: whoever really owns the mailbox wins.
   await sql`
-    insert into users (id, role, email, name, password_hash, ui_lang, pending_invite, terms_accepted_at, terms_version)
-    values (${id}, ${isTeacher ? 'teacher' : 'student'}, ${email}, ${name.trim()}, ${passwordHash}, ${lang}, ${invite}, now(), ${TERMS_VERSION})
+    insert into users (id, role, email, name, password_hash, ui_lang, pending_invite, terms_accepted_at, terms_version, signup_source)
+    values (${id}, ${isTeacher ? 'teacher' : 'student'}, ${email}, ${name.trim()}, ${passwordHash}, ${lang}, ${invite}, now(), ${TERMS_VERSION}, ${source})
     on conflict (id) do update set role = excluded.role, name = excluded.name, password_hash = excluded.password_hash, ui_lang = excluded.ui_lang,
-      pending_invite = excluded.pending_invite, terms_accepted_at = now(), terms_version = excluded.terms_version`;
+      pending_invite = excluded.pending_invite, terms_accepted_at = now(), terms_version = excluded.terms_version, signup_source = coalesce(excluded.signup_source, users.signup_source)`;
 
   sendMail('verify', email, lang, `verify/${await issueToken(id, 'verify_email', VERIFY_HOURS)}`);
   return accepted();

@@ -34,6 +34,7 @@ export const toNote = (r: Record<string, unknown>) => ({
   text: r.text,
   tag: r.tag,
   moduleId: r.module_id ?? undefined,
+  lessonId: r.lesson_id ?? undefined,
   pinned: r.pinned,
   createdAt: r.created_at,
   updatedAt: r.updated_at,

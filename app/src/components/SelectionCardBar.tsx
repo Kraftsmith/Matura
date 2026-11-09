@@ -45,7 +45,12 @@ export const SelectionCardBar: React.FC<SelectionCardBarProps> = ({ moduleId, te
   const add = useAddFlashcard(moduleId, targetUserId);
   const [picked, setPicked] = useState<Picked>();
   const panel = useRef<HTMLDivElement>(null);
-  const touch = window.matchMedia('(pointer: coarse)').matches;
+  // Known only in a browser; the component is also rendered to HTML at build time for the public site.
+  const [touch, setTouch] = useState(false);
+  useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect
+    setTouch(window.matchMedia('(pointer: coarse)').matches);
+  }, []);
 
   useEffect(() => {
     let dragging = false;

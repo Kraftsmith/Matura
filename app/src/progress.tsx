@@ -1,17 +1,28 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ApiError, clearStudentProgress, fetchProgress, putMeta, putModule } from './accountApi';
+import { ProgressContext, emptyModuleProgress, emptyProgressState, type ModuleProgress, type ProgressState, type ProgressValue } from './progress-context';
 import {
-  ProgressContext,
-  emptyModuleProgress,
-  emptyProgressState,
-  type CardStatus,
-  type ModuleProgress,
-  type ProgressState,
-  type ProgressValue,
-} from './progress-context';
+  countGuestWork,
+  findCard,
+  isProgressState,
+  makeCard,
+  mergeGuestProgress,
+  opAddCard,
+  opRemoveCard,
+  opReset,
+  opRestoreCard,
+  opSaveExerciseResult,
+  opSaveTestResult,
+  opSetCardStatus,
+  opTouchDeck,
+  opTouchModule,
+  opUpdateCard,
+  opUpdateModule,
+} from './progressOps';
+import { readGuestProgress, removeGuestProgress } from './guest/guestStorage';
+import { allModules } from './data/modulesData';
 import { useSettings } from './useSettings';
 import { useUser } from './useUser';
-import type { UserFlashcard } from './types';
 
 /** The browser-only store from before accounts. Read once, for the learner it belongs to. */
 const LEGACY_KEY = 'matura.progress.v3';
@@ -30,9 +41,6 @@ interface Cache {
 }
 
 const cacheKey = (userId: string) => `matura.progress.cache.${userId}`;
-
-const isProgressState = (v: unknown): v is ProgressState =>
-  !!v && typeof v === 'object' && (v as ProgressState).version === 1 && typeof (v as ProgressState).modules === 'object';
 
 const readCache = (userId: string): Cache | undefined => {
   try {
@@ -96,18 +104,14 @@ const dropLegacy = (userId: string) => {
   }
 };
 
-const newCardId = (moduleId: string) => `u-${moduleId}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 4)}`;
-
-const withStatus = (m: ModuleProgress, cardId: string, status: CardStatus): ModuleProgress => {
-  const mastered = m.mastered.filter((id) => id !== cardId);
-  const review = m.review.filter((id) => id !== cardId);
-  if (status === 'mastered') mastered.push(cardId);
-  if (status === 'review') review.push(cardId);
-  return { ...m, mastered, review };
+/** Names the topics a guest worked in, for the transfer question. */
+const guestTopics = (guest: ProgressState): string => {
+  const ids = new Set([...Object.keys(guest.modules), ...Object.keys(guest.cards ?? {})]);
+  return allModules
+    .filter((m) => ids.has(m.id))
+    .map((m) => `„${m.titlePl}”`)
+    .join(', ');
 };
-
-const statusIn = (m: ModuleProgress | undefined, cardId: string): CardStatus =>
-  m?.mastered.includes(cardId) ? 'mastered' : m?.review.includes(cardId) ? 'review' : 'none';
 
 export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, students, refreshClass, markSignedOut } = useUser();
@@ -163,10 +167,19 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       const serverEmpty = Object.keys(synced.current).length === 1 && synced.current[META] === EMPTY;
       const legacy = offered.current ? undefined : readLegacy(userId);
+      // What a guest did on the public site before signing up (Spec - Landing §8.3): offered once, then the key goes.
+      const guest = offered.current ? undefined : readGuestProgress();
       offered.current = true;
       if (legacy) {
         if (serverEmpty && window.confirm(t('progress.importAsk'))) setState(legacy);
         dropLegacy(userId);
+      }
+      if (guest) {
+        const counts = countGuestWork(guest);
+        if ((counts.exercises > 0 || counts.cards > 0) && window.confirm(t('progress.importGuestAsk', { topics: guestTopics(guest), n: counts.exercises, m: counts.cards }))) {
+          setState((prev) => mergeGuestProgress(prev, guest));
+        }
+        removeGuestProgress();
       }
     } catch (e) {
       fail(e);
@@ -272,122 +285,37 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const updateUser = useCallback((fn: (s: ProgressState) => ProgressState) => setState(fn), []);
 
-  const updateModule = useCallback(
-    (moduleId: string, fn: (m: ModuleProgress) => ModuleProgress) => {
-      updateUser((s) => ({
-        ...s,
-        updatedAt: new Date().toISOString(),
-        modules: { ...s.modules, [moduleId]: fn(s.modules[moduleId] ?? emptyModuleProgress()) },
-      }));
-    },
+  const updateModule = useCallback<ProgressValue['updateModule']>((moduleId, fn) => updateUser((s) => opUpdateModule(s, moduleId, fn)), [updateUser]);
+  const setCardStatus = useCallback<ProgressValue['setCardStatus']>((moduleId, cardId, status) => updateUser((s) => opSetCardStatus(s, moduleId, cardId, status)), [updateUser]);
+  const saveTestResult = useCallback<ProgressValue['saveTestResult']>((moduleId, score) => updateUser((s) => opSaveTestResult(s, moduleId, score)), [updateUser]);
+  const saveExerciseResult = useCallback<ProgressValue['saveExerciseResult']>(
+    (moduleId, exerciseId, score) => updateUser((s) => opSaveExerciseResult(s, moduleId, exerciseId, score)),
     [updateUser],
   );
-
-  const setCardStatus = useCallback(
-    (moduleId: string, cardId: string, status: CardStatus) => {
-      updateModule(moduleId, (m) => withStatus(m, cardId, status));
-    },
-    [updateModule],
-  );
-
-  const saveTestResult = useCallback(
-    (moduleId: string, scorePercent: number) => {
-      const score = Math.max(0, Math.min(100, Math.round(scorePercent)));
-      updateModule(moduleId, (m) => ({
-        ...m,
-        test: {
-          best: Math.max(m.test?.best ?? 0, score),
-          last: score,
-          attempts: (m.test?.attempts ?? 0) + 1,
-          lastAt: new Date().toISOString(),
-        },
-      }));
-    },
-    [updateModule],
-  );
-
-  const saveExerciseResult = useCallback(
-    (moduleId: string, exerciseId: string, scorePercent: number) => {
-      const score = Math.max(0, Math.min(100, Math.round(scorePercent)));
-      updateModule(moduleId, (m) => {
-        const previous = m.exercises?.[exerciseId];
-        return {
-          ...m,
-          exercises: {
-            ...m.exercises,
-            [exerciseId]: {
-              best: Math.max(previous?.best ?? 0, score),
-              last: score,
-              attempts: (previous?.attempts ?? 0) + 1,
-              lastAt: new Date().toISOString(),
-            },
-          },
-        };
-      });
-    },
-    [updateModule],
-  );
-
-  const touchModule = useCallback(
-    (moduleId: string) => {
-      updateUser((s) => (s.lastModuleId === moduleId ? s : { ...s, lastModuleId: moduleId }));
-    },
-    [updateUser],
-  );
-
-  const touchDeck = useCallback(
-    (moduleId: string) => {
-      updateUser((s) => (s.lastDeckId === moduleId ? s : { ...s, lastDeckId: moduleId }));
-    },
-    [updateUser],
-  );
-
-  const setCards = useCallback(
-    (moduleId: string, fn: (cards: UserFlashcard[]) => UserFlashcard[]) => {
-      updateUser((s) => ({
-        ...s,
-        updatedAt: new Date().toISOString(),
-        cards: { ...s.cards, [moduleId]: fn(s.cards?.[moduleId] ?? []) },
-      }));
-    },
-    [updateUser],
-  );
+  const touchModule = useCallback<ProgressValue['touchModule']>((moduleId) => updateUser((s) => opTouchModule(s, moduleId)), [updateUser]);
+  const touchDeck = useCallback<ProgressValue['touchDeck']>((moduleId) => updateUser((s) => opTouchDeck(s, moduleId)), [updateUser]);
 
   const addCard = useCallback<ProgressValue['addCard']>(
     (moduleId, draft) => {
-      const card: UserFlashcard = { ...draft, id: newCardId(moduleId), createdAt: new Date().toISOString() };
-      setCards(moduleId, (cards) => [...cards, card]);
+      const card = makeCard(moduleId, draft);
+      updateUser((s) => opAddCard(s, moduleId, card));
       return card;
     },
-    [setCards],
+    [updateUser],
   );
 
-  const updateCard = useCallback<ProgressValue['updateCard']>(
-    (moduleId, cardId, patch) => {
-      setCards(moduleId, (cards) => cards.map((c) => (c.id === cardId ? { ...c, ...patch, id: cardId, updatedAt: new Date().toISOString() } : c)));
-    },
-    [setCards],
-  );
+  const updateCard = useCallback<ProgressValue['updateCard']>((moduleId, cardId, patch) => updateUser((s) => opUpdateCard(s, moduleId, cardId, patch)), [updateUser]);
 
   const removeCard = useCallback<ProgressValue['removeCard']>(
     (moduleId, cardId) => {
-      const card = state.cards?.[moduleId]?.find((c) => c.id === cardId);
-      if (!card) return undefined;
-      const status = statusIn(state.modules[moduleId], cardId);
-      setCards(moduleId, (cards) => cards.filter((c) => c.id !== cardId));
-      updateModule(moduleId, (m) => withStatus(m, cardId, 'none'));
-      return { card, status };
+      const removed = findCard(state, moduleId, cardId);
+      if (removed) updateUser((s) => opRemoveCard(s, moduleId, cardId));
+      return removed;
     },
-    [state, setCards, updateModule],
+    [state, updateUser],
   );
 
-  const restoreCard = useCallback<ProgressValue['restoreCard']>(
-    (moduleId, card, status) => {
-      setCards(moduleId, (cards) => [...cards, card]);
-      updateModule(moduleId, (m) => withStatus(m, card.id, status));
-    },
-    [setCards, updateModule],
-  );
+  const restoreCard = useCallback<ProgressValue['restoreCard']>((moduleId, card, status) => updateUser((s) => opRestoreCard(s, moduleId, card, status)), [updateUser]);
 
   const moveCard = useCallback<ProgressValue['moveCard']>(
     (fromModuleId, toModuleId, cardId, patch) => {
@@ -400,7 +328,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   /** Clears statuses and results; the learner's own cards are their writing, so they stay. */
   const resetUser = useCallback(
     (uid: string) => {
-      if (uid === userId) setState((prev) => (prev.cards ? { ...emptyProgressState(), cards: prev.cards } : emptyProgressState()));
+      if (uid === userId) setState(opReset);
       else clearStudentProgress(uid).then(refreshClass).catch(() => setSaveFailed(true));
     },
     [userId, refreshClass],

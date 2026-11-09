@@ -1,0 +1,12 @@
+---
+import Base from '../layouts/Base.astro';
+import TopicGrid from '../components/TopicGrid.astro';
+---
+
+<Base title="Nie ma takiej strony" description="Strona nie istnieje. Może szukasz jednego z 14 tematów?" path="/404" noindex>
+  <div class="wrap py-12">
+    <h1 class="display">Nie ma takiej strony</h1>
+    <p class="lead mt-3">Może szukasz jednego z 14 tematów?</p>
+    <div class="mt-8"><TopicGrid /></div>
+  </div>
+</Base>

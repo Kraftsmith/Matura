@@ -120,6 +120,99 @@ await sql`drop table if exists login_attempts`;
 await sql`insert into users (id, role, name) values ('maria', 'student', 'Maria'), ('evgeny', 'student', 'Evgeny') on conflict (id) do nothing`;
 await sql`update users set name = 'Nauczyciel' where id = 'teacher' and name = ''`;
 
+// Lessons and homework (Spec - Kalendarz i zadania domowe.md, §8).
+await sql`
+  create table if not exists lesson_series (
+    id uuid primary key default gen_random_uuid(),
+    teacher_id text not null references users (id) on delete cascade,
+    weekday smallint not null check (weekday between 1 and 7),
+    start_time time not null,
+    duration_min smallint not null check (duration_min between 15 and 240),
+    starts_on date not null,
+    ends_on date not null,
+    plan text not null default '' check (char_length(plan) <= 2000),
+    created_at timestamptz not null default now()
+  )`;
+await sql`
+  create table if not exists lesson_series_students (
+    series_id uuid not null references lesson_series (id) on delete cascade,
+    student_id text not null references users (id) on delete cascade,
+    primary key (series_id, student_id)
+  )`;
+await sql`
+  create table if not exists lesson_series_skips (
+    series_id uuid not null references lesson_series (id) on delete cascade,
+    occurrence_date date not null,
+    primary key (series_id, occurrence_date)
+  )`;
+await sql`
+  create table if not exists lessons (
+    id uuid primary key default gen_random_uuid(),
+    teacher_id text not null references users (id) on delete cascade,
+    series_id uuid references lesson_series (id) on delete set null,
+    occurrence_date date,
+    starts_at timestamptz not null,
+    duration_min smallint not null check (duration_min between 15 and 240),
+    status text not null default 'planned' check (status in ('planned', 'held', 'cancelled', 'moved')),
+    cancelled_by text check (cancelled_by in ('student', 'teacher')),
+    moved_to uuid references lessons (id) on delete set null,
+    plan text not null default '' check (char_length(plan) <= 2000),
+    summary text not null default '' check (char_length(summary) <= 5000),
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now(),
+    unique (series_id, occurrence_date)
+  )`;
+await sql`create index if not exists lessons_teacher_time on lessons (teacher_id, starts_at)`;
+await sql`
+  create table if not exists lesson_participants (
+    lesson_id uuid not null references lessons (id) on delete cascade,
+    student_id text not null references users (id) on delete cascade,
+    attendance text check (attendance in ('present', 'absent', 'excused')),
+    primary key (lesson_id, student_id)
+  )`;
+await sql`create index if not exists lesson_participants_student on lesson_participants (student_id)`;
+
+await sql`
+  create table if not exists homework (
+    id uuid primary key default gen_random_uuid(),
+    teacher_id text not null references users (id) on delete cascade,
+    lesson_id uuid references lessons (id) on delete set null,
+    due_at timestamptz not null,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+  )`;
+await sql`create index if not exists homework_teacher_due on homework (teacher_id, due_at)`;
+await sql`
+  create table if not exists homework_items (
+    id uuid primary key default gen_random_uuid(),
+    homework_id uuid not null references homework (id) on delete cascade,
+    position smallint not null,
+    kind text not null check (kind in ('link', 'text')),
+    target text,
+    text text not null default '' check (char_length(text) <= 500),
+    created_at timestamptz not null default now(),
+    check ((kind = 'link') = (target is not null))
+  )`;
+await sql`create index if not exists homework_items_homework on homework_items (homework_id, position)`;
+await sql`
+  create table if not exists homework_students (
+    homework_id uuid not null references homework (id) on delete cascade,
+    student_id text not null references users (id) on delete cascade,
+    assigned_at timestamptz not null default now(),
+    primary key (homework_id, student_id)
+  )`;
+await sql`create index if not exists homework_students_student on homework_students (student_id)`;
+await sql`
+  create table if not exists homework_ticks (
+    item_id uuid not null references homework_items (id) on delete cascade,
+    student_id text not null references users (id) on delete cascade,
+    by text not null check (by in ('student', 'teacher')),
+    done_at timestamptz not null default now(),
+    primary key (item_id, student_id)
+  )`;
+// A private note can be about one lesson; the lesson's page lists them.
+await sql`alter table teacher_notes add column if not exists lesson_id uuid references lessons (id) on delete set null`;
+
 // Without the cascade, deleting an account would leave notes about a person who is gone.
 const foreignKeys = [
   ['teacher_notes', 'teacher_notes_student_fk', 'student_id'],
@@ -129,5 +222,28 @@ for (const [table, name, column] of foreignKeys) {
   const [found] = await sql`select 1 from pg_constraint where conname = ${name}`;
   if (!found) await sql.query(`alter table ${table} add constraint ${name} foreign key (${column}) references users (id) on delete cascade`);
 }
+
+// Addresses left on the public site: the waiting list and the contact form (Spec - Landing §10.3).
+await sql`alter table users add column if not exists signup_source text`;
+await sql`
+  create table if not exists leads (
+    id uuid primary key default gen_random_uuid(),
+    email text not null,
+    kind text not null default 'subscribe' check (kind in ('subscribe', 'contact')),
+    role text check (role in ('student', 'parent', 'teacher')),
+    status text not null default 'pending' check (status in ('pending', 'confirmed', 'unsubscribed')),
+    source text,
+    utm jsonb,
+    lang text not null default 'pl',
+    message text check (char_length(message) <= 2000),
+    token_hash text,
+    token_expires_at timestamptz,
+    unsubscribe_token_hash text,
+    confirmed_at timestamptz,
+    created_at timestamptz not null default now()
+  )`;
+await sql`create unique index if not exists leads_email_subscribe on leads (lower(email)) where kind = 'subscribe'`;
+await sql`create index if not exists leads_token on leads (token_hash)`;
+await sql`create index if not exists leads_unsubscribe_token on leads (unsubscribe_token_hash)`;
 
 console.log('Database is up to date.');

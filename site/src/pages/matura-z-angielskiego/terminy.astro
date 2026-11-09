@@ -1,0 +1,41 @@
+---
+import Page from '../../layouts/Page.astro';
+import LeadForm from '../../components/LeadForm';
+import { matura } from '../../../site.config';
+
+const crumbs = [
+  { name: 'Matura z angielskiego', href: '/matura-z-angielskiego' },
+  { name: `Terminy ${matura.year}`, href: '/matura-z-angielskiego/terminy' },
+];
+const formatDate = (iso: string) => new Date(`${iso}T00:00:00`).toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+
+<Page title={`Matura ${matura.year} z angielskiego: terminy egzaminu pisemnego i ustnego`} heading={`Terminy matury ${matura.year} z języka angielskiego`} description={`Kiedy jest matura z angielskiego w ${matura.year} roku, gdzie sprawdzić harmonogram CKE i jak rozłożyć naukę do egzaminu.`} crumbs={crumbs} updated="2026-11-09">
+  <h2>Kiedy jest egzamin</h2>
+  {matura.dateConfirmed ? (
+    <p>Egzamin pisemny z języka angielskiego na poziomie podstawowym: <strong>{formatDate(matura.writtenDate)}</strong>. Poziom rozszerzony zwykle w kolejnych dniach, część ustna w oknie kilkunastu dni maja. Dokładne daty znajdziesz w komunikacie dyrektora CKE o harmonogramie.</p>
+  ) : (
+    <p>Egzaminy maturalne odbywają się w <strong>maju {matura.year}</strong>; język angielski na poziomie podstawowym zwykle w pierwszym tygodniu sesji. Dokładny harmonogram ogłasza dyrektor CKE w komunikacie publikowanym z rocznym wyprzedzeniem. Gdy tylko się ukaże, wpiszemy tu konkretną datę i uruchomimy odliczanie na stronie głównej.</p>
+  )}
+  <p>Źródło zawsze to samo: <a href="https://cke.gov.pl/egzamin-maturalny/egzamin-maturalny-w-formule-2023/harmonogram-komunikaty-i-informacje/" rel="noopener" target="_blank">harmonogram i komunikaty CKE</a>. Nie planuj według dat z forów.</p>
+
+  <h2>Co jeszcze ma termin</h2>
+  <ul>
+    <li><strong>Deklaracja wstępna</strong>: do końca września roku szkolnego, w którym zdajesz. Wybierasz w niej poziom rozszerzony.</li>
+    <li><strong>Deklaracja ostateczna</strong>: do początku lutego. Potem zmiana poziomu nie jest możliwa.</li>
+    <li><strong>Wyniki</strong>: na początku lipca, w systemie ZIU i w szkole.</li>
+    <li><strong>Termin poprawkowy</strong>: sierpień, tylko dla osób, które nie zdały jednego egzaminu obowiązkowego.</li>
+  </ul>
+
+  <h2>Jak rozłożyć naukę</h2>
+  <ol>
+    <li><strong>Do grudnia</strong>: tematy 1–7, słownictwo i środki językowe. Jeden temat na dwa tygodnie.</li>
+    <li><strong>Styczeń–luty</strong>: tematy 8–14 i gramatyka z testami. Pierwszy arkusz próbny z zegarem.</li>
+    <li><strong>Marzec–kwiecień</strong>: powtórka fiszek „do powtórki”, wypowiedzi pisemne co tydzień, opis ilustracji na głos.</li>
+    <li><strong>Maj</strong>: arkusze z poprzednich lat, nic nowego.</li>
+  </ol>
+
+  <h2>Powiadomienie o harmonogramie</h2>
+  <p>Zostaw adres, a napiszemy, gdy CKE ogłosi daty i gdy wystartuje pełny dostęp.</p>
+  <LeadForm client:visible source="terminy" defaultRole="parent" compact />
+</Page>

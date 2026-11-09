@@ -1,0 +1,176 @@
+---
+import Base from '../layouts/Base.astro';
+import Countdown from '../components/Countdown.astro';
+import Fact from '../components/Fact.astro';
+import Sources from '../components/Sources.astro';
+import OpenTopic from '../components/OpenTopic.astro';
+import TopicGrid from '../components/TopicGrid.astro';
+import Pricing from '../components/Pricing.astro';
+import Faq from '../components/Faq.astro';
+import LeadForm from '../components/LeadForm';
+import { Image } from 'astro:assets';
+import heroShot from '../assets/screens/hero.png';
+import shotSlownictwo from '../assets/screens/slownictwo.png';
+import shotSrodki from '../assets/screens/srodki.png';
+import shotOpis from '../assets/screens/opis.png';
+import shotGramatyka from '../assets/screens/gramatyka.png';
+import shotFiszki from '../assets/screens/fiszki.png';
+import { SITE_NAME, matura, openModules, pricing } from '../../site.config';
+import { allModules, appLink, moduleById, topicPath, totals } from '../lib/content';
+import { faqPage, softwareApplication } from '../lib/seo';
+
+const open = moduleById(openModules[0]!)!;
+const freeN = pricing.freeAccountModules.length;
+const title = 'Matura z angielskiego online: ćwiczenia jak w arkuszu CKE';
+const description = `${allModules.length} tematów CKE, środki językowe, opis ilustracji w 6 krokach, fiszki i postęp. Cały temat „${open.titlePl}” bez logowania, konto za darmo.`;
+
+const parts = [
+  { name: 'Rozumienie ze słuchu', fact: 'ppListening', node: 'Słownictwo i rozumienie całości, nie każdego słowa.', us: 'Tego jeszcze u nas nie ma.' },
+  { name: 'Rozumienie tekstów pisanych', fact: 'ppReading', node: 'Słownictwo tematyczne, spójniki, odniesienia w tekście.', us: `Teksty z lukami w ${allModules.length} tematach: słownictwo w kontekście.` },
+  { name: 'Znajomość środków językowych', fact: 'ppLanguage', node: 'Gramatyka i słowotwórstwo w konkretnych typach zadań.', us: `${totals.exercises} ćwiczeń tych samych typów, z wyjaśnieniami.` },
+  { name: 'Wypowiedź pisemna', fact: 'ppWriting', node: 'Treść, spójność, zakres i poprawność: cztery kryteria.', us: 'Zadanie z planem, zwrotami, licznikiem słów i listą kontrolną.' },
+  { name: 'Część ustna', fact: 'oralPoints', node: 'Opis ilustracji, rozmowa, materiał stymulujący.', us: 'Opis ilustracji w 6 krokach i 3 pytania egzaminatora w każdym temacie.' },
+] as const;
+
+const faq = [
+  { q: 'Czy to działa na telefonie?', a: 'Tak, w przeglądarce, bez instalowania. Postęp jest zapisany na koncie, więc możesz zacząć na telefonie i skończyć na komputerze.' },
+  { q: 'Czy materiały są zgodne z Formułą 2023?', a: 'Tak. Tematy, typy zadań i kryteria bierzemy z Informatora CKE. Nie jesteśmy związani z CKE.' },
+  { q: 'Co jest za darmo?', a: `Temat „${open.titlePl}” w całości bez logowania. Darmowe konto dodaje zapis postępu, fiszki ze wszystkich tematów i ${freeN} ${freeN === 1 ? 'temat' : freeN < 5 ? 'tematy' : 'tematów'} w całości. Reszta w pełnym dostępie, zobacz cennik.` },
+  { q: 'Czy jest poziom rozszerzony?', a: 'Tak, zadania są oznaczone P i R; reguły gramatyczne mają obie warstwy.' },
+  { q: 'Czy rodzic widzi postęp?', a: 'Dziś przez konto dziecka. Raport na e-mail dla rodzica jest w przygotowaniu.' },
+  { q: 'Czy nauczyciel może korzystać z uczniami?', a: 'Tak: klasa, kalendarz zajęć, zadania domowe z linkami, fiszki od nauczyciela. Zobacz „Dla nauczycieli”.' },
+  { q: 'Jak usunąć konto?', a: 'W profilu, jednym przyciskiem. Dane są usuwane od razu.' },
+];
+
+const features = [
+  { title: 'Słownictwo w tekstach, nie w tabelkach', text: 'Każdy temat ma teksty z lukami i listę słów z przykładami. Zaznaczasz słowo, którego nie znasz, i jednym kliknięciem robisz z niego fiszkę.', href: '/tematy', img: shotSlownictwo },
+  { title: 'Te same typy zadań, co w arkuszu', text: 'Dopasowanie, bank słów, minidialogi. Po sprawdzeniu dostajesz wyjaśnienie, dlaczego akurat ta forma.', href: '/matura-z-angielskiego/srodki-jezykowe', img: shotSrodki },
+  { title: 'Opis ilustracji w 6 krokach', text: 'Wstęp, miejsce, osoby, czynności, atmosfera, własne zdanie. Do każdego zdjęcia trzy pytania egzaminatora z przykładowymi odpowiedziami.', href: '/matura-z-angielskiego/czesc-ustna', img: shotOpis },
+  { title: 'Gramatyka z testem na końcu', text: 'Reguły z przykładami i pułapkami, a po nich test, który pokazuje, co jeszcze do powtórki.', href: topicPath(open.id, 'gramatyka'), img: shotGramatyka },
+  { title: 'Fiszki, które pamiętają za Ciebie', text: 'Talia do każdego tematu, powtórka tego, co oznaczyłeś. Nauczyciel może dodać Ci fiszkę w trakcie lekcji.', href: topicPath(open.id, 'fiszki'), img: shotFiszki },
+];
+---
+
+<Base title={title} description={description} path="/" jsonLd={[softwareApplication(true), faqPage(faq)]}>
+  <!-- Old links to the app looked like /#czlowiek/slownictwo; the app now lives under /app/. The hash never reaches the server, so the page forwards it. -->
+  <script is:inline>
+    (function () {
+      var h = window.location.hash;
+      var own = ['#jak-to-dziala', '#otwarty-temat', '#tematy', '#rodzice', '#cennik', '#faq', '#zrodla', '#tresc'];
+      if (h && h.length > 1 && own.indexOf(h) === -1) window.location.replace('/app/' + h);
+    })();
+  </script>
+  <section class="bg-hero">
+    <div class="wrap grid items-center gap-10 py-16 lg:grid-cols-[1.1fr_1fr] lg:py-24">
+      <div>
+        <Countdown />
+        <h1 class="display mt-5">Przygotuj się do matury z angielskiego tak, jak sprawdza ją CKE</h1>
+        <p class="lead mt-5">{allModules.length} tematów, ćwiczenia jak w arkuszu, opis ilustracji w 6 krokach i fiszki, które pamiętają, czego nie umiesz.</p>
+        <div class="mt-8 flex flex-wrap items-center gap-4">
+          <a href={appLink('register?src=landing-hero')} class="rounded-lg bg-primary px-6 py-3 text-base font-bold text-white hover:bg-primary-hover" data-event="cta_register" data-block="hero">Zacznij za darmo</a>
+          <a href="#jak-to-dziala" class="font-semibold text-ink-2 hover:text-primary">Zobacz, jak to działa ↓</a>
+        </div>
+        <p class="mt-3 text-sm text-ink-2">Bez karty. Konto w minutę.</p>
+      </div>
+      <div class="card overflow-hidden">
+        <Image src={heroShot} alt={`Ćwiczenie środków językowych w ${SITE_NAME}: dopasowanie reakcji do zdań`} widths={[480, 720, 1080]} sizes="(min-width: 1024px) 540px, 100vw" format="webp" quality={80} loading="eager" fetchpriority="high" class="aspect-[3/2] w-full object-cover object-top" />
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap py-16">
+    <h2 class="section-title">Matura nie sprawdza „całego angielskiego”. Sprawdza konkretne rzeczy.</h2>
+    <p class="lead mt-3 max-w-3xl">Część pisemna na poziomie podstawowym trwa <Fact id="ppMinutes" /> i daje <Fact id="ppPoints" /> punktów w czterech częściach. Do zdania potrzeba <Fact id="passThreshold" />. Każda część sprawdza inny węzeł języka.</p>
+    <ul class="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {parts.map((p) => (
+        <li class="card flex flex-col gap-2 p-5">
+          <p class="text-sm font-bold text-ink-3">{p.name}</p>
+          <p class="text-2xl font-bold"><Fact id={p.fact} /></p>
+          <p class="text-sm text-ink-2">{p.node}</p>
+          <p class="mt-auto border-t border-line-soft pt-2 text-sm"><span class="font-bold text-ink">U nas:</span> {p.us}</p>
+        </li>
+      ))}
+      <li class="flex flex-col justify-center rounded-2xl border-2 border-dashed border-line p-5 text-sm text-ink-2">
+        Liczby pochodzą z Informatora CKE i są wymienione w jednym miejscu na dole strony. Nie obiecujemy wyniku: obiecujemy, że zrozumiesz, czego od Ciebie chcą.
+      </li>
+    </ul>
+  </section>
+
+  <section class="bg-surface" id="jak-to-dziala">
+    <div class="wrap py-16">
+      <h2 class="section-title">Jak to działa</h2>
+      <ol class="mt-8 grid gap-6 md:grid-cols-3">
+        {[
+          ['Wybierz temat', `Te same ${allModules.length} tematów, co w Informatorze CKE: od „Człowiek” po „Państwo i społeczeństwo”.`],
+          ['Ćwicz jak w arkuszu', 'Transformacje, słowotwórstwo, minidialogi, opis ilustracji w 6 krokach. Od razu widzisz, co i dlaczego jest źle.'],
+          ['Widzisz postęp', 'Każdy temat ma swój pasek, każde słowo, którego nie znasz, trafia do fiszek.'],
+        ].map(([h, t], i) => (
+          <li class="relative rounded-2xl bg-hero p-6">
+            <span class="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary text-lg font-bold text-white">{i + 1}</span>
+            <h3 class="text-lg font-bold">{h}</h3>
+            <p class="mt-1 text-ink-2">{t}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <OpenTopic />
+
+  <section class="bg-surface">
+    <div class="wrap py-16">
+      <h2 class="section-title">Co jest w środku</h2>
+      <div class="mt-8 space-y-10">
+        {features.map((f, i) => (
+          <div class:list={['grid items-center gap-6 md:grid-cols-2', i % 2 === 1 && 'md:[&>*:first-child]:order-2']}>
+            <div>
+              <h3 class="text-xl font-bold">{f.title}</h3>
+              <p class="mt-2 text-ink-2">{f.text}</p>
+              <a href={f.href} class="mt-3 inline-block font-semibold text-primary hover:underline">Zobacz →</a>
+            </div>
+            <div class="card overflow-hidden"><Image src={f.img} alt={f.title} widths={[480, 720, 1080]} sizes="(min-width: 768px) 540px, 100vw" format="webp" quality={78} loading="lazy" class="aspect-[3/2] w-full object-cover object-top" /></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap py-16" id="tematy">
+    <div class="flex flex-wrap items-baseline justify-between gap-3">
+      <h2 class="section-title">{allModules.length} tematów z Informatora CKE</h2>
+      <a href="/tematy" class="font-semibold text-primary hover:underline">Wszystkie tematy →</a>
+    </div>
+    <div class="mt-8"><TopicGrid /></div>
+  </section>
+
+  <section class="bg-hero" id="rodzice">
+    <div class="wrap grid items-center gap-10 py-16 lg:grid-cols-2">
+      <div>
+        <p class="mb-2 text-sm font-bold uppercase tracking-wide text-primary">Dla rodziców</p>
+        <h2 class="section-title">Rodzicu, zobacz, co naprawdę się dzieje.</h2>
+        <p class="mt-3 text-ink-2">Korepetytor mówi „idzie dobrze”. Tu widać, które tematy są zrobione, ile słów zostało do powtórki i kiedy ostatnio dziecko ćwiczyło. Data matury i cel są ustawione w profilu, a postęp liczy się sam.</p>
+        <a href="/dla-rodzicow" class="mt-5 inline-block rounded-lg border border-line bg-surface px-5 py-2.5 font-bold text-ink hover:bg-hero">Dla rodziców</a>
+      </div>
+      <LeadForm client:visible source="landing/parents" defaultRole="parent" title="Raport dla rodzica na e-mail: wkrótce." text="Zostaw adres, a napiszemy, kiedy wystartuje." />
+    </div>
+  </section>
+
+  <section class="wrap py-16" id="cennik">
+    <div class="flex flex-wrap items-baseline justify-between gap-3">
+      <h2 class="section-title">Ile to kosztuje</h2>
+      <a href="/cennik" class="font-semibold text-primary hover:underline">Pełny cennik →</a>
+    </div>
+    <div class="mt-8"><Pricing /></div>
+  </section>
+
+  <Faq items={faq} />
+
+  <section class="bg-primary">
+    <div class="wrap flex flex-wrap items-center justify-between gap-6 py-14 text-white">
+      <h2 class="text-2xl font-bold sm:text-3xl">Zacznij dziś. Matura {matura.year} nie przesunie się na później.</h2>
+      <a href={appLink('register?src=landing-final')} class="rounded-lg bg-white px-6 py-3 text-base font-bold text-primary hover:bg-hero" data-event="cta_register" data-block="final">Zacznij za darmo</a>
+    </div>
+  </section>
+
+  <div class="wrap"><Sources ids={['ppMinutes', 'ppPoints', 'passThreshold', 'ppListening', 'ppReading', 'ppLanguage', 'ppWriting', 'oralPoints']} /></div>
+</Base>

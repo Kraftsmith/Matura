@@ -5,6 +5,7 @@ import { daysUntil, type ExamPlan, type UserProfile } from '../users';
 import { Button, Meter, SectionTitle, StatTile } from './ui';
 import { Avatar, GrammarStatusChip } from './GrammarStatusChip';
 import { CompletedTasks } from './CompletedTasks';
+import { HomeworkBlock } from './schedule/HomeworkBlock';
 import { useProgress } from '../useProgress';
 import { useSettings } from '../useSettings';
 import { useTeacherCards } from '../useTeacherCards';
@@ -140,6 +141,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {replacement ?? (
         <>
+          {!teacherView && <HomeworkBlock />}
+
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             <StatTile
               icon={<Layers className="h-5 w-5" />}

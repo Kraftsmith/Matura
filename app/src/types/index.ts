@@ -6,11 +6,15 @@ export type SectionType =
   | 'fiszki'
   | 'fiszki-hub'
   | 'opis-foto'
-  | 'gramatyka' 
-  | 'slownictwo' 
+  | 'gramatyka'
+  | 'slownictwo'
   | 'srodki'
   | 'pisanie'
-  | 'design-system';
+  | 'design-system'
+  /** The teacher's calendar of lessons. */
+  | 'kalendarz'
+  /** A learner's lessons and homework. */
+  | 'zajecia';
 
 export type PartOfSpeech = 'noun' | 'verb' | 'adjective' | 'adverb' | 'idiom' | 'phrasal_verb' | 'phrase';
 
