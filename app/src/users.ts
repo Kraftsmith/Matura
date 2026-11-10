@@ -25,6 +25,10 @@ export interface AccountUser extends UserProfile, ExamPlan {
   onboarded: boolean;
   termsAccepted: boolean;
   teacher?: { name: string };
+  /** Mail at once when the teacher writes (a learner's setting). */
+  notifyMailMessage: boolean;
+  /** The daily summary by mail. */
+  notifyMailDigest: boolean;
 }
 
 /** A learner who joined the teacher's class. */

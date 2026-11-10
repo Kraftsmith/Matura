@@ -16,7 +16,9 @@ export type SectionType =
   /** The teacher's calendar of lessons. */
   | 'kalendarz'
   /** A learner's lessons and homework. */
-  | 'zajecia';
+  | 'zajecia'
+  /** The bell's full list. */
+  | 'powiadomienia';
 
 export type PartOfSpeech = 'noun' | 'verb' | 'adjective' | 'adverb' | 'idiom' | 'phrasal_verb' | 'phrase';
 

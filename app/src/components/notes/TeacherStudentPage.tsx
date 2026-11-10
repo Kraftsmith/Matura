@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Eye, EyeOff, StickyNote } from 'lucide-react';
+import { Eye, EyeOff, MessageSquare, StickyNote } from 'lucide-react';
 import type { MaturaModule, SectionType } from '../../types';
 import type { ClassStudent } from '../../users';
 import { DashboardView } from '../DashboardView';
 import { Button, Tabs, Toast } from '../ui';
 import { TeacherCardsPanel } from '../TeacherCardsPanel';
 import { StudentScheduleTabs } from '../schedule/StudentScheduleTabs';
+import { MessageDialog } from '../messages/MessageDialog';
+import { MessagesBlock } from '../messages/MessagesBlock';
 import { StudentPlanPanel } from './StudentPlanPanel';
 import { useSettings } from '../../useSettings';
 import { useUser } from '../../useUser';
@@ -37,8 +39,8 @@ type Tab = 'progress' | 'notes' | 'cards' | 'lessons' | 'homework' | 'plan';
 interface TeacherStudentPageProps {
   modules: MaturaModule[];
   student: ClassStudent;
-  /** Which tab to open first; the lesson bar links straight to the cards. */
-  initialTab?: 'cards';
+  /** Which tab to open first; the lesson bar links straight to the cards, a "homework done" notification to the homework. */
+  initialTab?: 'cards' | 'homework';
   onOpen: (moduleId: string, section: SectionType) => void;
   onOpenDeck: (moduleId: string) => void;
   onOpenLesson: (lessonId: string) => void;
@@ -61,6 +63,7 @@ const TeacherStudentPage: React.FC<TeacherStudentPageProps> = ({ modules, studen
   const [tab, setTab] = useState<Tab>(initialTab ?? 'progress');
   const [hidden, setHidden] = useState(readHidden);
   const [moduleFilter, setModuleFilter] = useState('');
+  const [writing, setWriting] = useState(false);
   const { deleted, deleteFailed, notes, undoDelete } = notesState;
   const cardCount = Object.values(cardsOf(student.id)).reduce((n, cards) => n + cards.length, 0);
 
@@ -94,10 +97,16 @@ const TeacherStudentPage: React.FC<TeacherStudentPageProps> = ({ modules, studen
   };
 
   const hideButton = (
-    <Button variant="ghost" size="sm" onClick={toggleHidden}>
-      {hidden ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-      {hidden ? nt('notes.show') : nt('notes.hide')}
-    </Button>
+    <div className="flex flex-wrap items-center gap-2">
+      <Button variant="secondary" size="sm" onClick={() => setWriting(true)}>
+        <MessageSquare className="h-4 w-4" />
+        {t('msg.write')}
+      </Button>
+      <Button variant="ghost" size="sm" onClick={toggleHidden}>
+        {hidden ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+        {hidden ? nt('notes.show') : nt('notes.hide')}
+      </Button>
+    </div>
   );
 
   return (
@@ -130,8 +139,13 @@ const TeacherStudentPage: React.FC<TeacherStudentPageProps> = ({ modules, studen
         replacement={
           tab === 'cards' ? (
             <TeacherCardsPanel student={student} modules={modules} />
-          ) : tab === 'lessons' || tab === 'homework' ? (
+          ) : tab === 'lessons' ? (
             <StudentScheduleTabs student={student} tab={tab} onOpenLesson={onOpenLesson} onSignedOut={onSignedOut} />
+          ) : tab === 'homework' ? (
+            <div className="grid gap-8">
+              <StudentScheduleTabs student={student} tab={tab} onOpenLesson={onOpenLesson} onSignedOut={onSignedOut} />
+              <MessagesBlock student={student} onSignedOut={onSignedOut} />
+            </div>
           ) : tab === 'plan' ? (
             <StudentPlanPanel student={student} onRemoved={onBackToClass} />
           ) : !hidden && tab === 'notes' ? (
@@ -139,6 +153,8 @@ const TeacherStudentPage: React.FC<TeacherStudentPageProps> = ({ modules, studen
           ) : undefined
         }
       />
+
+      {writing && <MessageDialog students={[student]} onClose={() => setWriting(false)} />}
 
       {(deleted || deleteFailed) && (
         <Toast action={deleted ? { label: nt('notes.undo'), onClick: undoDelete } : undefined}>{deleted ? nt('notes.deleted') : nt('notes.deleteFailed')}</Toast>

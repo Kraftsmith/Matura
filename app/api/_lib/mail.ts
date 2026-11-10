@@ -3,7 +3,7 @@ import { addHit, hitCount } from './rateLimit.js';
 
 type Lang = 'pl' | 'en';
 
-export type MailKind = 'verify' | 'exists' | 'reset' | 'setPassword' | 'newEmail' | 'emailChanging' | 'passwordChanged' | 'accountDeleted' | 'invite' | 'leadConfirm' | 'contactCopy';
+export type MailKind = 'verify' | 'exists' | 'reset' | 'setPassword' | 'newEmail' | 'emailChanging' | 'passwordChanged' | 'accountDeleted' | 'invite' | 'leadConfirm' | 'contactCopy' | 'teacherMessage' | 'digest';
 
 interface Template {
   subject: string;
@@ -29,6 +29,8 @@ const TEMPLATES: Record<Lang, Record<MailKind, Template>> = {
     invite: { subject: 'Zaproszenie do klasy', body: 'Nauczyciel {teacher} zaprasza Cię do swojej klasy w Matura English. Po dołączeniu nauczyciel zobaczy Twoje imię, e-mail, postępy i odpowiedzi w zadaniach.', button: 'Dołącz do klasy' },
     leadConfirm: { subject: 'Potwierdź zapis', body: 'Kliknij przycisk, aby potwierdzić zapis na wiadomości o starcie i nowościach. Link działa 24 godziny. Jeśli to nie Ty, zignoruj tę wiadomość.', button: 'Potwierdzam' },
     contactCopy: { subject: 'Wiadomość z formularza kontaktowego', body: 'Od: {from}\n\n{message}' },
+    teacherMessage: { subject: 'Wiadomość od nauczyciela', body: '{teacher} napisał(a) do Ciebie:\n\n{text}', button: 'Otwórz' },
+    digest: { subject: 'Twoje podsumowanie · {date}', body: '{body}', button: 'Otwórz' },
   },
   en: {
     verify: { subject: 'Confirm your email', body: 'Click the button to activate your account. The link works for 24 hours.', button: 'Confirm email' },
@@ -42,6 +44,8 @@ const TEMPLATES: Record<Lang, Record<MailKind, Template>> = {
     invite: { subject: 'Invitation to a class', body: 'Teacher {teacher} invites you to their class in Matura English. After joining, the teacher will see your name, email, progress and answers to tasks.', button: 'Join the class' },
     leadConfirm: { subject: 'Confirm your subscription', body: 'Click the button to confirm that you want news about the launch and new features. The link works for 24 hours. If this was not you, ignore this message.', button: 'Confirm' },
     contactCopy: { subject: 'Message from the contact form', body: 'From: {from}\n\n{message}' },
+    teacherMessage: { subject: 'A message from your teacher', body: '{teacher} wrote to you:\n\n{text}', button: 'Open' },
+    digest: { subject: 'Your summary · {date}', body: '{body}', button: 'Open' },
   },
 };
 
@@ -68,7 +72,11 @@ export interface MailOptions {
 export const deliver = async (kind: MailKind, to: string, lang: string, path?: string, vars: Record<string, string> = {}, options: MailOptions = {}): Promise<void> => {
   const raw = TEMPLATES[lang === 'en' ? 'en' : 'pl'][kind];
   // A name typed by a user goes into the mail: it must not become markup.
-  const template = { ...raw, body: raw.body.replace(/\{(\w+)\}/g, (_, k: string) => escapeHtml(vars[k] ?? '')) };
+  const template = {
+    ...raw,
+    subject: raw.subject.replace(/\{(\w+)\}/g, (_, k: string) => vars[k] ?? ''),
+    body: raw.body.replace(/\{(\w+)\}/g, (_, k: string) => escapeHtml(vars[k] ?? '')),
+  };
   const link = path ? linkTo(path) : undefined;
   const key = process.env.RESEND_API_KEY;
 

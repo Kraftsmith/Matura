@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { db, tokenHash } from './http.js';
+import { notify } from './notify.js';
 
 /** Raised when the Regulamin changes: everyone is then asked to accept it again. */
 export const TERMS_VERSION = '2026-11';
@@ -53,6 +54,8 @@ export const toAccount = (r: Record<string, unknown>, teacherName?: string) => (
   onboarded: !!r.onboarded_at,
   termsAccepted: r.terms_version === TERMS_VERSION,
   teacher: teacherName ? { name: teacherName } : undefined,
+  notifyMailMessage: r.notify_mail_message !== false,
+  notifyMailDigest: r.notify_mail_digest !== false,
 });
 
 export const loadAccount = async (userId: string) => {
@@ -89,6 +92,8 @@ export const joinClass = async (studentId: string, code: string): Promise<boolea
   const sql = db();
   const [teacher] = await sql`select id from users where invite_code = ${code} and role = 'teacher'`;
   if (!teacher) return false;
-  await sql`insert into teacher_students (teacher_id, student_id) values (${teacher.id}, ${studentId}) on conflict do nothing`;
+  const joined = await sql`insert into teacher_students (teacher_id, student_id) values (${teacher.id}, ${studentId}) on conflict do nothing returning 1`;
+  // Only a real join tells the teacher; opening the link again does not.
+  if (joined.length > 0) await notify([teacher.id as string], 'student_joined', { actorId: studentId });
   return true;
 };

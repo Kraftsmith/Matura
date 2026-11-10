@@ -1,4 +1,5 @@
 import { badRequest, db, guarded, json, notFound, requireTeacher, requireUser, unauthorized, type SessionUser } from './_lib/http.js';
+import { notify, roughStanding } from './_lib/notify.js';
 import { addHit, hitCount } from './_lib/rateLimit.js';
 import {
   MAX_RANGE_DAYS,
@@ -40,7 +41,7 @@ import { toMyHomework, toMyLesson, type Row } from './_lib/scheduleShapes.js';
 
 // The twelfth and last function of the Hobby plan: everything about lessons and homework, picked by ?resource=.
 // Teacher: GET lessons|overview|lesson|student, POST lessons|lesson-status|lesson-move|homework|tick|assign, PATCH lesson|homework, DELETE lesson|homework|tick.
-// Learner: GET my-lessons|my-homework, POST/DELETE my-tick.
+// Learner: GET my-lessons|my-homework, POST/DELETE my-tick, POST my-done.
 
 /** New lessons a teacher may create in a day; stops a loop in a client from filling the table. */
 const MAX_LESSONS_PER_DAY = 200;
@@ -119,15 +120,17 @@ const createLesson: Handler = async (req, teacher) => {
       returning id`;
     for (const id of studentIds) await sql`insert into lesson_series_students (series_id, student_id) values (${series.id as string}, ${id})`;
     await ensureSeriesLessons(teacher.id, date, date);
-    const [first] = await sql`select id from lessons where series_id = ${series.id as string} and occurrence_date = ${date}`;
+    const [first] = await sql`select id, starts_at from lessons where series_id = ${series.id as string} and occurrence_date = ${date}`;
+    await notify(studentIds, 'lesson_added', { lessonId: first.id as string, data: { startsAt: (first.starts_at as Date).toISOString(), durationMin, weekly: true } });
     return json({ lesson: await loadLesson(first.id as string) }, 201);
   }
 
   const [row] = await sql`
     insert into lessons (teacher_id, starts_at, duration_min, plan)
     values (${teacher.id}, (${date}::date + ${time}::time) at time zone ${TIME_ZONE}, ${durationMin}, ${plan})
-    returning id`;
+    returning id, starts_at`;
   await replaceParticipants(row.id as string, studentIds);
+  await notify(studentIds, 'lesson_added', { lessonId: row.id as string, data: { startsAt: (row.starts_at as Date).toISOString(), durationMin } });
   return json({ lesson: await loadLesson(row.id as string) }, 201);
 };
 
@@ -184,7 +187,15 @@ const patchLesson: Handler = async (req, teacher, params) => {
       update lessons set starts_at = (${day}::date + ${clock}::time) at time zone ${TIME_ZONE}, duration_min = ${duration}, plan = ${plan}, summary = ${summary}, updated_at = now()
       where id = ${id}`;
   }
+  const before = (await sql`select student_id from lesson_participants where lesson_id = ${id}`).map((r) => r.student_id as string);
   if (students) await replaceParticipants(id, students);
+  const [after] = await sql`select starts_at from lessons where id = ${id}`;
+  const startsAtNow = (after.starts_at as Date).toISOString();
+  // Those already in the lesson hear about a new time; those just added hear about the lesson.
+  if (row.status === 'planned' && startsAtNow !== (row.starts_at as Date).toISOString()) {
+    await notify(before.filter((s) => !students || students.includes(s)), 'lesson_moved', { lessonId: id, data: { oldStartsAt: (row.starts_at as Date).toISOString(), startsAt: startsAtNow, durationMin: duration }, coalesce: true });
+  }
+  if (students) await notify(students.filter((s) => !before.includes(s)), 'lesson_added', { lessonId: id, data: { startsAt: startsAtNow, durationMin: duration, weekly: !!row.series_id } });
   return json({ lesson: await loadLesson(id), kept: await loadLessons(kept) });
 };
 
@@ -208,6 +219,12 @@ const setStatus: Handler = async (req, teacher, params) => {
   } else {
     await sql`update lesson_participants set attendance = null where lesson_id = ${id}`;
   }
+  const participants = (await sql`select student_id from lesson_participants where lesson_id = ${id}`).map((r) => r.student_id as string);
+  // A lesson the teacher calls off is news to the learners; one they called off themselves is not.
+  if (status === 'cancelled' && cancelledBy === 'teacher') {
+    await notify(participants, 'lesson_cancelled', { lessonId: id, data: { startsAt: (row.starts_at as Date).toISOString(), durationMin: row.duration_min }, coalesce: true });
+  }
+  if (status === 'planned') await sql`delete from notifications where lesson_id = ${id} and kind = 'lesson_cancelled' and read_at is null`;
   return json({ lesson: await loadLesson(id) });
 };
 
@@ -223,9 +240,15 @@ const moveLesson: Handler = async (req, teacher, params) => {
   const [made] = await sql`
     insert into lessons (teacher_id, starts_at, duration_min, plan)
     values (${teacher.id}, (${date}::date + ${time}::time) at time zone ${TIME_ZONE}, ${row.duration_min as number}, ${row.plan as string})
-    returning id`;
+    returning id, starts_at`;
   await sql`insert into lesson_participants (lesson_id, student_id) select ${made.id as string}, student_id from lesson_participants where lesson_id = ${id}`;
   await sql`update lessons set status = 'moved', moved_to = ${made.id as string}, updated_at = now() where id = ${id}`;
+  const participants = (await sql`select student_id from lesson_participants where lesson_id = ${id}`).map((r) => r.student_id as string);
+  // Tied to the new lesson: undoing the move deletes it and takes the notification along.
+  await notify(participants, 'lesson_moved', {
+    lessonId: made.id as string,
+    data: { oldStartsAt: (row.starts_at as Date).toISOString(), startsAt: (made.starts_at as Date).toISOString(), durationMin: row.duration_min },
+  });
   return json({ lesson: await loadLesson(id), moved: await loadLesson(made.id as string) });
 };
 
@@ -250,6 +273,7 @@ const createHomework: Handler = async (req, teacher) => {
   const [row] = await sql`insert into homework (teacher_id, lesson_id, due_at) values (${teacher.id}, ${(lessonId as string | null) ?? null}, ${dueAt}) returning id`;
   await writeItems(row.id as string, parsed);
   await syncHomeworkStudents(row.id as string, studentIds);
+  if (parsed.length > 0) await notify(studentIds, 'homework_assigned', { homeworkId: row.id as string, data: { dueAt: new Date(dueAt).toISOString(), itemCount: parsed.length }, coalesce: true });
   const [homework] = await loadHomework(await sql`select * from homework where id = ${row.id as string}`);
   return json({ homework }, 201);
 };
@@ -266,11 +290,17 @@ const patchHomework: Handler = async (req, teacher, params) => {
 
   const sql = db();
   const id = row.id as string;
+  const [{ n: itemsBefore }] = await sql`select count(*)::int as n from homework_items where homework_id = ${id}`;
+  const studentsBefore = (await sql`select student_id from homework_students where homework_id = ${id}`).map((r) => r.student_id as string);
   if ('dueAt' in body) await sql`update homework set due_at = ${body.dueAt as string}, updated_at = now() where id = ${id}`;
   if (parsed) await writeItems(id, parsed);
   if ('studentIds' in body) await syncHomeworkStudents(id, body.studentIds as string[]);
   await sql`update homework set updated_at = now() where id = ${id}`;
   const [homework] = await loadHomework(await sql`select * from homework where id = ${id}`);
+  // More items: everyone hears. New learners: they hear even if nothing else changed. Fewer items or a new deadline: nobody.
+  const grew = homework.items.length > (itemsBefore as number);
+  const told = homework.students.map((s) => s.id).filter((s) => grew || !studentsBefore.includes(s));
+  if (homework.items.length > 0) await notify(told, 'homework_assigned', { homeworkId: id, data: { dueAt: homework.dueAt, itemCount: homework.items.length }, coalesce: true });
   return json({ homework });
 };
 
@@ -321,6 +351,7 @@ const assign: Handler = async (req, teacher) => {
   const today = todayInWarsaw();
   await ensureSeriesLessons(teacher.id, today, addDays(today, MAX_RANGE_DAYS));
   const touched = new Map<string, string[]>();
+  const newcomers = new Set<string>();
   // One new homework per due moment and lesson, shared by the learners who land on it.
   const created = new Map<string, string>();
 
@@ -351,14 +382,19 @@ const assign: Handler = async (req, teacher) => {
         created.set(key, homeworkId);
       }
     }
-    await sql`insert into homework_students (homework_id, student_id) values (${homeworkId}, ${studentId}) on conflict do nothing`;
+    const added = await sql`insert into homework_students (homework_id, student_id) values (${homeworkId}, ${studentId}) on conflict do nothing returning 1`;
     touched.set(homeworkId, [...(touched.get(homeworkId) ?? []), studentId]);
+    if (added.length > 0) newcomers.add(`${homeworkId}|${studentId}`);
   }
 
   for (const homeworkId of touched.keys()) {
     const [{ n }] = await sql`select count(*)::int as n from homework_items where homework_id = ${homeworkId}`;
     const same = await sql`select 1 from homework_items where homework_id = ${homeworkId} and kind = ${item.kind} and target is not distinct from ${item.target} and text = ${item.text}`;
     if (same.length === 0) await sql`insert into homework_items (homework_id, position, kind, target, text) values (${homeworkId}, ${n as number}, ${item.kind}, ${item.target}, ${item.text})`;
+    // The same item given twice is one notification; a learner just added to the homework hears about it anyway.
+    const told = (touched.get(homeworkId) ?? []).filter((s) => same.length === 0 || newcomers.has(`${homeworkId}|${s}`));
+    const [h] = await sql`select due_at from homework where id = ${homeworkId}`;
+    await notify(told, 'homework_assigned', { homeworkId, data: { dueAt: (h.due_at as Date).toISOString(), itemCount: (n as number) + (same.length === 0 ? 1 : 0) }, coalesce: true });
   }
   const homework = await loadHomework(await sql`select * from homework where id = any(${uuidArray([...touched.keys()])}::uuid[]) order by due_at`);
   return json({ homework });
@@ -443,6 +479,31 @@ const removeMyTick: Handler = async (_req, user, params) => {
   return json({ ok: true });
 };
 
+/**
+ * The learner's browser saw the homework become complete and says so (Spec - Powiadomienia §7.1). The server checks
+ * roughly that the work is there, then tells the teacher once per homework, again only after new items were added.
+ */
+const myDone: Handler = async (_req, user, params) => {
+  const homeworkId = params.get('homework');
+  if (!isUuid(homeworkId)) return notFound();
+  const sql = db();
+  const [hw] = await sql`
+    select h.id, h.teacher_id, h.due_at from homework h
+    join homework_students s on s.homework_id = h.id and s.student_id = ${user.id}
+    join teacher_students ts on ts.teacher_id = h.teacher_id and ts.student_id = ${user.id}
+    where h.id = ${homeworkId}`;
+  if (!hw) return notFound();
+  const standing = await roughStanding(hw.id as string, user.id);
+  if (standing.total === 0 || standing.done < standing.total) return json({ error: 'not_done' }, 409);
+  const [already] = await sql`
+    select 1 from notifications n
+    where n.kind = 'homework_done' and n.homework_id = ${hw.id as string} and n.actor_id = ${user.id}
+      and n.created_at >= (select coalesce(max(created_at), 'epoch') from homework_items where homework_id = ${hw.id as string})`;
+  if (already) return json({ created: false });
+  await notify([hw.teacher_id as string], 'homework_done', { actorId: user.id, homeworkId: hw.id as string, data: { dueAt: (hw.due_at as Date).toISOString() } });
+  return json({ created: true });
+};
+
 // ---- Dispatch
 
 const teacherHandlers: Record<string, Handler> = {
@@ -468,6 +529,7 @@ const learnerHandlers: Record<string, Handler> = {
   'GET my-homework': myHomework,
   'POST my-tick': addMyTick,
   'DELETE my-tick': removeMyTick,
+  'POST my-done': myDone,
 };
 
 const handle = guarded(async (req) => {

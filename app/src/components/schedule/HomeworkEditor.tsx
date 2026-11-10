@@ -1,24 +1,27 @@
 import React, { useState } from 'react';
 import { ArrowDown, ArrowUp, Link2, Plus, Trash2, Type } from 'lucide-react';
 import { ApiError } from '../../accountApi';
-import { assignedAtOf, defaultDueAt, homeworkItemStatus } from '../../homework';
+import { assignedAtOf, defaultDueAt, homeworkItemStatus, homeworkProgress } from '../../homework';
 import type { Homework, HomeworkItem, ItemDraft, Lesson } from '../../schedule';
 import { addTick, createHomework, deleteHomework, patchHomework, removeTick } from '../../scheduleApi';
-import { dayOf, formatDate, fromWarsaw, toLocalInput } from '../../time';
+import { dayOf, formatDate, formatMoment, fromWarsaw, toLocalInput } from '../../time';
 import { useProgress } from '../../useProgress';
 import { useSettings } from '../../useSettings';
 import { useUser } from '../../useUser';
+import { MessageDialog } from '../messages/MessageDialog';
 import { Button, Chip, TextField, fieldClass } from '../ui';
 import { ItemLine } from './common';
 import { useItemLabel, useLocale } from './scheduleFormat';
 import { TargetPicker } from './TargetPicker';
 
-/** Each learner's items, with the teacher's "Zalicz" at hand. */
+/** Each learner's items, with the teacher's "Zalicz" at hand, and "Przypomnij" while something is still to do. */
 export const HomeworkStatusTable: React.FC<{ homework: Homework; onChanged: () => void }> = ({ homework, onChanged }) => {
   const { t } = useSettings();
+  const locale = useLocale();
   const { students } = useUser();
   const { allStates } = useProgress();
   const [busy, setBusy] = useState<string>();
+  const [remind, setRemind] = useState<{ id: string; name: string }>();
 
   const toggle = async (item: HomeworkItem, studentId: string, accept: boolean) => {
     setBusy(`${item.id}/${studentId}`);
@@ -34,9 +37,17 @@ export const HomeworkStatusTable: React.FC<{ homework: Homework; onChanged: () =
     <div className="grid gap-3">
       {homework.students.map((s) => {
         const name = students.find((x) => x.id === s.id)?.name ?? s.id;
+        const complete = homeworkProgress(homework, s.id, allStates[s.id]).complete;
         return (
           <div key={s.id} className="rounded-lg border border-line px-4 py-2">
-            <p className="text-sm leading-5 font-semibold text-ink">{name}</p>
+            <p className="flex flex-wrap items-center justify-between gap-2 text-sm leading-5 font-semibold text-ink">
+              {name}
+              {!complete && (
+                <button type="button" onClick={() => setRemind({ id: s.id, name })} className="cursor-pointer font-semibold text-primary hover:underline">
+                  {t('msg.remind')}
+                </button>
+              )}
+            </p>
             <ul className="divide-y divide-line-soft">
               {homework.items.map((item) => {
                 const status = homeworkItemStatus(item, allStates[s.id], assignedAtOf(homework, item, s.id), homework.ticks[item.id]?.[s.id]);
@@ -59,6 +70,7 @@ export const HomeworkStatusTable: React.FC<{ homework: Homework; onChanged: () =
           </div>
         );
       })}
+      {remind && <MessageDialog students={[remind]} homeworkId={homework.id} initialText={t('msg.remindText', { date: formatMoment(homework.dueAt, locale) })} onClose={() => setRemind(undefined)} />}
     </div>
   );
 };

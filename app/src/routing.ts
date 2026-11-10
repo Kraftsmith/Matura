@@ -8,7 +8,8 @@ import { routeOf } from './userRoute';
  * URL scheme: #<moduleId>/<section>[/<item>], e.g. #praca/opis-foto,
  * #czlowiek/slownictwo/czl-txt-2 (one text), #czlowiek/srodki/czl-sj-2 (one exercise), #czlowiek/gramatyka/test.
  * Also accepted: #<section> (default module), #<moduleId> (first tab), #design-system, #profile, #ustawienia (languages),
- * #dashboard/<studentId> (teacher looking at one learner, /fiszki opens their cards),
+ * #dashboard/<studentId> (teacher looking at one learner, /fiszki opens their cards, /zadania their homework),
+ * #powiadomienia (the notifications),
  * #fiszki (all decks), #fiszki/powtorka (review of all decks), #fiszki/<moduleId>[/<cardId>] (one deck),
  * #kalendarz[/<date>] (the teacher's week), #kalendarz/z/<lessonId> (one lesson), #zajecia (a learner's lessons and homework).
  * An empty hash opens the dashboard.
@@ -17,7 +18,7 @@ import { routeOf } from './userRoute';
 export const moduleSections: SectionType[] = ['opis-foto', 'gramatyka', 'slownictwo', 'srodki', 'pisanie', 'fiszki'];
 /** Section shown when a module is opened without an explicit section (the first tab). */
 export const DEFAULT_SECTION: SectionType = moduleSections[0];
-export const standaloneSections: SectionType[] = ['dashboard', 'fiszki-hub', 'design-system', 'profile', 'ustawienia', 'kalendarz', 'zajecia'];
+export const standaloneSections: SectionType[] = ['dashboard', 'fiszki-hub', 'design-system', 'profile', 'ustawienia', 'kalendarz', 'zajecia', 'powiadomienia'];
 const validSections: SectionType[] = [...moduleSections, ...standaloneSections];
 export const DEFAULT_MODULE = allModules[0].id;
 
@@ -75,7 +76,7 @@ export const parseHash = (hash: string): Route => {
 
   if (!raw || a === 'dashboard') {
     // Whether this learner is in the class is known only after the server answers.
-    return { moduleId: DEFAULT_MODULE, section: 'dashboard', viewUserId: b, item: b && c === 'fiszki' ? c : undefined };
+    return { moduleId: DEFAULT_MODULE, section: 'dashboard', viewUserId: b, item: b && (c === 'fiszki' || c === 'zadania') ? c : undefined };
   }
   if (a === 'fiszki') {
     if (b === REVIEW_ITEM) return { moduleId: DEFAULT_MODULE, section: 'fiszki-hub', item: REVIEW_ITEM };

@@ -246,4 +246,28 @@ await sql`create unique index if not exists leads_email_subscribe on leads (lowe
 await sql`create index if not exists leads_token on leads (token_hash)`;
 await sql`create index if not exists leads_unsubscribe_token on leads (unsubscribe_token_hash)`;
 
+// Notifications (Spec - Powiadomienia.md, §9.1): one row per recipient and event; the text is built by the client from kind and data.
+await sql`
+  create table if not exists notifications (
+    id uuid primary key default gen_random_uuid(),
+    user_id text not null references users (id) on delete cascade,
+    kind text not null check (kind in (
+      'homework_done', 'student_joined',
+      'message', 'homework_assigned', 'lesson_added', 'lesson_moved', 'lesson_cancelled',
+      'homework_due', 'lesson_tomorrow')),
+    actor_id text references users (id) on delete set null,
+    homework_id uuid references homework (id) on delete cascade,
+    lesson_id uuid references lessons (id) on delete cascade,
+    text text check (char_length(text) <= 500),
+    data jsonb not null default '{}',
+    created_at timestamptz not null default now(),
+    read_at timestamptz,
+    mailed_at timestamptz,
+    check ((kind = 'message') = (text is not null))
+  )`;
+await sql`create index if not exists notifications_user_time on notifications (user_id, created_at desc)`;
+await sql`create index if not exists notifications_unread on notifications (user_id) where read_at is null`;
+await sql`alter table users add column if not exists notify_mail_message boolean not null default true`;
+await sql`alter table users add column if not exists notify_mail_digest boolean not null default true`;
+
 console.log('Database is up to date.');

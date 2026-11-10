@@ -7,6 +7,7 @@ import { useSettings } from '../useSettings';
 import { useProgress } from '../useProgress';
 import { useUser } from '../useUser';
 import { Avatar } from './GrammarStatusChip';
+import { NotificationBell } from './NotificationBell';
 
 interface NavbarProps {
   activeSection: SectionType;
@@ -82,6 +83,8 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onOpenHandbook, o
             <span className="hidden sm:inline">{t('nav.handbook')}</span>
             <span className="sr-only sm:hidden">{t('nav.handbookShort')}</span>
           </Button>
+
+          <NotificationBell />
 
           <div className="relative" ref={userMenuRef}>
             <button

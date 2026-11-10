@@ -19,6 +19,7 @@ import { GrammarHandbookModal } from './components/GrammarHandbookModal';
 import { DesignSystemShowcase } from './components/DesignSystemShowcase';
 import { ProfilePage } from './components/ProfilePage';
 import { SettingsPage } from './components/SettingsPage';
+import { NotificationsPage } from './components/NotificationsPage';
 import { HomeworkBanner } from './components/schedule/HomeworkBanner';
 import { ChevronRight } from 'lucide-react';
 import { useProgress } from './useProgress';
@@ -166,7 +167,7 @@ export function App() {
             key={`${viewedStudent.id}-${route.item ?? ''}`}
             modules={allModules}
             student={viewedStudent}
-            initialTab={route.item ? 'cards' : undefined}
+            initialTab={route.item === 'zadania' ? 'homework' : route.item ? 'cards' : undefined}
             onOpen={handleOpenFromDashboard}
             onOpenDeck={handleOpenDeck}
             onOpenLesson={handleOpenLesson}
@@ -340,6 +341,8 @@ export function App() {
           {activeSection === 'profile' && <ProfilePage />}
 
           {activeSection === 'ustawienia' && <SettingsPage />}
+
+          {activeSection === 'powiadomienia' && <NotificationsPage />}
         </main>
       </div>
 

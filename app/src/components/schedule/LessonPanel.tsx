@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowRight, Layers, Trash2, X } from 'lucide-react';
+import { ArrowRight, Layers, MessageSquare, Trash2, X } from 'lucide-react';
 import { ApiError } from '../../accountApi';
 import type { Attendance, CancelledBy, Homework, Lesson } from '../../schedule';
 import { deleteLesson, fetchLesson, patchLesson, setLessonStatus } from '../../scheduleApi';
 import { dayOf, formatDayLong, formatMoment, formatSpan, weekdayNames, weekdayOf } from '../../time';
 import { useSettings } from '../../useSettings';
 import { useTeacherCards } from '../../useTeacherCards';
+import { MessageDialog } from '../messages/MessageDialog';
 import { Button, TextArea, fieldClass } from '../ui';
 import { HomeworkEditor, HomeworkStatusTable } from './HomeworkEditor';
 import { LessonFormDialog } from './LessonFormDialog';
@@ -70,6 +71,7 @@ export const LessonPanel: React.FC<LessonPanelProps> = ({ lessonId, lessons, onC
   const [kept, setKept] = useState<Lesson[]>([]);
   const [deleteBlocked, setDeleteBlocked] = useState(false);
   const [editingHomework, setEditingHomework] = useState<Homework | 'new'>();
+  const [messaging, setMessaging] = useState(false);
 
   const load = () => {
     fetchLesson(lessonId)
@@ -242,11 +244,19 @@ export const LessonPanel: React.FC<LessonPanelProps> = ({ lessonId, lessons, onC
                   </li>
                 ))}
               </ul>
-              {lesson.status === 'planned' && (
-                <Button size="sm" variant="ghost" className="justify-self-start" onClick={() => setForm('edit')}>
-                  {t('lesson.addStudent')}
-                </Button>
-              )}
+              <div className="flex flex-wrap gap-2">
+                {lesson.status === 'planned' && (
+                  <Button size="sm" variant="ghost" onClick={() => setForm('edit')}>
+                    {t('lesson.addStudent')}
+                  </Button>
+                )}
+                {lesson.participants.length > 0 && (
+                  <Button size="sm" variant="ghost" onClick={() => setMessaging(true)}>
+                    <MessageSquare className="h-4 w-4" />
+                    {t('msg.toParticipants')}
+                  </Button>
+                )}
+              </div>
             </section>
 
             <LessonText key={`plan-${lesson.id}`} label={t('lesson.plan')} hint={`${t('lesson.planHint')} · ${t('lesson.studentsSee')}`} value={lesson.plan} maxLength={2000} onSave={saveText('plan')} />
@@ -311,6 +321,8 @@ export const LessonPanel: React.FC<LessonPanelProps> = ({ lessonId, lessons, onC
           </div>
         )}
       </div>
+
+      {messaging && lesson && <MessageDialog students={lesson.participants.map((p) => ({ id: p.id, name: p.name }))} lessonId={lesson.id} onClose={() => setMessaging(false)} />}
 
       {form && lesson && (
         <LessonFormDialog

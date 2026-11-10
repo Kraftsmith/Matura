@@ -16,6 +16,8 @@ const GUEST_USER: AccountUser = {
   translationLang: 'pl',
   onboarded: true,
   termsAccepted: true,
+  notifyMailMessage: false,
+  notifyMailDigest: false,
 };
 
 const noop = async () => {};

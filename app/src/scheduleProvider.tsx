@@ -3,6 +3,8 @@ import { ApiError } from './accountApi';
 import { ScheduleContext, type ScheduleValue } from './schedule-context';
 import type { Homework, Lesson, MyHomework, MyLesson } from './schedule';
 import { addMyTick, fetchMyHomework, fetchMyLessons, fetchOverview, removeMyTick } from './scheduleApi';
+import { useDoneReporter } from './useDoneReporter';
+import { useProgress } from './useProgress';
 import { useUser } from './useUser';
 
 /** A learner's page checks for new homework now and then: the teacher may be setting it during the lesson. */
@@ -21,6 +23,10 @@ export const ScheduleProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [status, setStatus] = useState<ScheduleValue['status']>('loading');
   // A slow answer to an older request must not overwrite a newer one.
   const generation = useRef(0);
+  const { state: progress, flush } = useProgress();
+  // True around the learner's own tick, so the reporter can tell it from a teacher's tick arriving with a poll.
+  const ownAction = useRef(false);
+  useDoneReporter({ enabled: !isTeacher, userId: user.id, homework: myHomework, state: progress, flush, ownAction });
 
   const refresh = useCallback(async () => {
     const mine = ++generation.current;
@@ -65,12 +71,14 @@ export const ScheduleProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const tickMine = useCallback(
     async (itemId: string, done: boolean) => {
       const now = new Date().toISOString();
+      ownAction.current = true;
       // Shown at once; the server's answer replaces it.
       setMyHomework((list) => list.map((h) => ({ ...h, items: h.items.map((i) => (i.id === itemId ? { ...i, tick: done ? { by: 'student', doneAt: now } : undefined } : i)) })));
       try {
         await (done ? addMyTick(itemId) : removeMyTick(itemId));
       } finally {
         await refresh();
+        ownAction.current = false;
       }
     },
     [refresh],
