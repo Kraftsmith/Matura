@@ -7,7 +7,7 @@ import { routeOf } from './userRoute';
 /**
  * URL scheme: #<moduleId>/<section>[/<item>], e.g. #praca/opis-foto,
  * #czlowiek/slownictwo/czl-txt-2 (one text), #czlowiek/srodki/czl-sj-2 (one exercise), #czlowiek/gramatyka/test.
- * Also accepted: #<section> (default module), #<moduleId> (first tab), #design-system, #profile,
+ * Also accepted: #<section> (default module), #<moduleId> (first tab), #design-system, #profile, #ustawienia (languages),
  * #dashboard/<studentId> (teacher looking at one learner, /fiszki opens their cards),
  * #fiszki (all decks), #fiszki/powtorka (review of all decks), #fiszki/<moduleId>[/<cardId>] (one deck),
  * #kalendarz[/<date>] (the teacher's week), #kalendarz/z/<lessonId> (one lesson), #zajecia (a learner's lessons and homework).
@@ -17,7 +17,7 @@ import { routeOf } from './userRoute';
 export const moduleSections: SectionType[] = ['opis-foto', 'gramatyka', 'slownictwo', 'srodki', 'pisanie', 'fiszki'];
 /** Section shown when a module is opened without an explicit section (the first tab). */
 export const DEFAULT_SECTION: SectionType = moduleSections[0];
-export const standaloneSections: SectionType[] = ['dashboard', 'fiszki-hub', 'design-system', 'profile', 'kalendarz', 'zajecia'];
+export const standaloneSections: SectionType[] = ['dashboard', 'fiszki-hub', 'design-system', 'profile', 'ustawienia', 'kalendarz', 'zajecia'];
 const validSections: SectionType[] = [...moduleSections, ...standaloneSections];
 export const DEFAULT_MODULE = allModules[0].id;
 

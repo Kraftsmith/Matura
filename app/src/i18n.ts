@@ -9,7 +9,7 @@ const pl = {
   'nav.openModules': 'Otwórz listę modułów',
   'nav.home': 'Matura Angielski, strona główna',
   'nav.signedIn': 'Zalogowany',
-  'nav.pageSettings': 'Ustawienia strony',
+  'nav.settings': 'Ustawienia',
   'nav.translationLang': 'Język tłumaczeń',
   'nav.uiLang': 'Język interfejsu',
   'nav.designSystem': 'Design system',
@@ -423,6 +423,13 @@ const pl = {
   // Misc
   'misc.path': 'Ścieżka',
   'misc.settings': 'Ustawienia',
+
+  // Settings page
+  'settings.title': 'Ustawienia',
+  'settings.languages': 'Języki',
+  'settings.uiLangHint': 'Język menu, przycisków i komunikatów.',
+  'settings.translationLangHint': 'Język tłumaczeń słówek, fiszek i objaśnień w zadaniach.',
+  'settings.saved': 'Ustawienia są zapisane na koncie i działają na każdym urządzeniu.',
   'misc.close': 'Zamknij',
   'misc.closePreview': 'Zamknij podgląd',
 
@@ -609,7 +616,7 @@ const en: Record<I18nKey, string> = {
   'nav.openModules': 'Open module list',
   'nav.home': 'Matura English, home page',
   'nav.signedIn': 'Signed in',
-  'nav.pageSettings': 'Page settings',
+  'nav.settings': 'Settings',
   'nav.translationLang': 'Translation language',
   'nav.uiLang': 'Interface language',
   'nav.designSystem': 'Design system',
@@ -1010,6 +1017,12 @@ const en: Record<I18nKey, string> = {
 
   'misc.path': 'Breadcrumb',
   'misc.settings': 'Settings',
+
+  'settings.title': 'Settings',
+  'settings.languages': 'Languages',
+  'settings.uiLangHint': 'The language of menus, buttons and messages.',
+  'settings.translationLangHint': 'The language of word translations, flashcards and explanations in tasks.',
+  'settings.saved': 'Settings are stored in your account and apply on every device.',
   'misc.close': 'Close',
   'misc.closePreview': 'Close preview',
 

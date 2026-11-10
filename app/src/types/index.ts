@@ -11,6 +11,8 @@ export type SectionType =
   | 'srodki'
   | 'pisanie'
   | 'design-system'
+  /** Interface and translation languages. */
+  | 'ustawienia'
   /** The teacher's calendar of lessons. */
   | 'kalendarz'
   /** A learner's lessons and homework. */

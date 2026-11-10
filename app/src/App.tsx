@@ -18,6 +18,7 @@ import { WritingTrainerView } from './components/WritingTrainerView';
 import { GrammarHandbookModal } from './components/GrammarHandbookModal';
 import { DesignSystemShowcase } from './components/DesignSystemShowcase';
 import { ProfilePage } from './components/ProfilePage';
+import { SettingsPage } from './components/SettingsPage';
 import { HomeworkBanner } from './components/schedule/HomeworkBanner';
 import { ChevronRight } from 'lucide-react';
 import { useProgress } from './useProgress';
@@ -238,7 +239,9 @@ export function App() {
                 {isTeacher ? t('side.teacherPanel') : t('nav.progress')}
               </a>
               <ChevronRight className="h-3.5 w-3.5" />
-              <span>{t('misc.settings')}</span>
+              <a href="#ustawienia" className="hover:text-primary hover:underline">
+                {t('misc.settings')}
+              </a>
               <ChevronRight className="h-3.5 w-3.5" />
               <span className="font-semibold text-ink">{t('nav.designSystem')}</span>
             </nav>
@@ -335,6 +338,8 @@ export function App() {
           {activeSection === 'design-system' && <DesignSystemShowcase />}
 
           {activeSection === 'profile' && <ProfilePage />}
+
+          {activeSection === 'ustawienia' && <SettingsPage />}
         </main>
       </div>
 

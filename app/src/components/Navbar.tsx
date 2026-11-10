@@ -1,23 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { BookOpen, CalendarDays, Menu, Palette, Languages, LayoutDashboard, ChevronDown, Globe, LogOut, UserPlus, UserRound } from 'lucide-react';
+import { BookOpen, CalendarDays, Menu, Palette, LayoutDashboard, ChevronDown, LogOut, Settings, UserPlus, UserRound } from 'lucide-react';
 import { INVITE_SCROLL_KEY } from './ClassInvite';
-import type { SectionType, TranslationLang } from '../types';
-import type { UiLang } from '../i18n';
+import type { SectionType } from '../types';
 import { Button } from './ui';
 import { useSettings } from '../useSettings';
 import { useProgress } from '../useProgress';
 import { useUser } from '../useUser';
 import { Avatar } from './GrammarStatusChip';
-
-const langOptions: { id: TranslationLang; label: string }[] = [
-  { id: 'pl', label: 'Polski' },
-  { id: 'ru', label: 'Русский' },
-];
-
-const uiLangOptions: { id: UiLang; label: string }[] = [
-  { id: 'pl', label: 'Polski' },
-  { id: 'en', label: 'English' },
-];
 
 interface NavbarProps {
   activeSection: SectionType;
@@ -26,42 +15,10 @@ interface NavbarProps {
   onSectionChange: (section: SectionType) => void;
 }
 
-const Segmented = <T extends string>({
-  options,
-  value,
-  onChange,
-  label,
-}: {
-  options: { id: T; label: string }[];
-  value: T;
-  onChange: (v: T) => void;
-  label: string;
-}) => (
-  <div className="grid grid-cols-2 gap-1 rounded-lg bg-chip p-1" role="radiogroup" aria-label={label}>
-    {options.map((o) => {
-      const on = value === o.id;
-      return (
-        <button
-          key={o.id}
-          type="button"
-          role="radio"
-          aria-checked={on}
-          onClick={() => onChange(o.id)}
-          className={`cursor-pointer rounded-md px-3 py-1.5 text-sm leading-5 font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary ${
-            on ? 'bg-surface text-ink' : 'text-ink-2 hover:text-ink'
-          }`}
-        >
-          {o.label}
-        </button>
-      );
-    })}
-  </div>
-);
-
 export const Navbar: React.FC<NavbarProps> = ({ activeSection, onOpenHandbook, onOpenSidebar, onSectionChange }) => {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
-  const { translationLang, setTranslationLang, uiLang, setUiLang, t } = useSettings();
+  const { t } = useSettings();
   const { user, signOut } = useUser();
   const { flush } = useProgress();
 
@@ -208,25 +165,17 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onOpenHandbook, o
                   </a>
                 )}
                 <div className="my-1 border-t border-line-soft" />
-                <p className="px-4 pt-2 pb-1 text-xs leading-4 text-ink-2">{t('nav.pageSettings')}</p>
-
-                <div className="px-4 py-2">
-                  <div className="mb-2 flex items-center gap-2 text-base leading-6 text-ink">
-                    <Globe className="h-5 w-5 text-ink-2" />
-                    {t('nav.uiLang')}
-                  </div>
-                  <Segmented options={uiLangOptions} value={uiLang} onChange={setUiLang} label={t('nav.uiLang')} />
-                </div>
-
-                <div className="px-4 py-2">
-                  <div className="mb-2 flex items-center gap-2 text-base leading-6 text-ink">
-                    <Languages className="h-5 w-5 text-ink-2" />
-                    {t('nav.translationLang')}
-                  </div>
-                  <Segmented options={langOptions} value={translationLang} onChange={setTranslationLang} label={t('nav.translationLang')} />
-                </div>
-
-                <div className="my-1 border-t border-line-soft" />
+                <a
+                  href="#ustawienia"
+                  role="menuitem"
+                  onClick={() => setUserMenuOpen(false)}
+                  className={`flex w-full items-center gap-3 px-4 py-2.5 text-left text-base leading-6 hover:bg-hero focus-visible:bg-hero focus-visible:outline-none ${
+                    activeSection === 'ustawienia' ? 'font-semibold text-primary' : 'text-ink'
+                  }`}
+                >
+                  <Settings className="h-5 w-5 text-ink-2" />
+                  {t('nav.settings')}
+                </a>
                 <button
                   type="button"
                   role="menuitem"

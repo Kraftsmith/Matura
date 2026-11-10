@@ -19,6 +19,12 @@ describe('routes for the calendar and the lessons page', () => {
     expect(parseHash('#maria/zajecia')).toMatchObject({ section: 'zajecia' });
   });
 
+  it('parses the settings page', () => {
+    expect(parseHash('#ustawienia')).toMatchObject({ section: 'ustawienia' });
+    expect(toHash(parseHash('#ustawienia'))).toBe('ustawienia');
+    expect(siteUrl(parseHash('#ustawienia'))).toBe('/app/#ustawienia');
+  });
+
   it('writes the same addresses back', () => {
     for (const hash of ['kalendarz', 'kalendarz/2026-11-16', `kalendarz/z/${LESSON}`, 'zajecia', 'czlowiek/slownictwo/czl-txt-1', 'fiszki/czlowiek']) {
       expect(toHash(parseHash(`#${hash}`))).toBe(hash);
