@@ -4,31 +4,42 @@ import Breadcrumbs from '../components/Breadcrumbs.astro';
 import Pricing from '../components/Pricing.astro';
 import LeadForm from '../components/LeadForm';
 import Faq from '../components/Faq.astro';
-import { pricing } from '../../site.config';
-import { breadcrumbList, faqPage, softwareApplication } from '../lib/seo';
+import { matura, openModules, pricing } from '../../site.config';
+import { allModules, moduleById } from '../lib/content';
+import { breadcrumbList, faqPage, pricingProduct, softwareApplication } from '../lib/seo';
+import { PAYMENT_METHODS, SEASON_END, formatPrice, planById, plans } from '@app/data/access';
 
 const crumbs = [{ name: 'Cennik', href: '/cennik' }];
-const paid = pricing.monthly !== null || pricing.untilMatura !== null;
+const open = moduleById(openModules[0]!)!;
+const student = planById('student')!;
+const parent = planById('parent')!;
+const seasonUntil = `do ${SEASON_END.label} ${matura.year}`;
+
+const lead = `Temat „${open.titlePl}” za darmo, bez logowania. Pełny dostęp do wszystkich ${allModules.length} tematów od ${formatPrice(student.monthly)} miesięcznie albo jedną płatnością do matury. Ceny zawierają VAT, rezygnacja w każdej chwili.`;
+const description = `${plans.map((p) => `${p.name} ${formatPrice(p.monthly)}`).join(', ')} miesięcznie albo jednorazowo do matury. Temat „${open.titlePl}” za darmo. Ceny z VAT, rezygnacja w każdej chwili.`;
+
 const faq = [
-  { q: 'Kiedy wystartuje pełny dostęp?', a: 'Przed szczytem przygotowań do matury. Zostaw adres poniżej, a dostaniesz jedną wiadomość w dniu startu.' },
-  { q: 'Czy darmowe konto wygasa?', a: 'Nie. To, co jest za darmo, zostaje za darmo: otwarte tematy, fiszki i zapis postępu.' },
-  { q: 'Czy będzie można zrezygnować?', a: 'Tak, w każdej chwili, bez pytań. Szczegóły w regulaminie, gdy ogłosimy ceny.' },
-  { q: 'Czy jest faktura?', a: 'Tak, ceny będą zawierały VAT, faktura do pobrania z profilu.' },
+  { q: 'Czy mogę zrezygnować?', a: 'Tak, w każdej chwili, w aplikacji, bez pytań. Dostęp działa do końca opłaconego miesiąca. Pakiet „Do matury” to jedna płatność: nic się nie odnawia, więc nie ma z czego rezygnować.' },
+  { q: 'Co się stanie po maturze?', a: `Pakiet „Do matury” kończy się ${SEASON_END.label}; 14 dni wcześniej przypomnimy o tym e-mailem. Subskrypcję miesięczną anulujesz jednym kliknięciem. Postęp i fiszki zostają na koncie, a temat „${open.titlePl}” nadal jest za darmo.` },
+  { q: 'Czy dziecko musi mieć konto?', a: `Tak. Rodzic kupuje plan Rodzic i wysyła dziecku link do miejsca; dziecko zakłada konto (od 16 lat) albo loguje się na swoje i przyjmuje miejsce. Od tej chwili ma pełny dostęp, a rodzic widzi jego postępy. Dziecko wie o tym: zgadza się na to, przyjmując miejsce. Drugie dziecko to +${formatPrice(parent.extraSeat!.price)} miesięcznie.` },
+  { q: 'Jak zapłacę?', a: `${PAYMENT_METHODS} BLIK i Przelewy24 nie potrafią odnawiać płatności, dlatego działają tylko w pakiecie jednorazowym.` },
+  { q: 'Faktura na firmę?', a: 'Tak. Przy zakupie podaj NIP, a faktura z danymi firmy przyjdzie e-mailem razem z potwierdzeniem płatności; wszystkie dokumenty znajdziesz też w aplikacji, w „Dostęp i płatności”.' },
+  { q: 'Czy darmowe konto wygasa?', a: `Nie. Temat „${open.titlePl}”, zapis postępu i narzędzia nauczyciela zostają za darmo. Pozostałe tematy pokazują początek i czekają na pełny dostęp; zapisany w nich postęp nie znika.` },
 ];
 ---
 
-<Base title="Cennik" description="Co jest za darmo, co w pełnym dostępie i ile to kosztuje. Bez zobowiązań." path="/cennik" jsonLd={[breadcrumbList(crumbs), softwareApplication(true), faqPage(faq)]}>
+<Base title="Cennik" description={description} path="/cennik" jsonLd={[breadcrumbList(crumbs), softwareApplication(), pricingProduct(lead), faqPage(faq)]}>
   <div class="wrap py-8">
     <Breadcrumbs crumbs={crumbs} />
     <h1 class="display mt-4">Cennik</h1>
-    <p class="lead mt-3 max-w-3xl">Jeden temat bez logowania, więcej za darmo z kontem, wszystko w pełnym dostępie. {paid ? 'Ceny zawierają VAT. Możesz zrezygnować w każdej chwili.' : 'Ceny pełnego dostępu ogłosimy wkrótce.'}</p>
+    <p class="lead mt-3 max-w-3xl">{lead}</p>
     <div class="mt-8"><Pricing full /></div>
 
-    {!paid && (
+    {!pricing.checkoutOpen && (
       <section id="lista" class="mt-12 grid items-start gap-8 lg:grid-cols-2">
         <div>
-          <h2 class="section-title">Powiadom mnie o starcie</h2>
-          <p class="mt-3 text-ink-2">Jedna wiadomość w dniu startu pełnego dostępu, z ceną i tym, co dokładnie wchodzi. Pierwsze konta dostaną ofertę wcześniejszego dostępu.</p>
+          <h2 class="section-title">Płatności uruchamiamy wkrótce</h2>
+          <p class="mt-3 text-ink-2">Ceny już znasz; zostaw adres, a dostaniesz jedną wiadomość w dniu startu płatności, z tym, co dokładnie wchodzi w każdy plan. Pakiet „Do matury” obejmie dostęp {seasonUntil}. Pierwsze konta dostaną ofertę wcześniejszego dostępu.</p>
         </div>
         <LeadForm client:visible source="pricing" defaultRole="parent" />
       </section>

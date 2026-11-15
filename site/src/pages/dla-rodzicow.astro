@@ -7,12 +7,15 @@ import Faq from '../components/Faq.astro';
 import { openModules } from '../../site.config';
 import { allModules, appLink, moduleById, topicPath } from '../lib/content';
 import { faqPage } from '../lib/seo';
+import { PAYMENT_METHODS, formatPrice, planById } from '@app/data/access';
 
 const open = moduleById(openModules[0]!)!;
+const student = planById('student')!;
+const parent = planById('parent')!;
 const crumbs = [{ name: 'Dla rodziców', href: '/dla-rodzicow' }];
 const faq = [
-  { q: 'Czy muszę zakładać konto jako rodzic?', a: 'Nie. Konto zakłada uczeń; rodzic widzi postęp przez to konto. Osobny raport dla rodzica na e-mail jest w przygotowaniu, można zostawić adres poniżej.' },
-  { q: 'Jak zapłacę i czy mogę zrezygnować?', a: 'Pełny dostęp wystartuje w nadchodzących miesiącach. Będzie można zrezygnować w każdej chwili; szczegóły na stronie cennika, gdy ogłosimy ceny.' },
+  { q: 'Czy muszę zakładać konto jako rodzic?', a: `Nie. Konto zakłada uczeń; rodzic może patrzeć na postęp przez to konto. Plan Rodzic (${formatPrice(parent.monthly)} miesięcznie) daje własne konto rodzica: pełny dostęp dla dziecka, panel z postępem i e-mail raz w tygodniu. Startuje razem z płatnościami, można zostawić adres poniżej.` },
+  { q: 'Jak zapłacę i czy mogę zrezygnować?', a: `Uczeń ${formatPrice(student.monthly)} miesięcznie, rodzic ${formatPrice(parent.monthly)} z miejscem dla dziecka w cenie, drugie dziecko +${formatPrice(parent.extraSeat!.price)}; albo jedna płatność do matury. ${PAYMENT_METHODS} Rezygnacja w każdej chwili, jednym kliknięciem. Szczegóły w cenniku.` },
   { q: 'Czy dziecko musi mieć 16 lat?', a: 'Tak, regulamin wymaga ukończonych 16 lat przy zakładaniu konta. Maturzyści spełniają ten warunek.' },
   { q: 'Co z danymi dziecka?', a: 'Imię, e-mail, postępy i odpowiedzi w zadaniach. Konto można usunąć jednym przyciskiem w profilu; dane są wtedy usuwane od razu. Szczegóły w polityce prywatności.' },
 ];
@@ -37,17 +40,17 @@ const faq = [
       <tr><td>Co dziecko robi</td><td>Godzina rozmowy i wyjaśnień w tygodniu</td><td>Ćwiczenia między spotkaniami, kiedy ma czas</td><td>Korepetytor tłumaczy, platforma utrwala</td></tr>
       <tr><td>Co widzi rodzic</td><td>„Idzie dobrze”</td><td>Zrobione tematy, wyniki, data ostatniej aktywności</td><td>Rozmowa z korepetytorem o konkretach</td></tr>
       <tr><td>Część ustna</td><td>Najlepsze miejsce na rozmowę</td><td>Schemat opisu ilustracji i pytania do ćwiczenia na głos</td><td>Dziecko przychodzi przygotowane</td></tr>
-      <tr><td>Koszt</td><td>Kilkadziesiąt złotych za godzinę</td><td>Darmowe konto; pełny dostęp wkrótce</td><td>Mniej godzin, lepiej wykorzystanych</td></tr>
+      <tr><td>Koszt</td><td>Kilkadziesiąt złotych za godzinę</td><td>Temat „{open.titlePl}” za darmo; pełny dostęp od {formatPrice(student.monthly)} miesięcznie</td><td>Mniej godzin, lepiej wykorzystanych</td></tr>
     </tbody>
   </table>
   <p>Nie namawiamy do rezygnacji z korepetytora. Namawiamy, żeby godzina z nim nie była jedyną godziną angielskiego w tygodniu, a Ty nie musiał(a) wierzyć na słowo.</p>
 
   <h2>Co widać dziś, a co będzie</h2>
   <p><strong>Dziś:</strong> przez konto dziecka widać postęp w każdym temacie, wyniki testów i ćwiczeń, fiszki do powtórki, datę matury i cel wpisane w profilu. Jeśli dziecko ma nauczyciela, nauczyciel widzi to samo i może zadawać prace domowe z linkami do konkretnych ćwiczeń.</p>
-  <p><strong>Wkrótce:</strong> raport dla rodzica na e-mail, raz w tygodniu, bez logowania: co zrobione, co zaległe, ile dni do egzaminu.</p>
+  <p><strong>Wkrótce:</strong> plan Rodzic za {formatPrice(parent.monthly)} miesięcznie: pełny dostęp dla dziecka, własny panel rodzica i e-mail raz w tygodniu, bez logowania: co zrobione, co zaległe, ile dni do egzaminu.</p>
 
   <h2>Od czego zacząć</h2>
-  <p>Pokaż dziecku temat <a href={topicPath(open.id)}>„{open.titlePl}”</a>: jest otwarty w całości bez logowania. Jeśli przerobi go do końca, <a href={appLink('register?src=parents')}>darmowe konto</a> zapisze postęp i otworzy kolejne tematy. <a href="/cennik">Co jest za darmo, a co w pełnym dostępie →</a></p>
+  <p>Pokaż dziecku temat <a href={topicPath(open.id)}>„{open.titlePl}”</a>: jest otwarty w całości bez logowania. Jeśli przerobi go do końca, <a href={appLink('register?src=parents')}>darmowe konto</a> zapisze postęp, a pełny dostęp otworzy pozostałe tematy. <a href="/cennik">Co jest za darmo, a co w pełnym dostępie →</a></p>
 
   <h2>Raport dla rodzica</h2>
   <LeadForm client:visible source="parents" defaultRole="parent" title="Powiadom mnie o raporcie dla rodzica" text="Jeden e-mail, gdy raport wystartuje. Żadnych innych wiadomości bez zgody." />

@@ -1,7 +1,10 @@
 ---
 import Page from '../layouts/Page.astro';
 import { appLink, allModules, totals } from '../lib/content';
+import { formatPrice, planById } from '@app/data/access';
 
+const student = planById('student')!;
+const teacher = planById('teacher')!;
 const crumbs = [{ name: 'Dla nauczycieli', href: '/dla-nauczycieli' }];
 ---
 
@@ -25,5 +28,6 @@ const crumbs = [{ name: 'Dla nauczycieli', href: '/dla-nauczycieli' }];
     <li>Skopiuj link do klasy z profilu i wyślij uczniom.</li>
     <li>Dodaj zajęcia w kalendarzu i zadaj pierwszą pracę domową z linkiem do ćwiczenia.</li>
   </ol>
-  <p>Konto nauczyciela jest darmowe. Uczniowie korzystają na zasadach z <a href="/cennik">cennika</a>.</p>
+  <h2>Ile to kosztuje</h2>
+  <p>Narzędzia klasy są darmowe: klasa, kalendarz, zadania domowe, notatki i fiszki dla uczniów. Plan Nauczyciel za {formatPrice(teacher.monthly)} miesięcznie daje Ci pełny dostęp do wszystkich tematów i miejsce dla jednego ucznia; każdy kolejny uczeń to +{formatPrice(teacher.extraSeat!.price)} miesięcznie. Uczeń może też płacić sam ({formatPrice(student.monthly)} miesięcznie) albo dostać miejsce od rodzica. Nauka w klasie wymaga pełnego dostępu ucznia; bez niego uczeń ćwiczy samodzielnie w temacie „Człowiek”. Szczegóły w <a href="/cennik">cenniku</a>.</p>
 </Page>

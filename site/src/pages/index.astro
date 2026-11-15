@@ -21,12 +21,15 @@ import shotSrodki from '../assets/screens/srodki.png';
 import shotOpis from '../assets/screens/opis.png';
 import shotGramatyka from '../assets/screens/gramatyka.png';
 import shotFiszki from '../assets/screens/fiszki.png';
-import { SITE_NAME, matura, openModules, pricing } from '../../site.config';
+import { SITE_NAME, matura, openModules } from '../../site.config';
+import { formatPrice, planById } from '@app/data/access';
 import { allModules, appLink, moduleById, topicPath, totals } from '../lib/content';
 import { faqPage, softwareApplication } from '../lib/seo';
 
 const open = moduleById(openModules[0]!)!;
-const freeN = pricing.freeAccountModules.length;
+const student = planById('student')!;
+const parent = planById('parent')!;
+const teacher = planById('teacher')!;
 const title = 'Matura z angielskiego online: ćwiczenia jak w arkuszu CKE';
 const description = `${allModules.length} tematów CKE, środki językowe, opis ilustracji w 6 krokach, fiszki i postęp. Cały temat „${open.titlePl}” bez logowania, konto za darmo.`;
 
@@ -41,10 +44,10 @@ const parts = [
 const faq = [
   { q: 'Czy to działa na telefonie?', a: 'Tak, w przeglądarce, bez instalowania. Postęp jest zapisany na koncie, więc możesz zacząć na telefonie i skończyć na komputerze.' },
   { q: 'Czy materiały są zgodne z Formułą 2023?', a: 'Tak. Tematy, typy zadań i kryteria bierzemy z Informatora CKE. Nie jesteśmy związani z CKE.' },
-  { q: 'Co jest za darmo?', a: `Temat „${open.titlePl}” w całości bez logowania. Darmowe konto dodaje zapis postępu, fiszki ze wszystkich tematów i ${freeN} ${freeN === 1 ? 'temat' : freeN < 5 ? 'tematy' : 'tematów'} w całości. Reszta w pełnym dostępie, zobacz cennik.` },
+  { q: 'Co jest za darmo?', a: `Temat „${open.titlePl}” w całości, bez logowania i z darmowym kontem. Darmowe konto dodaje zapis postępu na każdym urządzeniu. Pozostałe ${allModules.length - 1} tematów jest w pełnym dostępie: od ${formatPrice(student.monthly)} miesięcznie, zobacz cennik.` },
   { q: 'Czy jest poziom rozszerzony?', a: 'Tak, zadania są oznaczone P i R; reguły gramatyczne mają obie warstwy.' },
-  { q: 'Czy rodzic widzi postęp?', a: 'Dziś przez konto dziecka. Raport na e-mail dla rodzica jest w przygotowaniu.' },
-  { q: 'Czy nauczyciel może korzystać z uczniami?', a: 'Tak: klasa, kalendarz zajęć, zadania domowe z linkami, fiszki od nauczyciela. Zobacz „Dla nauczycieli”.' },
+  { q: 'Czy rodzic widzi postęp?', a: `Dziś przez konto dziecka. Plan Rodzic (${formatPrice(parent.monthly)} miesięcznie) da rodzicowi własny panel z postępem dziecka i e-mail raz w tygodniu; startuje razem z płatnościami.` },
+  { q: 'Czy nauczyciel może korzystać z uczniami?', a: `Tak: klasa, kalendarz zajęć, zadania domowe z linkami, fiszki od nauczyciela, wszystko za darmo. Nauka w klasie wymaga pełnego dostępu ucznia: płaci on sam, rodzic albo nauczyciel (miejsce ${formatPrice(teacher.extraSeat!.price)} miesięcznie). Zobacz „Dla nauczycieli”.` },
   { q: 'Jak usunąć konto?', a: 'W profilu, jednym przyciskiem. Dane są usuwane od razu.' },
 ];
 
@@ -64,7 +67,7 @@ const steps = [
 ];
 ---
 
-<Base title={title} description={description} path="/" jsonLd={[softwareApplication(true), faqPage(faq)]} bodyClass="bg-surface">
+<Base title={title} description={description} path="/" jsonLd={[softwareApplication(), faqPage(faq)]} bodyClass="bg-surface">
   <!-- Old links to the app looked like /#czlowiek/slownictwo; the app now lives under /app/. The hash never reaches the server, so the page forwards it. -->
   <script is:inline>
     (function () {

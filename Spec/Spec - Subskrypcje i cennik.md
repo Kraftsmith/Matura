@@ -1,6 +1,6 @@
 # Спецификация: Подписки, места (seats) и цены
 
-**Статус:** черновик, не начато · **Дата:** 10.11.2026 · **Связано с:** [Spec - Landing i strony publiczne.md](Spec%20-%20Landing%20i%20strony%20publiczne.md), [Регистрация пользователя.md](Регистрация%20пользователя.md), [Spec - Student cabinet and teacher notes.md](Spec%20-%20Student%20cabinet%20and%20teacher%20notes.md), [Spec - Kalendarz i zadania domowe.md](Spec%20-%20Kalendarz%20i%20zadania%20domowe.md)
+**Статус:** в работе: сделаны 1.1 (общий `access.ts`), этап 5 (сайт) и 6.3 (SQL метрик), 16.11.2026; остальное не начато · **Дата:** 10.11.2026, правки 16.11.2026 · **Связано с:** [Spec - Landing i strony publiczne.md](Spec%20-%20Landing%20i%20strony%20publiczne.md), [Регистрация пользователя.md](Регистрация%20пользователя.md), [Spec - Student cabinet and teacher notes.md](Spec%20-%20Student%20cabinet%20and%20teacher%20notes.md), [Spec - Kalendarz i zadania domowe.md](Spec%20-%20Kalendarz%20i%20zadania%20domowe.md)
 
 Все цены в спеке — брутто, в złotych, с VAT. Тексты интерфейса по-польски.
 
@@ -292,6 +292,15 @@ create table billing_events (                     -- идемпотентнос�
 
 `seatInvite` («{name} daje Ci pełny dostęp do {Nazwa}», кнопка «Przyjmij miejsce»), `paymentFailed`, `seasonEnding` (за 14 дней до 30 июня), `parentWeekly`, `newSchoolYear` (сентябрь, без автопродления). Инвойсы и квитанции шлёт Stripe.
 
+**`accessLaunch`** — письмо существующим пользователям за 14 дней до включения замков (задача 6.2, вопрос 9). Черновик от 16.11.2026, отправка ждёт решения по вопросу 9 (TASKS 11.13), замков (1.4) и Stripe (0.2); цены в тексте подставляются из `app/src/data/access.ts`, не вписываются.
+
+| | pl |
+|---|---|
+| Тема | Za 14 dni pełny dostęp staje się płatny. Co to zmienia dla Ciebie |
+| Текст | Cześć {name}! Do tej pory każde konto widziało wszystkie tematy. Od {date} w całości za darmo zostaje temat „Człowiek”; pozostałe tematy otworzy pełny dostęp: Uczeń {student} miesięcznie, Rodzic {parent} z miejscem dla dziecka, Nauczyciel {teacher} z miejscem dla ucznia, albo jedna płatność do matury. Twój postęp i fiszki we wszystkich tematach zostają na koncie i wrócą w całości, gdy tylko będziesz mieć dostęp. Narzędzia klasy dla nauczycieli pozostają darmowe. {bonus} |
+| `{bonus}` | Пусто, пока нет решения по вопросу 9; при значении по умолчанию: «Twoje konto powstało przed startem płatności, więc pierwszy miesiąc pełnego dostępu masz w prezencie: nic nie musisz robić.» |
+| Кнопка | Zobacz cennik → `/cennik` |
+
 ---
 
 ## 11. Безопасность и право
@@ -452,7 +461,7 @@ create table billing_events (                     -- идемпотентнос�
 
 ### Этап 1. Доступ и замок (без денег)
 
-- [ ] 1.1. `app/src/data/access.ts` с `freeAccountModules = ['czlowiek']`; сайт читает оттуда. Одна бесплатная тема для ученика и учителя.
+- [x] 1.1. `app/src/data/access.ts` с `freeAccountModules = ['czlowiek']`; сайт читает оттуда. Одна бесплатная тема для ученика и учителя. Сделано 16.11.2026: файл есть, `site.config.ts` и `content.ts` читают его; приложение начнёт читать его вместе с замком (1.4).
 - [ ] 1.2. Таблицы `subscriptions`, `seats`, `billing_events`, роль `parent`, `stripe_customer_id`.
 - [ ] 1.3. `_lib/access.ts` → `hasFullAccess`; поле `access` в `me.ts` и `class.ts`.
 - [ ] 1.4. Замок в приложении (§6.4), замки в боковой панели, чипы в панели класса, замок на домашке.
@@ -479,12 +488,12 @@ create table billing_events (                     -- идемпотентнос�
 
 ### Этап 5. Сайт
 
-- [ ] 5.1. `/cennik`: три плана, переключатель периода, способы оплаты, FAQ, `Offer` с ценами; `pricing` в `site.config.ts` читает цены из одного места с приложением.
-- [ ] 5.2. `AccessWall` на сайте: текст о планах и ссылка на `/cennik` (без изменений механики).
-- [ ] 5.3. Лендинг §6.9 и FAQ 3: реальные цены; во всех обещаниях бесплатного доступа указана только одна тема Człowiek вместо двух, включая связанную спецификацию лендинга.
+- [x] 5.1. `/cennik`: три плана, переключатель периода, способы оплаты, FAQ, `Offer` с ценами; `pricing` в `site.config.ts` читает цены из одного места с приложением. Сделано 16.11.2026. Пакеты 99 / 149 zł — значения по умолчанию из вопроса 3, у учителя пакета нет (вопрос 11). Пока `checkoutOpen = false` в `access.ts`, кнопки ведут на список ожидания, а `Offer` несут `availability: PreOrder`; после 2.1–2.2 флаг переключается, кнопки «Wybierz» ведут на `#dostep/kup`.
+- [x] 5.2. `AccessWall` на сайте: текст о планах и ссылка на `/cennik` (без изменений механики). Сделано 16.11.2026.
+- [x] 5.3. Лендинг §6.9 и FAQ 3: реальные цены; во всех обещаниях бесплатного доступа указана только одна тема Człowiek вместо двух, включая связанную спецификацию лендинга. Сделано 16.11.2026: лендинг, `/dla-rodzicow`, `/dla-nauczycieli`, спека лендинга §6.9, §6.10, §7.5 и вопросы 3–4.
 
 ### Этап 6. Проверка и выпуск
 
-- [ ] 6.1. Критерии §13 в тестовом режиме Stripe, включая BLIK-тест.
-- [ ] 6.2. Письмо существующим пользователям (вопрос 9), включение замков, перевод Stripe в боевой режим.
-- [ ] 6.3. Панель метрик §12.7 (пока SQL-запросы в README).
+- [ ] 6.1. Критерии §13 в тестовом режиме Stripe, включая BLIK-тест. Ждёт 0.2 и этапов 1–4.
+- [ ] 6.2. Письмо существующим пользователям (вопрос 9), включение замков, перевод Stripe в боевой режим. Черновик письма `accessLaunch` в §10.4 (16.11.2026); отправка ждёт решения по вопросу 9, замков 1.4 и Stripe 0.2.
+- [x] 6.3. Панель метрик §12.7 (пока SQL-запросы в README). Сделано 16.11.2026: раздел «Billing metrics» в `app/README.md`; запросы написаны под схему §8 и заработают после миграции 1.2.

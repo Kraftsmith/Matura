@@ -221,7 +221,7 @@
 
 ### 6.9. Цены коротко
 
-Две карточки рядом, как на `/cennik`, без подробностей: «Za darmo» (что входит) и «Pełny dostęp» (`{cena}`, что добавляется). Кнопка платной карточки до запуска оплаты: «Powiadom mnie o starcie» → форма с ролью `rodzic`. Ссылка «Pełny cennik» → `/cennik`.
+Обновлено 16.11.2026 по спеке подписок §5. Три карточки планов, как на `/cennik`, с месячными ценами из `app/src/data/access.ts`: **Uczeń** 20 zł, **Rodzic** 30 zł (место для ребёнка в цене, второй ребёнок +20 zł), **Nauczyciel** 30 zł (место для ученика в цене, следующее +15 zł); под месячной ценой строка «albo {cena} jednorazowo, do 30 czerwca {rok}» там, где пакет есть. Переключателя периода на лендинге нет. Под карточками строка: «Temat „Człowiek” jest za darmo, bez logowania i z kontem. Ceny zawierają VAT.» Кнопка карточки до запуска оплаты (`checkoutOpen = false` в `access.ts`): «Powiadom mnie o starcie» → `/cennik#lista` (форма с ролью `rodzic`); после запуска: «Wybierz» → `/app/#dostep/kup?plan=…&period=month`. Ссылка «Pełny cennik» → `/cennik`.
 
 ### 6.10. FAQ
 
@@ -229,10 +229,10 @@
 
 1. **Czy to działa na telefonie?** Tak, w przeglądarce, bez instalowania. Postęp jest zapisany na koncie, więc możesz zacząć na telefonie i skończyć na komputerze.
 2. **Czy materiały są zgodne z Formułą 2023?** Tak. Tematy, typy zadań i kryteria bierzemy z Informatora CKE. Nie jesteśmy związani z CKE.
-3. **Co jest za darmo?** Temat „Człowiek” w całości bez logowania. Darmowe konto dodaje zapis postępu, fiszki ze wszystkich tematów i {n} tematów. Reszta w pełnym dostępie, zobacz cennik.
+3. **Co jest za darmo?** Temat „Człowiek” w całości, bez logowania i z darmowym kontem. Darmowe konto dodaje zapis postępu na każdym urządzeniu. Pozostałe 13 tematów jest w pełnym dostępie: od 20 zł miesięcznie, zobacz cennik. (Обновлено 16.11.2026: одна бесплатная тема, решение владельца от 10.11.2026; число и цена берутся из данных, не вписаны.)
 4. **Czy jest poziom rozszerzony?** Tak, zadania są oznaczone P i R; reguły gramatyczne mają obie warstwy.
-5. **Czy rodzic widzi postęp?** Dziś przez konto dziecka. Raport na e-mail dla rodzica jest w przygotowaniu.
-6. **Czy nauczyciel może korzystać z uczniami?** Tak: klasa, kalendarz zajęć, zadania domowe z linkami, fiszki od nauczyciela. Zobacz „Dla nauczycieli”.
+5. **Czy rodzic widzi postęp?** Dziś przez konto dziecka. Plan Rodzic (30 zł miesięcznie) da rodzicowi własny panel z postępem dziecka i e-mail raz w tygodniu; startuje razem z płatnościami.
+6. **Czy nauczyciel może korzystać z uczniami?** Tak: klasa, kalendarz zajęć, zadania domowe z linkami, fiszki od nauczyciela, wszystko za darmo. Nauka w klasie wymaga pełnego dostępu ucznia: płaci on sam, rodzic albo nauczyciel (miejsce 15 zł miesięcznie). Zobacz „Dla nauczycieli”.
 7. **Jak usunąć konto?** W profilu, jednym przyciskiem. Dane są usuwane od razu.
 
 Число `{n}` в вопросе 3 зависит от решения об объёме бесплатного слоя (вопрос 3 в §18).
@@ -290,21 +290,27 @@ H1: **Klasa, kalendarz i zadania domowe w jednym miejscu**. Что есть: с�
 
 ### 7.5. `/cennik`
 
-Две карточки и таблица сравнения.
+Обновлено 16.11.2026 по спеке подписок §10.1; цены и бесплатная тема берутся из `app/src/data/access.ts`.
 
-| | Bez konta | Za darmo | Pełny dostęp |
+Сверху переключатель периода «Miesięcznie / Do matury» (кнопки с `aria-pressed`, без JavaScript видны месячные цены) и строка под ним: для месяца «Odnawia się co miesiąc. Możesz zrezygnować w każdej chwili», для пакета «Jedna płatność, dostęp do 30 czerwca {rok}, bez automatycznego odnawiania». Три карточки планов (§5 спеки подписок): название, для кого, цена выбранного периода, чьё место в цене, три пункта, доплата за место; у Nauczyciel пакета нет, в режиме «Do matury» карточка говорит «ten plan jest tylko miesięczny». Карточка Rodzic выделена рамкой. Кнопки: до запуска оплаты «Powiadom mnie o starcie» → `#lista`; после «Wybierz» → `/app/#dostep/kup?plan=…&period=…` (адрес меняется вместе с переключателем). Под карточками строка о способах оплаты: «Miesięcznie: karta. Do matury: BLIK, Przelewy24 albo karta. Ceny zawierają VAT.»
+
+Ниже заголовок «Co jest za darmo, a co w pełnym dostępie» и таблица:
+
+| | Bez konta | Darmowe konto | Pełny dostęp |
 |---|---|---|---|
-| Цена | 0 zł | 0 zł | `{cena}` za `{okres}` |
-| Темы | „Człowiek” w całości | `{n}` tematów w całości | 14 tematów |
-| Postęp | tylko w tej przeglądarce | na koncie, na każdym urządzeniu | ✅ |
-| Fiszki | talia „Człowiek” | wszystkie talie, powtórka | ✅ |
-| Opis ilustracji, pisanie | w „Człowiek” | w darmowych tematach | все темы |
-| Raport dla rodzica | — | — | wkrótce |
-| Klasa nauczyciela | — | ✅ | ✅ |
+| Tematy | „Człowiek” w całości, pozostałe: początek | „Człowiek” w całości, pozostałe: początek | 14 tematów w całości |
+| Postęp | tylko w tej przeglądarce | na koncie, na każdym urządzeniu | na koncie, na każdym urządzeniu |
+| Fiszki | talia „Człowiek” | talia „Człowiek”, początek pozostałych talii | wszystkie talie, powtórka |
+| Opis ilustracji, pisanie | w „Człowiek” | w „Człowiek” | we wszystkich tematach |
+| Nauka w klasie nauczyciela | — | — | ✅ |
+| Panel rodzica, e-mail co tydzień | — | — | w planie Rodzic |
+| Narzędzia nauczyciela: klasa, kalendarz, zadania domowe | — | ✅ (konto nauczyciela) | ✅ |
 
-Колонка «Bez konta» показывает, что открытая тема — не урезанное демо: в ней есть всё, кроме сохранения на аккаунте.
+Колонка «Bez konta» показывает, что открытая тема — не урезанное демо: в ней есть всё, кроме сохранения на аккаунте. Под таблицей строка: «Pełny dostęp ma uczeń z własnym planem albo z miejscem od rodzica lub nauczyciela; nauczyciel ma go w swoim planie. Postęp zapisany w zamkniętych tematach nie znika.»
 
-Под таблицей: «Ceny zawierają VAT. Możesz zrezygnować w każdej chwili» — текст зависит от решения о модели (вопрос 4 в §18). До запуска оплаты кнопка платной карточки — «Powiadom mnie o starcie». Разметка `Product` с `Offer` появляется только с настоящей ценой.
+FAQ страницы: «Czy mogę zrezygnować?», «Co się stanie po maturze?», «Czy dziecko musi mieć konto?», «Jak zapłacę?», «Faktura na firmę?», «Czy darmowe konto wygasa?». До запуска оплаты под карточками остаётся блок «Płatności uruchamiamy wkrótce» с формой списка ожидания (роль `rodzic`).
+
+Разметка: `Product` «{Nazwa}: pełny dostęp» с `AggregateOffer` (`lowPrice`, `highPrice`, `offerCount`) и по одному `Offer` на план и период с настоящей ценой; `SoftwareApplication` на `/` и `/cennik` несёт те же `Offer` плюс бесплатный с ценой 0. Пока `checkoutOpen = false`, у платных `Offer` стоит `availability: PreOrder`, после запуска — `InStock`.
 
 ### 7.6. Блог
 
@@ -676,8 +682,8 @@ site/                     — Astro, собирается в ../app/dist
 
 1. **Имя продукта и домен** (нет значения: блокер этапа 0). Критерии в концепции соцсетей; домен `.pl` предпочтителен для польской выдачи, `.com` — если планируются `/ru/` и `/en/`.
 2. Выносить ли учителей вперёд: страница `/dla-nauczycieli` в главном меню или только в подвале? Продукт последние недели растёт именно учительскими функциями. (в подвале и в «Więcej», пересмотреть после первых регистраций)
-3. Сколько тем даёт бесплатный аккаунт сверх открытой «Człowiek»? От этого зависят FAQ, цены и текст страниц тем. (ещё одна: Edukacja; остальные 12 за платным доступом)
-4. Модель оплаты: месячная подписка, пропуск «do matury» разовым платежом или оба? Цена? (оба варианта на `/cennik`, цены `{cena}`; решить до запуска оплаты)
+3. Сколько тем даёт бесплатный аккаунт сверх открытой «Człowiek»? **Решено 10.11.2026: ни одной.** Бесплатный ученик и учитель открывают целиком только Człowiek, `freeAccountModules = ['czlowiek']` в `app/src/data/access.ts` (спека подписок, решение 4). Сайт переведён 16.11.2026.
+4. Модель оплаты: **решено, оба варианта.** Месяц с автопродлением и разовый «Do matury» до 30 июня; цены в спеке подписок §5 (пакеты 99 / 149 zł пока значения по умолчанию, вопрос 3 там же). `/cennik` показывает их с 16.11.2026.
 5. Аналитика: Vercel Web Analytics или Plausible? (Vercel: уже есть, бесплатный лимит хватит)
 6. Связывать ли сайт и регистрацию (`?src=` → `users.signup_source`)? Нужно поле в базе и правка `auth.ts`. (да, в очереди 1, одна строка в таблице)
 7. Параметр `?role=teacher` на регистрации, чтобы с `/dla-nauczycieli` сразу открывался переключатель на учителя. (да, вместе с вопросом 6)

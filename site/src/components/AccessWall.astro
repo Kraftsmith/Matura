@@ -4,6 +4,10 @@
  */
 import { openModules } from '../../site.config';
 import { accessOf, allModules, loginLink, moduleById, registerLink } from '../lib/content';
+import { formatPrice, planById } from '@app/data/access';
+
+const student = planById('student')!;
+const parent = planById('parent')!;
 
 interface Props {
   moduleId: string;
@@ -29,7 +33,7 @@ const open = moduleById(openModules[0]!);
     ) : (
       <>
         <h2 id="dostep" class="text-xl font-bold">Ten temat jest w pełnym dostępie</h2>
-        <p class="mt-2 text-ink-2">Kup dostęp, a otworzysz wszystkie {allModules.length} tematów: teksty z lukami, ćwiczenia środków językowych, testy, opis ilustracji i fiszki. Postęp zapisze się na koncie.</p>
+        <p class="mt-2 text-ink-2">Pełny dostęp otwiera wszystkie {allModules.length} tematów: teksty z lukami, ćwiczenia środków językowych, testy, opis ilustracji i fiszki. Uczeń płaci {formatPrice(student.monthly)} miesięcznie; rodzic albo nauczyciel {formatPrice(parent.monthly)} z miejscem dla ucznia w cenie. Jest też jedna płatność do matury. Postęp zapisze się na koncie.</p>
         <div class="mt-4 flex flex-wrap gap-3">
           <a href="/cennik" class="rounded-lg bg-primary px-5 py-2.5 font-bold text-white hover:bg-primary-hover" data-event="pricing_view" data-block="wall">Zobacz cennik</a>
           <a href={loginLink(next)} class="rounded-lg border border-line px-5 py-2.5 font-bold text-ink hover:bg-hero">Mam konto: zaloguj się</a>

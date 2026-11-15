@@ -48,3 +48,81 @@ Add a learner to a class from the start with `--student-of teacher`. Without `RE
 | `CONTACT_TO` | Where the contact form's copy goes; unset means the message is only stored |
 
 Each file in `app/api` (outside `_lib`) is one function and the Hobby plan allows 12, so related routes share a file and pick the action from the query string.
+
+## Access and prices
+
+`src/data/access.ts` is the one place for what is free (`freeAccountModules`) and what full access costs (`plans`, monthly and the one-time "Do matury" package, extra seats). The site reads it for `/cennik`, the landing, the access wall and the schema.org offers; the app will read it for the lock and `#dostep/kup`. `checkoutOpen` there is `false` until `api/billing.ts` exists: the site then shows the prices with the waiting list instead of buy buttons. See `Spec/Spec - Subskrypcje i cennik.md`.
+
+## Billing metrics
+
+The numbers to watch from the first day of sales (`Spec/Spec - Subskrypcje i cennik.md` §12.7), as SQL against the tables of that spec's §8 (`subscriptions`, `seats`, `billing_events`; they arrive with the billing migration). Run them in the Neon console or with `psql "$DATABASE_URL"`. A seat is paid while its subscription is `active`, or `past_due` inside the grace period. Prices in the MRR query mirror `src/data/access.ts`; change both together. There is no history table: run the MRR and seat queries at the end of every month of the season and keep the results.
+
+```sql
+-- Active seats by the owner's plan
+select s.plan, count(*) as active_seats
+from seats st
+join subscriptions s on s.id = st.subscription_id
+where st.student_id is not null
+  and (s.status = 'active' or (s.status = 'past_due' and s.grace_until > now()))
+group by s.plan
+order by s.plan;
+
+-- Conversion: students with a paid seat out of all student accounts (goal: 5% or more over a season)
+select count(*) as students,
+       count(*) filter (where exists (
+         select 1 from seats x join subscriptions s on s.id = x.subscription_id
+         where x.student_id = u.id and s.status in ('active', 'past_due'))) as with_seat
+from users u
+where u.role = 'student';
+
+-- One-time packages against monthly plans this school year (BLIK and Przelewy24 pay only for packages;
+-- the exact payment method is in Stripe, Payments, filtered by method)
+with season as (select make_date(extract(year from now() - interval '8 months')::int, 9, 1) as start)
+select period, count(*) as subscriptions,
+       round(100.0 * count(*) / sum(count(*)) over (), 1) as pct
+from subscriptions, season
+where created_at >= season.start
+group by period;
+
+-- Average paid duration per plan, in months, over closed subscriptions
+select plan, count(*) as closed,
+       round((avg(current_period_end - created_at) / interval '30 days')::numeric, 1) as months
+from subscriptions
+where status in ('canceled', 'expired')
+group by plan;
+
+-- Seats per teacher: bought and taken
+select s.owner_id, s.seats_included + s.seats_extra as seats, count(st.student_id) as taken
+from subscriptions s
+left join seats st on st.subscription_id = s.id and st.student_id is not null
+where s.plan = 'teacher' and s.status in ('active', 'past_due')
+group by s.owner_id, s.seats_included, s.seats_extra
+order by seats desc;
+
+-- Class learners without a paid seat: the teacher's funnel
+select ts.teacher_id, count(*) as learners,
+       count(*) filter (where not exists (
+         select 1 from seats x join subscriptions s on s.id = x.subscription_id
+         where x.student_id = ts.student_id and s.status in ('active', 'past_due'))) as without_seat
+from teacher_students ts
+group by ts.teacher_id
+order by without_seat desc;
+
+-- Failed payments and refunds by month (refunds appear once the webhook subscribes to charge.refunded)
+select date_trunc('month', received_at)::date as month, type, count(*)
+from billing_events
+where type in ('invoice.payment_failed', 'charge.refunded')
+group by 1, 2
+order by 1, 2;
+
+-- MRR of the monthly plans, gross, and the subscriptions behind it
+select plan, count(*) as subscriptions,
+       sum(case plan
+             when 'student' then 20
+             when 'parent' then 30 + 20 * seats_extra
+             when 'teacher' then 30 + 15 * seats_extra
+           end) as mrr_gross_pln
+from subscriptions
+where period = 'month' and status in ('active', 'past_due')
+group by plan;
+```

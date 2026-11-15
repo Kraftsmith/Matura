@@ -1,82 +1,140 @@
 ---
-import { openModules, pricing } from '../../site.config';
+/**
+ * The three plans (Spec - Subskrypcje i cennik §5, §10.1). The landing shows them with monthly prices;
+ * /cennik adds the period switch, the payment methods line and the comparison table.
+ * Prices and the free topic come from app/src/data/access.ts, never from this file.
+ */
+import { matura, openModules, pricing } from '../../site.config';
 import { allModules, appLink, moduleById } from '../lib/content';
+import { PAYMENT_METHODS, SEASON_END, buyRoute, formatPrice, plans, type Period, type Plan } from '@app/data/access';
 
 interface Props {
-  /** The landing shows two cards; /cennik adds the "Bez konta" column and the table. */
+  /** The landing shows the cards only; /cennik adds the period switch, the payment line and the table. */
   full?: boolean;
 }
 const { full = false } = Astro.props;
 
-const openTitles = openModules.map((id) => moduleById(id)?.titlePl ?? id);
-const freeCount = pricing.freeAccountModules.length;
-const paid = pricing.monthly !== null || pricing.untilMatura !== null;
-const price = (n: number | null, period: string) => (n === null ? 'wkrótce' : `${n} ${pricing.currency} ${period}`);
+const titlesOf = (ids: readonly string[]) => ids.map((id) => moduleById(id)?.titlePl ?? id);
+const quoted = (titles: string[]) => `„${titles.join('”, „')}”`;
+const openTitles = titlesOf(openModules);
+const freeTitles = titlesOf(pricing.freeAccountModules);
+const seasonUntil = `do ${SEASON_END.label} ${matura.year}`;
+
+/* Until the checkout exists the buttons lead to the waiting list on /cennik (Spec - Landing §7.5). */
+const buyHref = (plan: Plan, period: Period) => (pricing.checkoutOpen ? appLink(buyRoute(plan.id, period)) : '/cennik#lista');
+const buyLabel = pricing.checkoutOpen ? 'Wybierz' : 'Powiadom mnie o starcie';
+const buyEvent = pricing.checkoutOpen ? 'checkout_start' : 'pricing_notify';
 
 const check = '✓';
 const rows: [string, string, string, string][] = [
-  ['Tematy', `„${openTitles.join('”, „')}” w całości`, `${freeCount} ${freeCount === 1 ? 'temat' : freeCount < 5 ? 'tematy' : 'tematów'} w całości`, `${allModules.length} tematów`],
-  ['Postęp', 'tylko w tej przeglądarce', 'na koncie, na każdym urządzeniu', check],
-  ['Fiszki', `talia „${openTitles[0]}”`, 'wszystkie talie, powtórka', check],
-  ['Opis ilustracji, pisanie', `w „${openTitles[0]}”`, 'w darmowych tematach', 'we wszystkich tematach'],
-  ['Raport dla rodzica', '—', '—', 'wkrótce'],
-  ['Klasa nauczyciela', '—', check, check],
+  ['Tematy', `${quoted(openTitles)} w całości, pozostałe: początek`, `${quoted(freeTitles)} w całości, pozostałe: początek`, `${allModules.length} tematów w całości`],
+  ['Postęp', 'tylko w tej przeglądarce', 'na koncie, na każdym urządzeniu', 'na koncie, na każdym urządzeniu'],
+  ['Fiszki', `talia ${quoted([openTitles[0]!])}`, `talia ${quoted([freeTitles[0]!])}, początek pozostałych talii`, 'wszystkie talie, powtórka'],
+  ['Opis ilustracji, pisanie', `w ${quoted(openTitles)}`, `w ${quoted(freeTitles)}`, 'we wszystkich tematach'],
+  ['Nauka w klasie nauczyciela', '—', '—', check],
+  ['Panel rodzica, e-mail co tydzień', '—', '—', 'w planie Rodzic'],
+  ['Narzędzia nauczyciela: klasa, kalendarz, zadania domowe', '—', `${check} (konto nauczyciela)`, check],
 ];
 ---
 
-<div class:list={['grid gap-4', full ? 'lg:grid-cols-3' : 'sm:grid-cols-2']}>
-  {full && (
-    <div class="card flex flex-col p-6">
-      <h3 class="text-lg font-bold">Bez konta</h3>
-      <p class="mt-1 text-3xl font-bold">0 zł</p>
-      <p class="mt-2 text-sm text-ink-2">Temat „{openTitles[0]}” w całości, bez logowania. Postęp zostaje w tej przeglądarce.</p>
-      <a href={`/tematy/${openModules[0]}`} class="mt-auto inline-block rounded-lg border border-line px-4 py-2.5 text-center font-bold text-ink hover:bg-hero">Otwórz temat</a>
+{full && (
+  <div class="flex flex-wrap items-center gap-x-5 gap-y-3" data-pricing-toggle>
+    <div role="group" aria-label="Okres rozliczenia" class="inline-flex rounded-full bg-tile p-1">
+      <button type="button" data-period="month" aria-pressed="true" class="rounded-full px-4 py-2 text-sm font-semibold text-ink-2 transition aria-pressed:bg-surface aria-pressed:text-ink aria-pressed:shadow-card">Miesięcznie</button>
+      <button type="button" data-period="season" aria-pressed="false" class="rounded-full px-4 py-2 text-sm font-semibold text-ink-2 transition aria-pressed:bg-surface aria-pressed:text-ink aria-pressed:shadow-card">Do matury</button>
     </div>
-  )}
-  <div class="card flex flex-col p-6">
-    <h3 class="text-lg font-bold">Za darmo</h3>
-    <p class="mt-1 text-3xl font-bold">0 zł</p>
-    <p class="mt-2 text-sm text-ink-2">Konto, {freeCount} {freeCount === 1 ? 'temat' : freeCount < 5 ? 'tematy' : 'tematów'} w całości, fiszki ze wszystkich tematów i postęp zapisany na koncie.</p>
-    <a href={appLink('register?src=pricing')} class="mt-auto inline-block rounded-lg bg-primary px-4 py-2.5 text-center font-bold text-white hover:bg-primary-hover" data-event="cta_register" data-block="pricing">Zacznij za darmo</a>
+    <p class="text-sm text-ink-2" data-period-note="month">Odnawia się co miesiąc. Możesz zrezygnować w każdej chwili.</p>
+    <p class="text-sm text-ink-2" data-period-note="season" hidden>Jedna płatność, dostęp {seasonUntil}, bez automatycznego odnawiania.</p>
   </div>
-  <div class="card flex flex-col border-2 border-primary p-6">
-    <h3 class="text-lg font-bold">Pełny dostęp</h3>
-    {paid ? (
-      <p class="mt-1 text-3xl font-bold">{price(pricing.untilMatura, 'do matury')}</p>
-    ) : (
-      <p class="mt-1 text-3xl font-bold">wkrótce</p>
-    )}
-    {paid && pricing.monthly !== null && <p class="text-sm text-ink-2">albo {price(pricing.monthly, 'miesięcznie')}</p>}
-    <p class="mt-2 text-sm text-ink-2">Wszystkie {allModules.length} tematów, każdy tekst, ćwiczenie i test, a później raport dla rodzica.</p>
-    {paid ? (
-      <a href={appLink('register?src=pricing-paid')} class="mt-auto inline-block rounded-lg bg-primary px-4 py-2.5 text-center font-bold text-white hover:bg-primary-hover">Kup dostęp</a>
-    ) : (
-      <a href="/cennik#lista" class="mt-auto inline-block rounded-lg bg-primary px-4 py-2.5 text-center font-bold text-white hover:bg-primary-hover" data-event="pricing_notify">Powiadom mnie o starcie</a>
-    )}
-  </div>
+)}
+
+<div class:list={['grid gap-4 md:grid-cols-3', full && 'mt-6']}>
+  {plans.map((p) => (
+    <div id={`plan-${p.id}`} class:list={['card flex flex-col p-6', p.id === 'parent' && 'border-2 border-primary']}>
+      <h3 class="text-lg font-bold">{p.name}</h3>
+      <p class="text-sm text-ink-2">{p.tagline}</p>
+      <p class="mt-3" data-price="month">
+        <span class="text-3xl font-bold">{formatPrice(p.monthly)}</span>
+        <span class="text-sm text-ink-2"> miesięcznie</span>
+      </p>
+      {full && (
+        <p class="mt-3" data-price="season" hidden>
+          <span class="text-3xl font-bold">{formatPrice(p.season ?? p.monthly)}</span>
+          <span class="text-sm text-ink-2"> {p.season !== null ? `jednorazowo, ${seasonUntil}` : 'miesięcznie; ten plan jest tylko miesięczny'}</span>
+        </p>
+      )}
+      {!full && p.season !== null && <p class="text-sm text-ink-2">albo {formatPrice(p.season)} jednorazowo, {seasonUntil}</p>}
+      <p class="mt-4 text-sm font-semibold text-ink">{p.seats}</p>
+      <ul class="mt-2 space-y-1.5 text-sm text-ink-2">
+        {p.includes.map((line) => (
+          <li class="flex gap-2"><span class="text-primary" aria-hidden="true">{check}</span><span>{line}</span></li>
+        ))}
+        {p.extraSeat && (
+          <li class="flex gap-2"><span class="text-primary" aria-hidden="true">+</span><span>{p.extraSeat.label}: +{formatPrice(p.extraSeat.price)} miesięcznie</span></li>
+        )}
+      </ul>
+      <a
+        href={buyHref(p, 'month')}
+        data-buy
+        data-href-month={buyHref(p, 'month')}
+        data-href-season={buyHref(p, p.season !== null ? 'season' : 'month')}
+        data-plan={p.id}
+        class:list={['mt-6 inline-block rounded-lg px-4 py-2.5 text-center font-bold', p.id === 'parent' ? 'bg-primary text-white hover:bg-primary-hover' : 'border border-line text-ink hover:bg-hero']}
+        data-event={buyEvent}
+        data-block="pricing"
+      >{buyLabel}</a>
+    </div>
+  ))}
 </div>
 
+<p class="mt-4 text-sm text-ink-2">
+  {full ? PAYMENT_METHODS : `Temat ${quoted(openTitles)} jest za darmo, bez logowania i z kontem.`} Ceny zawierają VAT.
+</p>
+
 {full && (
-  <div class="card mt-6 overflow-x-auto">
-    <table class="w-full text-sm">
-      <thead>
-        <tr class="border-b border-line text-left">
-          <th class="px-4 py-3 font-semibold text-ink"></th>
-          <th class="px-4 py-3 font-semibold text-ink">Bez konta</th>
-          <th class="px-4 py-3 font-semibold text-ink">Za darmo</th>
-          <th class="px-4 py-3 font-semibold text-ink">Pełny dostęp</th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((r) => (
-          <tr class="border-b border-line-soft last:border-0">
-            <th scope="row" class="px-4 py-3 text-left font-semibold text-ink">{r[0]}</th>
-            <td class="px-4 py-3 text-ink-2">{r[1]}</td>
-            <td class="px-4 py-3 text-ink-2">{r[2]}</td>
-            <td class="px-4 py-3 text-ink-2">{r[3]}</td>
+  <>
+    <h2 class="section-title mt-12">Co jest za darmo, a co w pełnym dostępie</h2>
+    <div class="card mt-6 overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-line text-left">
+            <th class="px-4 py-3 font-semibold text-ink"></th>
+            <th class="px-4 py-3 font-semibold text-ink">Bez konta</th>
+            <th class="px-4 py-3 font-semibold text-ink">Darmowe konto</th>
+            <th class="px-4 py-3 font-semibold text-ink">Pełny dostęp</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr class="border-b border-line-soft last:border-0">
+              <th scope="row" class="px-4 py-3 text-left font-semibold text-ink">{r[0]}</th>
+              <td class="px-4 py-3 text-ink-2">{r[1]}</td>
+              <td class="px-4 py-3 text-ink-2">{r[2]}</td>
+              <td class="px-4 py-3 text-ink-2">{r[3]}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="mt-3 text-sm text-ink-2">Pełny dostęp ma uczeń z własnym planem albo z miejscem od rodzica lub nauczyciela; nauczyciel ma go w swoim planie. Postęp zapisany w zamkniętych tematach nie znika.</p>
+
+    <script>
+      /* The period switch: shows one price per card and points the buttons at that period (Spec - Subskrypcje §6.1). */
+      const toggle = document.querySelector<HTMLElement>('[data-pricing-toggle]');
+      if (toggle) {
+        const buttons = Array.from(toggle.querySelectorAll<HTMLButtonElement>('button[data-period]'));
+        const apply = (period: string) => {
+          for (const b of buttons) b.setAttribute('aria-pressed', String(b.dataset.period === period));
+          for (const el of document.querySelectorAll<HTMLElement>('[data-price], [data-period-note]')) {
+            el.hidden = (el.dataset.price ?? el.dataset.periodNote) !== period;
+          }
+          for (const a of document.querySelectorAll<HTMLAnchorElement>('a[data-buy]')) {
+            const href = period === 'season' ? a.dataset.hrefSeason : a.dataset.hrefMonth;
+            if (href) a.setAttribute('href', href);
+          }
+        };
+        for (const b of buttons) b.addEventListener('click', () => apply(b.dataset.period ?? 'month'));
+      }
+    </script>
+  </>
 )}

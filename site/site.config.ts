@@ -3,6 +3,8 @@
  * with their sources, the open topics. Content itself comes from ../app/src/data (Spec - Landing §3.1).
  */
 
+import { checkoutOpen, freeAccountModules } from '@app/data/access';
+
 /** Product name. Placeholder until the owner decides (Spec - Landing §18, question 1). */
 export const SITE_NAME = 'Matura Angielski';
 
@@ -65,14 +67,15 @@ export const examFacts = {
 
 export type ExamFactId = keyof typeof examFacts;
 
-/** Prices are placeholders until the owner decides (Spec - Landing §18, question 4). */
+/**
+ * The free topic, the plans and their prices live in app/src/data/access.ts, shared with the app
+ * (Spec - Subskrypcje i cennik §8): the site never types a price. Here only what the pages need by name.
+ */
 export const pricing = {
-  currency: 'zł',
-  /** Null means "not announced": the page shows "wkrótce" and the waiting list instead of a price. */
-  monthly: null as number | null,
-  untilMatura: null as number | null,
-  /** Topics a free account gets in full on top of the open ones (Spec - Landing §18, question 3). */
-  freeAccountModules: ['czlowiek', 'edukacja'],
+  /** Topics a free account opens in full; the same list the app's lock uses. */
+  freeAccountModules,
+  /** False until the checkout exists: the buy buttons lead to the waiting list instead. */
+  checkoutOpen,
 };
 
 /** Social accounts, Polish ones first; empty strings hide the link. */

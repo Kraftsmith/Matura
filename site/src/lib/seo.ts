@@ -1,4 +1,5 @@
 import { SITE_NAME, SITE_URL } from '../../site.config';
+import { SEASON_END, checkoutOpen, plans, type Period, type Plan } from '@app/data/access';
 
 export const absolute = (path: string): string => new URL(path, SITE_URL).toString();
 
@@ -31,15 +32,52 @@ export const breadcrumbList = (crumbs: Crumb[]) => ({
   itemListElement: crumbs.map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.name, item: absolute(c.href) })),
 });
 
-export const softwareApplication = (priceFree = true) => ({
+/* Until the checkout exists the offers are announced, not on sale. */
+const AVAILABILITY = checkoutOpen ? 'https://schema.org/InStock' : 'https://schema.org/PreOrder';
+
+const offer = (plan: Plan, period: Period, price: number) => ({
+  '@type': 'Offer',
+  name: `${plan.name}, ${period === 'month' ? 'miesięcznie' : `do ${SEASON_END.label}`}`,
+  price: price.toFixed(2),
+  priceCurrency: 'PLN',
+  url: absolute(`/cennik#plan-${plan.id}`),
+  availability: AVAILABILITY,
+  category: period === 'month' ? 'subskrypcja miesięczna' : 'płatność jednorazowa',
+});
+
+/** One Offer per plan and period, with the real prices from app/src/data/access.ts (Spec - Subskrypcje §10.1). */
+export const planOffers = () => plans.flatMap((p) => [offer(p, 'month', p.monthly), ...(p.season === null ? [] : [offer(p, 'season', p.season)])]);
+
+export const softwareApplication = () => ({
   '@type': 'SoftwareApplication',
   name: SITE_NAME,
   applicationCategory: 'EducationalApplication',
   operatingSystem: 'Web',
   inLanguage: 'pl-PL',
   url: SITE_URL,
-  ...(priceFree ? { offers: { '@type': 'Offer', price: '0', priceCurrency: 'PLN' } } : {}),
+  offers: [{ '@type': 'Offer', name: 'Darmowe konto', price: '0', priceCurrency: 'PLN', url: absolute('/cennik'), availability: 'https://schema.org/InStock' }, ...planOffers()],
 });
+
+/** /cennik: a Product with an Offer per plan and period, so the prices can show in results (Spec - Landing §7.5). */
+export const pricingProduct = (description: string) => {
+  const offers = planOffers();
+  const prices = offers.map((o) => Number(o.price));
+  return {
+    '@type': 'Product',
+    name: `${SITE_NAME}: pełny dostęp`,
+    description,
+    image: absolute('/og-default.png'),
+    brand: { '@type': 'Brand', name: SITE_NAME },
+    offers: {
+      '@type': 'AggregateOffer',
+      priceCurrency: 'PLN',
+      lowPrice: Math.min(...prices).toFixed(2),
+      highPrice: Math.max(...prices).toFixed(2),
+      offerCount: offers.length,
+      offers,
+    },
+  };
+};
 
 export const faqPage = (items: { q: string; a: string }[]) => ({
   '@type': 'FAQPage',
