@@ -55,7 +55,7 @@ export interface LanguageUseWork {
 const letterOf = (index: number) => String.fromCharCode(97 + index);
 
 /** The learner's answers to one exercise, each with the sentence or dialogue it belongs to. */
-const languageAnswers = (e: LanguageUseExercise, work: LanguageWork): WorkAnswer[] => {
+export const languageAnswers = (e: LanguageUseExercise, work: LanguageWork): WorkAnswer[] => {
   const mark = (key: string, value: string) => (work.checked ? isItemCorrect(e, key, value) : undefined);
   if (e.type === 'matching') {
     return e.prompts.flatMap((prompt): WorkAnswer[] => {

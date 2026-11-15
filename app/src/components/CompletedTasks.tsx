@@ -19,7 +19,8 @@ export const WorkLine: React.FC<{ work: ModuleWork }> = ({ work }) => {
   return <p className="text-xs leading-4 text-ink-2">{parts.join(' · ')}</p>;
 };
 
-const Answers: React.FC<{ answers: WorkAnswer[] }> = ({ answers }) => {
+/** The learner's answers one under another, each with a tick or a cross once checked. */
+export const WorkAnswers: React.FC<{ answers: WorkAnswer[] }> = ({ answers }) => {
   const { t } = useSettings();
   return (
     <ol className="mt-2 grid gap-2">
@@ -78,7 +79,7 @@ export const CompletedTasks: React.FC<{ rows: ModuleSummary[]; teacherView: bool
                   title={t('work.test')}
                   result={t('work.testLine', { a: work.test.answered, n: work.test.total, c: work.test.checked, k: work.test.correct })}
                 >
-                  <Answers answers={work.test.answers} />
+                  <WorkAnswers answers={work.test.answers} />
                 </Task>
               )}
 
@@ -90,7 +91,7 @@ export const CompletedTasks: React.FC<{ rows: ModuleSummary[]; teacherView: bool
                     .filter(Boolean)
                     .join(', ')}
                 >
-                  <Answers answers={e.answers} />
+                  <WorkAnswers answers={e.answers} />
                 </Task>
               ))}
 
@@ -114,7 +115,7 @@ export const CompletedTasks: React.FC<{ rows: ModuleSummary[]; teacherView: bool
                               .filter(Boolean)
                               .join(' · ')}
                           </p>
-                          {e.answers.length > 0 && <Answers answers={e.answers} />}
+                          {e.answers.length > 0 && <WorkAnswers answers={e.answers} />}
                         </div>
                       </li>
                     ))}

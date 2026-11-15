@@ -43,7 +43,7 @@ export const MatchingBody: React.FC<ExerciseBodyProps<MatchingExercise>> = ({ ex
             <li key={prompt.id} className="grid gap-2">
               <p className="text-base leading-6 text-ink">
                 <span className="mr-1.5 tabular-nums text-ink-3">{i + 1}.</span>
-                {prompt.text}
+                <span data-card-text={exercise.id}>{prompt.text}</span>
               </p>
               <div role="group" aria-label={`${t('srodki.chooseReply')} ${i + 1}`} className="flex flex-wrap gap-1.5">
                 {replies.map((reply, r) => (
@@ -79,7 +79,9 @@ export const MatchingBody: React.FC<ExerciseBodyProps<MatchingExercise>> = ({ ex
           return (
             <li key={reply.id} className="grid grid-cols-[auto_1fr_auto] items-start gap-x-2 text-base leading-6 text-ink">
               <span className="font-semibold">{letterOf(r)}.</span>
-              <span className="min-w-0">{reply.text}</span>
+              <span className="min-w-0" data-card-text={exercise.id}>
+                {reply.text}
+              </span>
               {locked && <span className="text-sm leading-6 font-semibold text-success tabular-nums">{promptIndex + 1}</span>}
             </li>
           );

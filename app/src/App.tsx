@@ -329,6 +329,7 @@ export function App() {
               moduleTitle={currentModule.titlePl}
               results={currentProgress?.exercises}
               onResult={(exerciseId, score) => saveExerciseResult(currentModule.id, exerciseId, score)}
+              teacherSignedIn={isTeacher}
             />
           )}
 

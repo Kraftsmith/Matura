@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { ArrowDown, ArrowUp, Link2, Plus, Trash2, Type } from 'lucide-react';
 import { ApiError } from '../../accountApi';
-import { assignedAtOf, defaultDueAt, homeworkItemStatus, homeworkProgress } from '../../homework';
+import { assignedAtOf, defaultDueAt, homeworkItemStatus, homeworkProgress, workForItem } from '../../homework';
 import type { Homework, HomeworkItem, ItemDraft, Lesson } from '../../schedule';
 import { addTick, createHomework, deleteHomework, patchHomework, removeTick } from '../../scheduleApi';
 import { dayOf, formatDate, formatMoment, fromWarsaw, toLocalInput } from '../../time';
 import { useProgress } from '../../useProgress';
 import { useSettings } from '../../useSettings';
 import { useUser } from '../../useUser';
+import { WorkAnswers } from '../CompletedTasks';
 import { MessageDialog } from '../messages/MessageDialog';
 import { Button, Chip, TextField, fieldClass } from '../ui';
 import { ItemLine } from './common';
@@ -52,12 +53,14 @@ export const HomeworkStatusTable: React.FC<{ homework: Homework; onChanged: () =
               {homework.items.map((item) => {
                 const status = homeworkItemStatus(item, allStates[s.id], assignedAtOf(homework, item, s.id), homework.ticks[item.id]?.[s.id]);
                 const teacherTick = status.tick?.by === 'teacher';
+                const work = workForItem(item, allStates[s.id]);
                 return (
                   <ItemLine
                     key={item.id}
                     item={item}
                     status={status}
                     href={item.kind === 'link' && item.target ? `#${item.target}` : undefined}
+                    details={work?.answers ? <WorkAnswers answers={work.answers} /> : work?.text ? <p className="max-w-[72ch] text-sm leading-6 whitespace-pre-wrap text-ink">{work.text}</p> : undefined}
                     action={
                       <Button size="sm" variant="ghost" disabled={busy === `${item.id}/${s.id}`} onClick={() => void toggle(item, s.id, !teacherTick)}>
                         {teacherTick ? t('hw.unaccept') : t('hw.accept')}

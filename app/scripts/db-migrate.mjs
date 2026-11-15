@@ -212,6 +212,11 @@ await sql`
   )`;
 // A private note can be about one lesson; the lesson's page lists them.
 await sql`alter table teacher_notes add column if not exists lesson_id uuid references lessons (id) on delete set null`;
+// The day a note is about, chosen by the teacher; older notes take the Warsaw day they were written on.
+await sql`alter table teacher_notes add column if not exists noted_on date`;
+await sql`update teacher_notes set noted_on = (created_at at time zone 'Europe/Warsaw')::date where noted_on is null`;
+await sql`alter table teacher_notes alter column noted_on set not null`;
+await sql`alter table teacher_notes alter column noted_on set default (now() at time zone 'Europe/Warsaw')::date`;
 
 // Without the cascade, deleting an account would leave notes about a person who is gone.
 const foreignKeys = [

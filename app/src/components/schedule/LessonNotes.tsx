@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Lock } from 'lucide-react';
 import type { Lesson } from '../../schedule';
 import { useSettings } from '../../useSettings';
-import { Button, Chip, TextArea, fieldClass } from '../ui';
+import { Button, Chip, fieldClass } from '../ui';
 import { createNote, listNotes, type TeacherNote } from '../notes/notesApi';
+import { NoteEditor } from '../notes/NoteEditor';
+import { NoteText } from '../notes/NoteText';
 import { formatRelative } from '../../progressSummary';
 import { useLocale } from './scheduleFormat';
 
@@ -55,7 +57,7 @@ export const LessonNotes: React.FC<{ lesson: Lesson; onSignedOut: () => void }> 
       </h3>
       {notes.map((n) => (
         <article key={n.id} className="grid gap-1 rounded-lg border border-line px-4 py-3">
-          <p className="text-base leading-6 whitespace-pre-wrap text-ink">{n.text}</p>
+          <NoteText text={n.text} className="text-base leading-6 text-ink" />
           <p className="flex flex-wrap items-center gap-2 text-sm leading-5 text-ink-2">
             {lesson.participants.length > 1 && <Chip size="sm">{nameOf(n.studentId)}</Chip>}
             <span>{formatRelative(n.createdAt, t, locale)}</span>
@@ -79,7 +81,7 @@ export const LessonNotes: React.FC<{ lesson: Lesson; onSignedOut: () => void }> 
               </select>
             </label>
           )}
-          <TextArea rows={3} maxLength={5000} autoFocus value={text} onChange={(e) => setText(e.target.value)} />
+          <NoteEditor rows={3} maxLength={5000} autoFocus value={text} onChange={setText} />
           <div className="flex gap-2">
             <Button size="sm" disabled={busy || !text.trim()} onClick={() => void submit()}>
               {t('profile.save')}

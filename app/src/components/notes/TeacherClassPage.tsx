@@ -8,6 +8,7 @@ import { useSettings } from '../../useSettings';
 import { formatRelative } from '../../progressSummary';
 import { fetchSummary, SignedOutError, type NotesSummary } from './notesApi';
 import { useNotesStrings } from './notesStrings';
+import { stripNoteMarkup } from './noteMarkup';
 
 interface TeacherClassPageProps {
   modules: MaturaModule[];
@@ -49,7 +50,7 @@ const TeacherClassPage: React.FC<TeacherClassPageProps> = ({ modules, students, 
               <StickyNote className="h-4 w-4 shrink-0 text-primary" />
               {s ? nt('notes.card', { n: s.count, when: formatRelative(s.lastAt, t, locale) }) : nt('notes.cardNone')}
             </p>
-            {s?.pinnedText && <p className="truncate text-ink">{s.pinnedText}</p>}
+            {s?.pinnedText && <p className="truncate text-ink">{stripNoteMarkup(s.pinnedText)}</p>}
           </div>
         )}
       </>

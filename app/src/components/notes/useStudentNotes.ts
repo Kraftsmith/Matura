@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { today } from '../../time';
 import { createNote, deleteNote, listNotes, patchNote, SignedOutError, type NoteDraft, type NotePatch, type TeacherNote } from './notesApi';
 
 const UNDO_MS = 8000;
@@ -13,7 +14,7 @@ interface PendingDelete {
   timer: ReturnType<typeof setTimeout>;
 }
 
-const byPinnedThenNew = (a: ShownNote, b: ShownNote) => Number(b.pinned) - Number(a.pinned) || b.createdAt.localeCompare(a.createdAt);
+const byPinnedThenNew = (a: ShownNote, b: ShownNote) => Number(b.pinned) - Number(a.pinned) || b.day.localeCompare(a.day) || b.createdAt.localeCompare(a.createdAt);
 
 const isLocal = (id: string) => id.startsWith('local-');
 
@@ -66,7 +67,7 @@ export const useStudentNotes = (studentId: string, onSignedOut: () => void) => {
   const add = useCallback(
     (draft: NoteDraft) => {
       const now = new Date().toISOString();
-      const note: ShownNote = { ...draft, id: `local-${crypto.randomUUID()}`, studentId, pinned: false, createdAt: now, updatedAt: now };
+      const note: ShownNote = { ...draft, day: draft.day ?? today(), id: `local-${crypto.randomUUID()}`, studentId, pinned: false, createdAt: now, updatedAt: now };
       setNotes((list) => [...list, note].sort(byPinnedThenNew));
       saveNew(note, draft);
     },
@@ -91,7 +92,7 @@ export const useStudentNotes = (studentId: string, onSignedOut: () => void) => {
       const shown: ShownNote = { ...note, ...rest, ...(moduleId !== undefined ? { moduleId: moduleId ?? undefined } : {}) };
       if (isLocal(note.id)) {
         // Not on the server yet: the retry has to send the edited text, not the first one.
-        replace(note.id, { ...shown, unsaved: { create: { text: shown.text, tag: shown.tag, moduleId: shown.moduleId } } });
+        replace(note.id, { ...shown, unsaved: { create: { text: shown.text, tag: shown.tag, moduleId: shown.moduleId, day: shown.day } } });
         return;
       }
       replace(note.id, shown);

@@ -27,10 +27,12 @@ export const MiniDialogueBody: React.FC<ExerciseBodyProps<MiniDialogueExercise>>
                 {item.lines.map((line, i) => (
                   <p key={i}>
                     <span className="mr-1 text-ink-3">{line.speaker}:</span>
-                    {line.text ?? (
+                    {line.text !== null ? (
+                      <span data-card-text={exercise.id}>{line.text}</span>
+                    ) : (
                       <>
                         <span className="font-semibold text-primary">______</span>
-                        {line.after && ` ${line.after}`}
+                        {line.after && <span data-card-text={exercise.id}> {line.after}</span>}
                       </>
                     )}
                   </p>
@@ -46,7 +48,7 @@ export const MiniDialogueBody: React.FC<ExerciseBodyProps<MiniDialogueExercise>>
                   disabled={locked}
                   onSelect={() => onChange({ ...answers, [item.id]: String(i) })}
                 >
-                  {option}
+                  <span data-card-text={exercise.id}>{option}</span>
                 </OptionCard>
               ))}
             </div>

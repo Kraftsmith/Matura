@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Plus, Volume2 } from 'lucide-react';
-import type { VocabularyText } from '../types';
+import type { UserCardSource } from '../types';
 import { Button } from './ui';
 import { speak } from '../speech';
 import { cleanSelection, fitsOnCard, lowerSentenceStart, sentenceWith } from '../text';
@@ -20,11 +20,18 @@ interface Picked {
 
 interface SelectionCardBarProps {
   moduleId: string;
-  texts: VocabularyText[];
+  /** Where the card comes from; the dialog's hints and the card's badge follow it. */
+  source: UserCardSource;
+  /** The category for a card from the text with this id (a text's subtopic, an exercise's function). */
+  categoryOf?: (textId: string) => string | undefined;
   /** The learner the teacher is adding cards for. */
   targetUserId?: string;
 }
 
+/**
+ * A selection becomes a card when it stays inside one element marked `data-card-text="<id>"`. The element's text is the
+ * example sentence's source, unless `data-card-sentence` gives a better one (a gapped sentence with its answer).
+ */
 const paragraphOf = (node: Node | null) => (node instanceof Element ? node : node?.parentElement)?.closest<HTMLElement>('[data-card-text]');
 
 /** The selected phrase, if it can become a card: inside one paragraph of a text, and short enough. */
@@ -36,11 +43,11 @@ const readSelection = (): Picked | undefined => {
   const phrase = cleanSelection(selection.toString());
   if (!fitsOnCard(phrase)) return undefined;
   const box = selection.getRangeAt(0).getBoundingClientRect();
-  return { phrase, paragraph: paragraph.textContent ?? '', textId: paragraph.dataset.cardText ?? '', top: box.top, left: box.left + box.width / 2, scrollY: window.scrollY };
+  return { phrase, paragraph: paragraph.dataset.cardSentence ?? paragraph.textContent ?? '', textId: paragraph.dataset.cardText ?? '', top: box.top, left: box.left + box.width / 2, scrollY: window.scrollY };
 };
 
 /** "Add to flashcards" next to a selected word: a floating panel with a mouse, a bar at the bottom on a touch screen. */
-export const SelectionCardBar: React.FC<SelectionCardBarProps> = ({ moduleId, texts, targetUserId }) => {
+export const SelectionCardBar: React.FC<SelectionCardBarProps> = ({ moduleId, source, categoryOf, targetUserId }) => {
   const { t } = useSettings();
   const add = useAddFlashcard(moduleId, targetUserId);
   const [picked, setPicked] = useState<Picked>();
@@ -88,8 +95,7 @@ export const SelectionCardBar: React.FC<SelectionCardBarProps> = ({ moduleId, te
 
   const addPicked = () => {
     const sentence = sentenceWith(picked.paragraph, picked.phrase);
-    const text = texts.find((x) => x.id === picked.textId);
-    add.open({ front: lowerSentenceStart(picked.phrase, sentence), exampleSentence: sentence, category: text?.subtopic, source: 'slownictwo-text', sourceRef: picked.textId });
+    add.open({ front: lowerSentenceStart(picked.phrase, sentence), exampleSentence: sentence, category: categoryOf?.(picked.textId), source, sourceRef: picked.textId });
     setPicked(undefined);
   };
 

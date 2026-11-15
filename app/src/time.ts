@@ -74,6 +74,9 @@ export const formatDayLong = (day: string, locale: string): string => new Intl.D
 /** "wt 11.11" / "Tue 11/11". */
 export const formatDayShort = (day: string, locale: string): string => new Intl.DateTimeFormat(locale, { timeZone: TIME_ZONE, weekday: 'short', day: '2-digit', month: '2-digit' }).format(noonOf(day));
 
+/** "11 listopada 2026" / "11 November 2026". */
+export const formatDayFull = (day: string, locale: string): string => new Intl.DateTimeFormat(locale, { timeZone: TIME_ZONE, day: 'numeric', month: 'long', year: 'numeric' }).format(noonOf(day));
+
 /** "11.11" / "11/11". */
 export const formatDate = (day: string, locale: string): string => new Intl.DateTimeFormat(locale, { timeZone: TIME_ZONE, day: '2-digit', month: '2-digit' }).format(noonOf(day));
 

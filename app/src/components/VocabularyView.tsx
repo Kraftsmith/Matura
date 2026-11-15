@@ -334,7 +334,7 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({ moduleId, texts,
   return (
     <div className="grid gap-8 py-6">
       {teacherSignedIn && <LessonBar student={lessonStudent} onChoose={chooseStudent} />}
-      <SelectionCardBar moduleId={moduleId} texts={texts} targetUserId={lessonStudent} />
+      <SelectionCardBar moduleId={moduleId} source="slownictwo-text" categoryOf={(id) => texts.find((x) => x.id === id)?.subtopic} targetUserId={lessonStudent} />
       <SectionTitle
         title={`${t('vocab.title')}: ${moduleTitle}`}
         description={`${texts.length} ${texts.length === 1 ? 'text' : 'texts'} on the CKE subtopics of this module. Read, listen, learn the highlighted words, then answer the questions aloud.`}

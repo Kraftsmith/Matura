@@ -1,5 +1,6 @@
 import { badRequest, db, guarded, json, notFound, requireStudentOf } from '../_lib/http.js';
 import { isNoteId, toNote, validModule, validTag, validText } from '../_lib/notes.js';
+import { validDay } from '../_lib/schedule.js';
 
 // /api/notes/<noteId>
 const noteIdOf = (req: Request) => new URL(req.url).pathname.split('/')[3];
@@ -7,7 +8,7 @@ const noteIdOf = (req: Request) => new URL(req.url).pathname.split('/')[3];
 /** The note, but only for the teacher of the learner it is about. */
 const ownNote = async (req: Request, noteId: string | undefined) => {
   if (!isNoteId(noteId)) return null;
-  const [note] = await db()`select * from teacher_notes where id = ${noteId}`;
+  const [note] = await db()`select *, noted_on::text as day from teacher_notes where id = ${noteId}`;
   return note && (await requireStudentOf(req, note.student_id as string)) ? note : null;
 };
 
@@ -22,20 +23,22 @@ export const PATCH = guarded(async (req) => {
   if ('tag' in body && !validTag(body.tag)) return badRequest();
   if ('moduleId' in body && !validModule(body.moduleId)) return badRequest();
   if ('pinned' in body && typeof body.pinned !== 'boolean') return badRequest();
+  if ('day' in body && !validDay(body.day)) return badRequest();
 
   const text = 'text' in body ? body.text : note.text;
   const tag = 'tag' in body ? body.tag : note.tag;
   const moduleId = 'moduleId' in body ? body.moduleId : note.module_id;
   const pinned = 'pinned' in body ? body.pinned : note.pinned;
+  const day = 'day' in body ? body.day : note.day;
   // Pinning is not an edit: the "edited" mark follows the content only.
-  const edited = text !== note.text || tag !== note.tag || moduleId !== note.module_id;
+  const edited = text !== note.text || tag !== note.tag || moduleId !== note.module_id || day !== note.day;
 
   const [row] = await db()`
     update teacher_notes
-    set text = ${text}, tag = ${tag}, module_id = ${moduleId}, pinned = ${pinned},
+    set text = ${text}, tag = ${tag}, module_id = ${moduleId}, pinned = ${pinned}, noted_on = ${day as string}::date,
         updated_at = case when ${edited}::boolean then now() else updated_at end
     where id = ${noteId}
-    returning *`;
+    returning *, noted_on::text as day`;
   return json({ note: toNote(row) });
 });
 

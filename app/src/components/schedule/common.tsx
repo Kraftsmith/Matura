@@ -24,10 +24,12 @@ interface ItemLineProps {
   href?: string;
   /** Buttons at the end of the line. */
   action?: React.ReactNode;
+  /** The learner's work, folded under the line (the teacher's view). */
+  details?: React.ReactNode;
 }
 
 /** One homework item with its state: the same line for the learner and for the teacher. */
-export const ItemLine: React.FC<ItemLineProps> = ({ item, status, href, action }) => {
+export const ItemLine: React.FC<ItemLineProps> = ({ item, status, href, action, details }) => {
   const { t } = useSettings();
   const label = useItemLabel();
   const evidence = useEvidenceText();
@@ -55,6 +57,12 @@ export const ItemLine: React.FC<ItemLineProps> = ({ item, status, href, action }
         )}
         {comment && <span className="block text-sm leading-5 text-ink-2">{comment}</span>}
         {bits.length > 0 && <span className={`block text-sm leading-5 ${status.evidence.warn ? 'text-warning' : 'text-ink-2'}`}>{bits.join(' · ')}</span>}
+        {details && (
+          <details className="mt-1">
+            <summary className="cursor-pointer text-sm leading-5 font-semibold text-primary hover:underline">{t('hw.showWork')}</summary>
+            <div className="mt-1 mb-2 rounded-lg bg-hero px-3 py-2">{details}</div>
+          </details>
+        )}
       </span>
       {action && <span className="flex shrink-0 items-center gap-2">{action}</span>}
     </li>

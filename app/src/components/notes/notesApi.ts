@@ -10,6 +10,8 @@ export interface TeacherNote {
   /** The lesson the note is about, when it was written from the calendar. */
   lessonId?: string;
   pinned: boolean;
+  /** The day the note is about, "YYYY-MM-DD"; by default the day it was written. */
+  day: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -19,9 +21,11 @@ export interface NoteDraft {
   tag: NoteTag;
   moduleId?: string;
   lessonId?: string;
+  /** Left out, the server takes the lesson's day, else today in Poland. */
+  day?: string;
 }
 
-export type NotePatch = Partial<Pick<TeacherNote, 'text' | 'tag' | 'pinned'>> & { moduleId?: string | null };
+export type NotePatch = Partial<Pick<TeacherNote, 'text' | 'tag' | 'pinned' | 'day'>> & { moduleId?: string | null };
 
 export interface NotesSummary {
   count: number;

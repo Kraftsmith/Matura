@@ -28,6 +28,7 @@ export const validTag = (v: unknown): v is string => typeof v === 'string' && TA
 export const isModuleId = (v: unknown): v is string => typeof v === 'string' && MODULE_IDS.includes(v);
 export const validModule = (v: unknown): v is string | null => v === null || (typeof v === 'string' && MODULE_IDS.includes(v));
 
+/** Every query that feeds this selects `noted_on::text as day`, so the day never passes through a JS Date. */
 export const toNote = (r: Record<string, unknown>) => ({
   id: r.id,
   studentId: r.student_id,
@@ -36,6 +37,7 @@ export const toNote = (r: Record<string, unknown>) => ({
   moduleId: r.module_id ?? undefined,
   lessonId: r.lesson_id ?? undefined,
   pinned: r.pinned,
+  day: r.day,
   createdAt: r.created_at,
   updatedAt: r.updated_at,
 });

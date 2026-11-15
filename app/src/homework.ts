@@ -1,8 +1,10 @@
 import { allModules } from './data/modulesData';
+import { languageUseExercisesByModule } from './data/languageUseExercises';
 import { vocabularyExercisesByText } from './data/vocabularyExercises';
 import { autoCounted, parseTarget, targetKind, type CourseTarget } from './courseTargets';
+import { isGapCorrect } from './languageUse';
 import { EXERCISE_PASS_SCORE, GRAMMAR_PASS_SCORE, type ProgressState } from './progress-context';
-import { countWords } from './progressSummary';
+import { countWords, isTestAnswerCorrect, languageAnswers, type WorkAnswer } from './progressSummary';
 import type { Homework, HomeworkItem, Lesson, MyHomework, Tick } from './schedule';
 import { byStart } from './schedule';
 import { addDays, dayOf, fromWarsaw } from './time';
@@ -61,6 +63,57 @@ const evidenceFor = (target: CourseTarget, state: ProgressState | undefined): It
     }
     default:
       return NONE;
+  }
+};
+
+/** What the learner actually wrote for a homework item: the answers one by one, or a text. */
+export interface ItemWork {
+  answers?: WorkAnswer[];
+  text?: string;
+}
+
+/**
+ * The learner's own work behind a homework item, for the teacher to read without opening the page as the learner.
+ * Undefined when there is nothing yet, or when the key was shown (the answers are the key's, not the learner's).
+ */
+export const workForItem = (item: HomeworkItem, state: ProgressState | undefined): ItemWork | undefined => {
+  const target = item.kind === 'link' && item.target ? parseTarget(item.target) : undefined;
+  if (!target) return undefined;
+  const p = state?.modules[target.moduleId];
+  if (!p) return undefined;
+  switch (targetKind(target)) {
+    case 'gap': {
+      const work = p.gapWork?.[target.item as string];
+      const items = vocabularyExercisesByText[target.item as string]?.items;
+      if (!work || !items || work.revealed) return undefined;
+      const answers = items.flatMap((it, i): WorkAnswer[] => {
+        const answer = work.values[i]?.trim();
+        return answer ? [{ label: it.sentence, answer, correct: work.checked ? isGapCorrect(it, answer) : undefined }] : [];
+      });
+      return answers.length ? { answers } : undefined;
+    }
+    case 'exercise': {
+      const work = p.exerciseWork?.[target.item as string];
+      const exercise = languageUseExercisesByModule[target.moduleId]?.find((e) => e.id === target.item);
+      if (!work || !exercise || work.revealed) return undefined;
+      const answers = languageAnswers(exercise, work);
+      return answers.length ? { answers } : undefined;
+    }
+    case 'test': {
+      const module = allModules.find((m) => m.id === target.moduleId);
+      if (!module || !p.testWork) return undefined;
+      const answers = module.testQuestions.flatMap((q): WorkAnswer[] => {
+        const answer = p.testWork?.answers[q.id]?.trim();
+        if (!answer) return [];
+        const label = [q.sentencePrefix, '___', q.sentenceSuffix].filter(Boolean).join(' ');
+        return [{ label, answer, correct: p.testWork?.checked[q.id] ? isTestAnswerCorrect(q, answer) : undefined }];
+      });
+      return answers.length ? { answers } : undefined;
+    }
+    case 'essay':
+      return p.essay?.text.trim() ? { text: p.essay.text } : undefined;
+    default:
+      return undefined;
   }
 };
 

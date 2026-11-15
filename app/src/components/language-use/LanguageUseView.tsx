@@ -3,8 +3,11 @@ import { ArrowLeft, Languages } from 'lucide-react';
 import type { LanguageUseExercise } from '../../types';
 import type { ExerciseResult } from '../../progress-context';
 import { pluralForm } from '../../i18n';
+import { useFlashcardDialog } from '../../useAddFlashcard';
 import { useSettings } from '../../useSettings';
 import { Button, SectionTitle } from '../ui';
+import { LessonBar } from '../LessonBar';
+import { SelectionCardBar } from '../SelectionCardBar';
 import { ExerciseCard } from './ExerciseCard';
 
 interface LanguageUseViewProps {
@@ -15,10 +18,12 @@ interface LanguageUseViewProps {
   moduleTitle: string;
   results?: Record<string, ExerciseResult>;
   onResult: (exerciseId: string, scorePercent: number) => void;
+  teacherSignedIn?: boolean;
 }
 
-export const LanguageUseView: React.FC<LanguageUseViewProps> = ({ moduleId, exercises, exerciseId, moduleTitle, results, onResult }) => {
+export const LanguageUseView: React.FC<LanguageUseViewProps> = ({ moduleId, exercises, exerciseId, moduleTitle, results, onResult, teacherSignedIn }) => {
   const { t, translationLang } = useSettings();
+  const { lessonStudent, chooseStudent } = useFlashcardDialog();
   const [showTranslations, setShowTranslations] = useState(false);
   const sectionRoute = `${moduleId}/srodki`;
   const focused = exercises.find((e) => e.id === exerciseId);
@@ -43,6 +48,9 @@ export const LanguageUseView: React.FC<LanguageUseViewProps> = ({ moduleId, exer
 
   return (
     <div className="grid gap-8 py-6">
+      {teacherSignedIn && <LessonBar student={lessonStudent} onChoose={chooseStudent} />}
+      {/* A word selected in an exercise's sentence can become a card, as in the texts. */}
+      <SelectionCardBar moduleId={moduleId} source="srodki" categoryOf={(id) => exercises.find((e) => e.id === id)?.functionLabel} targetUserId={lessonStudent} />
       <SectionTitle
         title={`${t('srodki.title')}: ${moduleTitle}`}
         description={t('srodki.desc', { n: exercises.length, word: t(`plural.exercise${pluralForm(exercises.length)}`) })}

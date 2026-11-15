@@ -37,7 +37,7 @@ export const WordBankBody: React.FC<ExerciseBodyProps<WordBankExercise>> = ({ ex
                 isUsed || locked ? 'border-line-soft text-ink-3' : 'cursor-pointer border-line bg-surface text-ink hover:border-ink-2'
               }`}
             >
-              {word}
+              <span data-card-text={exercise.id}>{word}</span>
             </button>
           );
         })}
@@ -51,7 +51,8 @@ export const WordBankBody: React.FC<ExerciseBodyProps<WordBankExercise>> = ({ ex
           const wrong = phase === 'checked' && !correct;
           return (
             <li key={item.sentence} className="grid gap-1">
-              <p className="text-base leading-7 text-ink">
+              {/* The example on a card is the whole sentence; its answer appears in it only once it is known. */}
+              <p className="text-base leading-7 text-ink" data-card-text={exercise.id} data-card-sentence={item.sentence.replace('___', locked ? item.answer : '…')}>
                 <span className="mr-1.5 tabular-nums text-ink-3">{i + 1}.</span>
                 {before}
                 <InlineInput

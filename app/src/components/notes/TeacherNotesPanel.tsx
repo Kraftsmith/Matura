@@ -1,11 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { Lock, Pencil, Pin, PinOff, Search, Trash2 } from 'lucide-react';
 import type { MaturaModule } from '../../types';
-import { Button, Chip, TextArea, TextField, fieldClass } from '../ui';
+import { Button, Chip, TextField, fieldClass } from '../ui';
 import { useSettings } from '../../useSettings';
-import { formatRelative } from '../../progressSummary';
+import { formatDayFull, today } from '../../time';
 import { NOTE_TAGS, type NoteTag } from './notesApi';
 import { tagKey, useNotesStrings } from './notesStrings';
+import { NoteEditor } from './NoteEditor';
+import { NoteText } from './NoteText';
 import type { ShownNote, useStudentNotes } from './useStudentNotes';
 
 /** Grows with the text up to 12 lines, as far as the browser supports it. */
@@ -70,6 +72,7 @@ const NewNote: React.FC<{ studentId: string; studentName: string; modules: Matur
   const [text, setText] = useState(() => readDraft(studentId));
   const [tag, setTag] = useState<NoteTag>('general');
   const [moduleId, setModuleId] = useState(initialModule);
+  const [day, setDay] = useState(today);
 
   const change = (value: string) => {
     setText(value);
@@ -78,22 +81,23 @@ const NewNote: React.FC<{ studentId: string; studentName: string; modules: Matur
 
   const submit = () => {
     if (!text.trim()) return;
-    onAdd({ text: text.trim(), tag, moduleId: moduleId || undefined });
+    onAdd({ text: text.trim(), tag, moduleId: moduleId || undefined, day });
     change('');
     setTag('general');
     setModuleId(initialModule);
+    setDay(today());
   };
 
   return (
     <div className="grid gap-3 card p-5">
-      <TextArea
+      <NoteEditor
         label={nt('notes.newLabel')}
         placeholder={nt('notes.placeholder', { name: studentName })}
         rows={3}
         maxLength={5000}
         style={growing}
         value={text}
-        onChange={(e) => change(e.target.value)}
+        onChange={change}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && e.ctrlKey) submit();
         }}
@@ -103,6 +107,7 @@ const NewNote: React.FC<{ studentId: string; studentName: string; modules: Matur
         <div className="min-w-48 flex-1">
           <TopicSelect modules={modules} value={moduleId} onChange={setModuleId} />
         </div>
+        <TextField aria-label={nt('notes.date')} type="date" value={day} onChange={(e) => e.target.value && setDay(e.target.value)} />
         <Button disabled={!text.trim()} onClick={submit}>
           {nt('notes.add')}
         </Button>
@@ -113,11 +118,12 @@ const NewNote: React.FC<{ studentId: string; studentName: string; modules: Matur
 
 const NoteCard: React.FC<{ note: ShownNote; modules: MaturaModule[]; actions: ReturnType<typeof useStudentNotes> }> = ({ note, modules, actions }) => {
   const nt = useNotesStrings();
-  const { t, uiLang } = useSettings();
+  const { uiLang } = useSettings();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(note.text);
   const [draftTag, setDraftTag] = useState(note.tag);
   const [draftModule, setDraftModule] = useState(note.moduleId ?? '');
+  const [draftDay, setDraftDay] = useState(note.day);
   const [expanded, setExpanded] = useState(false);
   const locale = uiLang === 'en' ? 'en-GB' : 'pl-PL';
   const module = modules.find((m) => m.id === note.moduleId);
@@ -129,21 +135,27 @@ const NoteCard: React.FC<{ note: ShownNote; modules: MaturaModule[]; actions: Re
     setDraft(note.text);
     setDraftTag(note.tag);
     setDraftModule(note.moduleId ?? '');
+    setDraftDay(note.day);
     setEditing(true);
   };
 
   const saveEdit = () => {
     if (!draft.trim()) return;
-    actions.update(note, { text: draft.trim(), tag: draftTag, moduleId: draftModule || null });
+    actions.update(note, { text: draft.trim(), tag: draftTag, moduleId: draftModule || null, day: draftDay });
     setEditing(false);
   };
 
   if (editing) {
     return (
       <article className="grid gap-3 rounded-2xl border border-primary bg-surface p-5">
-        <TextArea aria-label={nt('notes.edit')} rows={3} maxLength={5000} style={growing} value={draft} onChange={(e) => setDraft(e.target.value)} />
+        <NoteEditor label={nt('notes.edit')} rows={3} maxLength={5000} style={growing} value={draft} onChange={setDraft} />
         <TagPicker value={draftTag} onChange={setDraftTag} />
-        <TopicSelect modules={modules} value={draftModule} onChange={setDraftModule} />
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="min-w-48 flex-1">
+            <TopicSelect modules={modules} value={draftModule} onChange={setDraftModule} />
+          </div>
+          <TextField aria-label={nt('notes.date')} type="date" value={draftDay} onChange={(e) => e.target.value && setDraftDay(e.target.value)} />
+        </div>
         <div className="flex flex-wrap gap-2">
           <Button size="sm" disabled={!draft.trim()} onClick={saveEdit}>
             {nt('notes.save')}
@@ -158,7 +170,7 @@ const NoteCard: React.FC<{ note: ShownNote; modules: MaturaModule[]; actions: Re
 
   return (
     <article className={`grid gap-3 rounded-2xl border bg-surface p-5 ${note.unsaved ? 'border-error' : 'border-line'}`}>
-      <p className={`text-base leading-6 break-words whitespace-pre-wrap text-ink ${long && !expanded ? 'line-clamp-6' : ''}`}>{note.text}</p>
+      <NoteText text={note.text} className={`text-base leading-6 text-ink ${long && !expanded ? 'line-clamp-6' : ''}`} />
       {long && (
         <button type="button" onClick={() => setExpanded(!expanded)} className="cursor-pointer justify-self-start text-sm leading-5 font-semibold text-primary hover:underline">
           {expanded ? nt('notes.less') : nt('notes.more')}
@@ -177,7 +189,7 @@ const NoteCard: React.FC<{ note: ShownNote; modules: MaturaModule[]; actions: Re
           {note.pinned && <Pin className="h-4 w-4 text-primary" aria-label={nt('notes.unpin')} />}
           <Chip size="sm">{nt(tagKey(note.tag))}</Chip>
           {module && <span>{module.titlePl}</span>}
-          <span title={new Date(note.createdAt).toLocaleString(locale)}>{formatRelative(note.createdAt, t, locale)}</span>
+          <span title={new Date(note.createdAt).toLocaleString(locale)}>{formatDayFull(note.day, locale)}</span>
           {note.updatedAt !== note.createdAt && <span>· {nt('notes.edited')}</span>}
         </div>
         <div className="flex gap-1">

@@ -56,7 +56,7 @@ export const TextField: React.FC<TextFieldProps> = ({
   );
 };
 
-export interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement>, FieldShellProps {}
+export interface TextAreaProps extends React.ComponentProps<'textarea'>, FieldShellProps {}
 
 export const TextArea: React.FC<TextAreaProps> = ({ label, hint, error, trailing, className = '', id: idProp, ...rest }) => {
   const auto = useId();
