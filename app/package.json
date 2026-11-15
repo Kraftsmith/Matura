@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:api": "vercel dev",
+    "dev:local": "vite --config vite.local.config.ts",
     "build": "tsc -b && vite build",
     "build:site": "npm --prefix ../site run build",
     "build:all": "npm run build:site && tsc -b && vite build",

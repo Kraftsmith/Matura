@@ -35,6 +35,7 @@ vercel env pull .env.local   # once, needs a linked project
 npm run db:migrate           # safe to repeat
 npm run user:create -- teacher you@example.com "Your name" --role teacher   # prints a link to set the password
 npm run dev:api              # front end and API together
+npm run dev:local            # the same without the Vercel CLI: Vite serves /api from api/ (vercel dev cannot symlink its builders on Windows without Developer Mode)
 ```
 
 Add a learner to a class from the start with `--student-of teacher`. Without `RESEND_API_KEY`, `vercel dev` prints mail links to the console; on Vercel the mail then fails.
