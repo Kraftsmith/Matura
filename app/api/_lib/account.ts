@@ -56,6 +56,7 @@ export const toAccount = (r: Record<string, unknown>, teacherName?: string) => (
   teacher: teacherName ? { name: teacherName } : undefined,
   notifyMailMessage: r.notify_mail_message !== false,
   notifyMailDigest: r.notify_mail_digest !== false,
+  notifyMailDone: r.notify_mail_done !== false,
 });
 
 export const loadAccount = async (userId: string) => {

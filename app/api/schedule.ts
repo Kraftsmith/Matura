@@ -1,4 +1,5 @@
 import { badRequest, db, guarded, json, notFound, requireTeacher, requireUser, unauthorized, type SessionUser } from './_lib/http.js';
+import { sendMail } from './_lib/mail.js';
 import { notify, roughStanding } from './_lib/notify.js';
 import { addHit, hitCount } from './_lib/rateLimit.js';
 import {
@@ -500,7 +501,16 @@ const myDone: Handler = async (_req, user, params) => {
     where n.kind = 'homework_done' and n.homework_id = ${hw.id as string} and n.actor_id = ${user.id}
       and n.created_at >= (select coalesce(max(created_at), 'epoch') from homework_items where homework_id = ${hw.id as string})`;
   if (already) return json({ created: false });
-  await notify([hw.teacher_id as string], 'homework_done', { actorId: user.id, homeworkId: hw.id as string, data: { dueAt: (hw.due_at as Date).toISOString() } });
+  const [id] = await notify([hw.teacher_id as string], 'homework_done', { actorId: user.id, homeworkId: hw.id as string, data: { dueAt: (hw.due_at as Date).toISOString() } });
+  // The teacher may be away from the site: a mail at once, unless they turned it off. The digest then skips it.
+  const [teacher] = await sql`select email, ui_lang, notify_mail_done from users where id = ${hw.teacher_id as string}`;
+  const [student] = await sql`select name from users where id = ${user.id}`;
+  if (teacher?.email && teacher.notify_mail_done !== false) {
+    const lang = teacher.ui_lang === 'en' ? 'en' : 'pl';
+    const date = new Intl.DateTimeFormat(lang === 'en' ? 'en-GB' : 'pl-PL', { timeZone: TIME_ZONE, day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }).format(hw.due_at as Date);
+    sendMail('homeworkDone', teacher.email as string, lang, `dashboard/${user.id}/zadania`, { name: (student?.name as string) ?? '', date });
+    await sql`update notifications set mailed_at = now() where id = ${id}`;
+  }
   return json({ created: true });
 };
 

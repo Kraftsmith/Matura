@@ -274,5 +274,7 @@ await sql`create index if not exists notifications_user_time on notifications (u
 await sql`create index if not exists notifications_unread on notifications (user_id) where read_at is null`;
 await sql`alter table users add column if not exists notify_mail_message boolean not null default true`;
 await sql`alter table users add column if not exists notify_mail_digest boolean not null default true`;
+// A teacher's mail the moment a learner finishes a homework (on top of the daily digest).
+await sql`alter table users add column if not exists notify_mail_done boolean not null default true`;
 
 console.log('Database is up to date.');

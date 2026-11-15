@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Globe, Languages, Mail, MessageSquare } from 'lucide-react';
+import { ClipboardCheck, Globe, Languages, Mail, MessageSquare } from 'lucide-react';
 import type { TranslationLang } from '../types';
 import type { UiLang } from '../i18n';
 import { patchMe } from '../accountApi';
@@ -82,7 +82,7 @@ const NotificationSettings: React.FC = () => {
   const { user, setAccount } = useUser();
   const [failed, setFailed] = useState(false);
 
-  const save = (patch: { notifyMailMessage?: boolean; notifyMailDigest?: boolean }) => {
+  const save = (patch: { notifyMailMessage?: boolean; notifyMailDigest?: boolean; notifyMailDone?: boolean }) => {
     setAccount({ ...user, ...patch });
     patchMe(patch).then(setAccount, () => setFailed(true));
   };
@@ -94,6 +94,14 @@ const NotificationSettings: React.FC = () => {
         <>
           <Row icon={<MessageSquare className="h-5 w-5" />} title={t('profile.mailMessage')} hint={t('profile.mailMessageHint')}>
             <Switch label={t('profile.mailMessage')} checked={user.notifyMailMessage} onChange={(v) => save({ notifyMailMessage: v })} />
+          </Row>
+          <div className="border-t border-line-soft" />
+        </>
+      )}
+      {user.role === 'teacher' && (
+        <>
+          <Row icon={<ClipboardCheck className="h-5 w-5" />} title={t('profile.mailDone')} hint={t('profile.mailDoneHint')}>
+            <Switch label={t('profile.mailDone')} checked={user.notifyMailDone} onChange={(v) => save({ notifyMailDone: v })} />
           </Row>
           <div className="border-t border-line-soft" />
         </>

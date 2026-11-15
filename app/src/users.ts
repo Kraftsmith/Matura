@@ -29,6 +29,8 @@ export interface AccountUser extends UserProfile, ExamPlan {
   notifyMailMessage: boolean;
   /** The daily summary by mail. */
   notifyMailDigest: boolean;
+  /** Mail at once when a learner finishes a homework (a teacher's setting). */
+  notifyMailDone: boolean;
 }
 
 /** A learner who joined the teacher's class. */

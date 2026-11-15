@@ -18,6 +18,7 @@ const GUEST_USER: AccountUser = {
   termsAccepted: true,
   notifyMailMessage: false,
   notifyMailDigest: false,
+  notifyMailDone: false,
 };
 
 const noop = async () => {};

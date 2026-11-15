@@ -659,7 +659,9 @@ const pl = {
   'profile.mailMessageHint': 'Od razu, gdy nauczyciel napisze.',
   'profile.mailDigest': 'Codzienne podsumowanie e-mailem',
   'profile.mailDigestHint': 'Rano: nieprzeczytane powiadomienia, jutrzejsze zajęcia i terminy zadań. Tylko gdy jest o czym pisać.',
-  'profile.mailDigestHintTeacher': 'Rano: zrobione zadania domowe, nowi uczniowie, dzisiejsze zajęcia. Tylko gdy jest o czym pisać.',
+  'profile.mailDigestHintTeacher': 'Rano: nowi uczniowie, dzisiejsze zajęcia i to, czego nie przeczytano. Tylko gdy jest o czym pisać.',
+  'profile.mailDone': 'E-mail, gdy uczeń zrobi zadanie domowe',
+  'profile.mailDoneHint': 'Od razu, gdy uczeń skończy wszystkie punkty zadania.',
   'profile.siteAlways': 'Powiadomienia na stronie są zawsze włączone.',
 };
 
@@ -1306,7 +1308,9 @@ const en: Record<I18nKey, string> = {
   'profile.mailMessageHint': 'At once, when the teacher writes.',
   'profile.mailDigest': 'Daily summary by email',
   'profile.mailDigestHint': 'In the morning: unread notifications, tomorrow\'s lessons and homework deadlines. Only when there is something to say.',
-  'profile.mailDigestHintTeacher': 'In the morning: homework done, new students, today\'s lessons. Only when there is something to say.',
+  'profile.mailDigestHintTeacher': 'In the morning: new students, today\'s lessons and what was left unread. Only when there is something to say.',
+  'profile.mailDone': 'Email when a student finishes homework',
+  'profile.mailDoneHint': 'At once, when the student completes every item.',
   'profile.siteAlways': 'Notifications on the site are always on.',
 };
 

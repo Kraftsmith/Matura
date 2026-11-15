@@ -185,6 +185,7 @@
 |---|---|---|---|
 | E-mail o wiadomości od nauczyciela | ученик | вкл | Письмо сразу при `message` |
 | Codzienne podsumowanie e-mailem | оба | вкл | Сводка §8.2 |
+| E-mail, gdy uczeń zrobi zadanie domowe | учитель | вкл | Письмо сразу при `homework_done` (добавлено 15.11.2026) |
 
 Под блоком: «Powiadomienia na stronie są zawsze włączone». Отдельных настроек по видам нет: два переключателя закрывают реальные случаи.
 
@@ -198,6 +199,7 @@
 
 | Событие | Кому | Тема | Тело |
 |---|---|---|---|
+| `homework_done` | учителю, если `notify_mail_done` (добавлено 15.11.2026 по просьбе учителя: колокольчик виден только на сайте, а сводка приходит лишь утром) | {name}: zadanie domowe zrobione | «{name} zrobił(a) zadanie domowe z terminem {date}. Otwórz stronę ucznia, aby zobaczyć odpowiedzi.» + кнопка «Zobacz odpowiedzi» → `#dashboard/<ученик>/zadania`. Ставит `mailed_at`, в сводку не попадает |
 | `message` | ученику, если `notify_mail_message` | Wiadomość od nauczyciela | «{teacher} napisał(a) do Ciebie:» + текст сообщения (экранированный, как `{teacher}` в приглашении) + кнопка «Otwórz» → ссылка уведомления |
 
 Больше ничего сразу не уходит.

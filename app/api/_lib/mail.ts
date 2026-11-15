@@ -3,7 +3,7 @@ import { addHit, hitCount } from './rateLimit.js';
 
 type Lang = 'pl' | 'en';
 
-export type MailKind = 'verify' | 'exists' | 'reset' | 'setPassword' | 'newEmail' | 'emailChanging' | 'passwordChanged' | 'accountDeleted' | 'invite' | 'leadConfirm' | 'contactCopy' | 'teacherMessage' | 'digest';
+export type MailKind = 'verify' | 'exists' | 'reset' | 'setPassword' | 'newEmail' | 'emailChanging' | 'passwordChanged' | 'accountDeleted' | 'invite' | 'leadConfirm' | 'contactCopy' | 'teacherMessage' | 'homeworkDone' | 'digest';
 
 interface Template {
   subject: string;
@@ -30,6 +30,7 @@ const TEMPLATES: Record<Lang, Record<MailKind, Template>> = {
     leadConfirm: { subject: 'Potwierdź zapis', body: 'Kliknij przycisk, aby potwierdzić zapis na wiadomości o starcie i nowościach. Link działa 24 godziny. Jeśli to nie Ty, zignoruj tę wiadomość.', button: 'Potwierdzam' },
     contactCopy: { subject: 'Wiadomość z formularza kontaktowego', body: 'Od: {from}\n\n{message}' },
     teacherMessage: { subject: 'Wiadomość od nauczyciela', body: '{teacher} napisał(a) do Ciebie:\n\n{text}', button: 'Otwórz' },
+    homeworkDone: { subject: '{name}: zadanie domowe zrobione', body: '{name} zrobił(a) zadanie domowe z terminem {date}. Otwórz stronę ucznia, aby zobaczyć odpowiedzi.', button: 'Zobacz odpowiedzi' },
     digest: { subject: 'Twoje podsumowanie · {date}', body: '{body}', button: 'Otwórz' },
   },
   en: {
@@ -45,6 +46,7 @@ const TEMPLATES: Record<Lang, Record<MailKind, Template>> = {
     leadConfirm: { subject: 'Confirm your subscription', body: 'Click the button to confirm that you want news about the launch and new features. The link works for 24 hours. If this was not you, ignore this message.', button: 'Confirm' },
     contactCopy: { subject: 'Message from the contact form', body: 'From: {from}\n\n{message}' },
     teacherMessage: { subject: 'A message from your teacher', body: '{teacher} wrote to you:\n\n{text}', button: 'Open' },
+    homeworkDone: { subject: '{name}: homework done', body: '{name} has done the homework due {date}. Open the student page to see the answers.', button: 'See the answers' },
     digest: { subject: 'Your summary · {date}', body: '{body}', button: 'Open' },
   },
 };

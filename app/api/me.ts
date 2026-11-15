@@ -56,7 +56,7 @@ export const PATCH = guarded(async (req) => {
   const body = ((await req.json().catch(() => null)) ?? {}) as Record<string, unknown>;
 
   const sql = db();
-  const [row] = await sql`select name, exam_date, level, goal, ui_lang, translation_lang, notify_mail_message, notify_mail_digest from users where id = ${user.id}`;
+  const [row] = await sql`select name, exam_date, level, goal, ui_lang, translation_lang, notify_mail_message, notify_mail_digest, notify_mail_done from users where id = ${user.id}`;
   const pick = (key: string, column: string) => (key in body ? body[key] : row[column]);
   const name = pick('name', 'name');
   const examDate = 'examDate' in body ? body.examDate : (dateOnly(row.exam_date) ?? null);
@@ -66,6 +66,7 @@ export const PATCH = guarded(async (req) => {
   const translationLang = pick('translationLang', 'translation_lang');
   const mailMessage = pick('notifyMailMessage', 'notify_mail_message');
   const mailDigest = pick('notifyMailDigest', 'notify_mail_digest');
+  const mailDone = pick('notifyMailDone', 'notify_mail_done');
   if (
     !validName(name) ||
     !validDate(examDate as string | null) ||
@@ -74,7 +75,8 @@ export const PATCH = guarded(async (req) => {
     !validUiLang(uiLang) ||
     !validTranslationLang(translationLang) ||
     typeof mailMessage !== 'boolean' ||
-    typeof mailDigest !== 'boolean'
+    typeof mailDigest !== 'boolean' ||
+    typeof mailDone !== 'boolean'
   ) {
     return badRequest();
   }
@@ -82,7 +84,7 @@ export const PATCH = guarded(async (req) => {
   await sql`
     update users
     set name = ${name.trim()}, exam_date = ${examDate as string | null}, level = ${level}, goal = ${goal}, ui_lang = ${uiLang}, translation_lang = ${translationLang},
-        notify_mail_message = ${mailMessage}, notify_mail_digest = ${mailDigest}
+        notify_mail_message = ${mailMessage}, notify_mail_digest = ${mailDigest}, notify_mail_done = ${mailDone}
     where id = ${user.id}`;
   if (body.acceptTerms === true) await sql`update users set terms_accepted_at = now(), terms_version = ${TERMS_VERSION} where id = ${user.id}`;
   if (body.onboarded === true) await sql`update users set onboarded_at = coalesce(onboarded_at, now()) where id = ${user.id}`;
