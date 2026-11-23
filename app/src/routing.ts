@@ -7,7 +7,7 @@ import { routeOf } from './userRoute';
 /**
  * URL scheme: #<moduleId>/<section>[/<item>], e.g. #praca/opis-foto,
  * #czlowiek/slownictwo/czl-txt-2 (one text), #czlowiek/srodki/czl-sj-2 (one exercise), #czlowiek/gramatyka/test,
- * #czlowiek/gramatyka/gram-2 (one rule), #czlowiek/gramatyka/gram-2/zadania (the tasks of the test that check that rule).
+ * #czlowiek/gramatyka/gram-2 (one rule), #czlowiek/gramatyka/test/test-4 (one task of the test).
  * Also accepted: #<section> (default module), #<moduleId> (first tab), #design-system, #profile, #ustawienia (languages),
  * #dashboard/<studentId> (teacher looking at one learner, /fiszki opens their cards, /zadania their homework),
  * #powiadomienia (the notifications),
@@ -32,8 +32,6 @@ export const REVIEW_ITEM = 'powtorka';
 export const TEACHER_FILTER_ITEM = 'od-nauczyciela';
 /** Second segment of #kalendarz before a lesson id. */
 const LESSON_SEGMENT = 'z';
-/** Segment after a grammar rule's id: the tasks that check the rule, not the rule itself. */
-const TASKS_SEGMENT = 'zadania';
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -49,8 +47,8 @@ export interface Route {
   fromHub?: boolean;
   /** Calendar only: the lesson open in the side panel. */
   lessonId?: string;
-  /** Grammar only: `item` is a rule and the address points at the tasks of the test that check it. */
-  tasks?: boolean;
+  /** Grammar only, with the item "test": the id of the one task of the test the address points at. */
+  task?: string;
 }
 
 export const isStandalone = (s: SectionType) => standaloneSections.includes(s);
@@ -98,8 +96,8 @@ export const parseHash = (hash: string): Route => {
   if (isModuleId(a)) {
     const section = b && isSection(b) && !isStandalone(b) ? b : DEFAULT_SECTION;
     const item = validItem(a, section, c);
-    const tasks = section === 'gramatyka' && !!item && item !== 'test' && d === TASKS_SEGMENT;
-    return tasks ? { moduleId: a, section, item, tasks } : { moduleId: a, section, item };
+    const isTask = section === 'gramatyka' && item === 'test' && !!allModules.find((m) => m.id === a)?.testQuestions.some((q) => q.id === d);
+    return isTask ? { moduleId: a, section, item, task: d } : { moduleId: a, section, item };
   }
   const a2 = legacySections[a] ?? a;
   if (isSection(a2)) return { moduleId: DEFAULT_MODULE, section: a2 };
@@ -113,7 +111,7 @@ export const toHash = (r: Route): string => {
   if (r.fromHub) return r.item ? `fiszki/${r.moduleId}/${r.item}` : `fiszki/${r.moduleId}`;
   if (isStandalone(r.section)) return r.section;
   if (!r.item) return `${r.moduleId}/${r.section}`;
-  return `${r.moduleId}/${r.section}/${r.item}${r.tasks ? `/${TASKS_SEGMENT}` : ''}`;
+  return `${r.moduleId}/${r.section}/${r.item}${r.task ? `/${r.task}` : ''}`;
 };
 
 /* ---------- Addresses on the public site (Spec - Landing §3.1, rule 4) ---------- */
@@ -154,7 +152,5 @@ export const pageTargets = (r: Route): string[] => {
   if (isStandalone(r.section)) return [];
   const section = `${r.moduleId}/${r.section}`;
   if (r.section === 'fiszki') return [`fiszki/${r.moduleId}`, section];
-  // The tasks of one rule are a part of the topic's test.
-  if (r.tasks) return [`${section}/test`, section];
   return r.item && r.item !== TEACHER_FILTER_ITEM ? [`${section}/${r.item}`, section] : [section];
 };

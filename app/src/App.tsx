@@ -301,7 +301,7 @@ export function App() {
               key={currentModule.id}
               moduleId={currentModule.id}
               focusId={route.item}
-              focusTasks={route.tasks}
+              focusTask={route.task}
               rules={currentModule.grammarRules}
               questions={currentModule.testQuestions}
               moduleTitle={currentModule.titlePl}

@@ -6,14 +6,14 @@ import { InteractiveTestView } from './InteractiveTestView';
 import { useSettings } from '../useSettings';
 import { pluralForm } from '../i18n';
 import { CopyLinkButton } from './CopyLinkButton';
-import { ruleAnchor, tasksAnchor, TEST_ANCHOR } from '../grammarAnchors';
+import { ruleAnchor, taskAnchor, tasksAnchor, TEST_ANCHOR } from '../grammarAnchors';
 
 interface GrammarSectionViewProps {
   moduleId: string;
   /** A rule id or "test" from the address: the page opens scrolled to it. */
   focusId?: string;
-  /** With a rule id: scroll to the tasks that check the rule instead of the rule. */
-  focusTasks?: boolean;
+  /** With "test": the id of one task, the page opens scrolled to it. */
+  focusTask?: string;
   rules: GrammarRule[];
   questions: TestQuestion[];
   moduleTitle: string;
@@ -26,17 +26,17 @@ const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ b
  * One section for grammar: the rules of the module first, then the test that checks them.
  * Rules and tasks are linked both ways through grammarRef.ruleId.
  */
-export const GrammarSectionView: React.FC<GrammarSectionViewProps> = ({ moduleId, focusId, focusTasks, rules, questions, moduleTitle, onScoreSave }) => {
+export const GrammarSectionView: React.FC<GrammarSectionViewProps> = ({ moduleId, focusId, focusTask, rules, questions, moduleTitle, onScoreSave }) => {
   const { tr, t } = useSettings();
   const sectionRoute = `${moduleId}/gramatyka`;
 
-  // Every rule, its tasks and the test have their own address (…/gramatyka/gram-2, …/gramatyka/gram-2/zadania, …/gramatyka/test).
+  // Every rule, the test and each of its tasks have their own address (…/gramatyka/gram-2, …/gramatyka/test, …/gramatyka/test/test-4).
   useEffect(() => {
     if (!focusId) return;
-    // A rule without tasks, or tasks hidden by the "only wrong" filter: the rule itself.
-    const target = focusId === 'test' ? document.getElementById(TEST_ANCHOR) : (focusTasks && document.getElementById(tasksAnchor(focusId))) || document.getElementById(ruleAnchor(focusId));
+    // A task hidden by the "only wrong" filter: the top of the test.
+    const target = focusId === 'test' ? (focusTask && document.getElementById(taskAnchor(focusTask))) || document.getElementById(TEST_ANCHOR) : document.getElementById(ruleAnchor(focusId));
     target?.scrollIntoView({ block: 'start' });
-  }, [focusId, focusTasks]);
+  }, [focusId, focusTask]);
 
   const tasksPerRule = rules.reduce<Record<string, number>>((acc, r) => {
     acc[r.id] = questions.filter((q) => q.grammarRef?.ruleId === r.id).length;

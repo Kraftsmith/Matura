@@ -236,12 +236,10 @@ const pl = {
   'gram.otherGroup': 'Słownictwo i słowotwórstwo',
 
   // Grammar handbook (the drawer)
-  'hb.desc': 'Reguły ze wszystkich tematów w skrócie. Przy każdej są zadania, na których ją przećwiczysz.',
-  'hb.search': 'Szukaj reguły',
+  'hb.desc': 'Zagadnienia gramatyczne ze wszystkich tematów i ćwiczenia do każdego z nich.',
+  'hb.search': 'Szukaj zagadnienia',
   'hb.searchPlaceholder': 'np. used to, inwersja, passive',
-  'hb.practice': 'Ćwicz',
-  'hb.fullRule': 'Cała reguła',
-  'hb.empty': 'Nie ma takiej reguły. Spróbuj innego słowa.',
+  'hb.empty': 'Nie ma takiego zagadnienia. Spróbuj innego słowa.',
 
   // Test
   'test.header': 'Test sprawdzający',
@@ -903,12 +901,10 @@ const en: Record<I18nKey, string> = {
   'gram.backToRules': 'Back to the rules',
   'gram.otherGroup': 'Vocabulary and word formation',
 
-  'hb.desc': 'The rules of every topic in brief. Each one comes with tasks to practise it on.',
-  'hb.search': 'Search the rules',
+  'hb.desc': 'The grammar points of every topic and the exercises for each of them.',
+  'hb.search': 'Search the grammar points',
   'hb.searchPlaceholder': 'e.g. used to, inversion, passive',
-  'hb.practice': 'Practise',
-  'hb.fullRule': 'Full rule',
-  'hb.empty': 'No such rule. Try another word.',
+  'hb.empty': 'No such grammar point. Try another word.',
 
   'test.header': 'Progress test',
   'test.count': '{n} tasks (word formation, key word transformations and translation of fragments).',

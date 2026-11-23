@@ -26,7 +26,7 @@ Every text and exercise has its own link, for homework:
 
 - `/#czlowiek/slownictwo/czl-txt-2` — one vocabulary text with its gap-fill, on its own page
 - `/#czlowiek/srodki/czl-sj-2` — one Środki językowe exercise on its own page
-- `/#czlowiek/gramatyka/gram-2` — opens the grammar section at that rule; `/#czlowiek/gramatyka/gram-2/zadania` — at the tasks of the test that check that rule (the "Ćwicz" links of the grammar handbook); `/#czlowiek/gramatyka/test` — at the test
+- `/#czlowiek/gramatyka/gram-2` — opens the grammar section at that rule; `/#czlowiek/gramatyka/test` — at the test; `/#czlowiek/gramatyka/test/test-4` — at one task of the test (the exercise links of the grammar handbook)
 - `/#czlowiek/opis-foto`, `/#czlowiek/pisanie`, `/#czlowiek/fiszki` — the one exercise of each of these sections
 
 Flashcards have their own module, with the same decks as the topic tabs:

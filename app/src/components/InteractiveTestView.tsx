@@ -9,7 +9,7 @@ import { useProgress } from '../useProgress';
 import type { TestWork } from '../progress-context';
 import { isTestAnswerCorrect } from '../progressSummary';
 import { pluralForm } from '../i18n';
-import { ruleAnchor, tasksAnchor } from '../grammarAnchors';
+import { ruleAnchor, taskAnchor, tasksAnchor } from '../grammarAnchors';
 
 interface InteractiveTestViewProps {
   moduleId: string;
@@ -177,7 +177,7 @@ export const InteractiveTestView: React.FC<InteractiveTestViewProps> = ({ module
                 const levelKey = q.level === 'Rozszerzony' ? 'level.Rozszerzony' : 'level.Podstawowy';
 
                 return (
-                  <div key={q.id} className={`card border p-6 ${isChecked ? (isCorrect ? 'border-success' : 'border-error') : 'border-line'}`}>
+                  <div key={q.id} id={taskAnchor(q.id)} className={`card scroll-mt-24 border p-6 ${isChecked ? (isCorrect ? 'border-success' : 'border-error') : 'border-line'}`}>
                     <div className="mb-4 flex items-start justify-between gap-4">
                       <div className="space-y-1">
                         <div className="flex flex-wrap items-center gap-2 text-sm text-ink-2">

@@ -31,19 +31,20 @@ describe('routes for the calendar and the lessons page', () => {
     }
   });
 
-  it('gives the tasks of one grammar rule their own address', () => {
-    const tasks = parseHash('#czlowiek/gramatyka/gram-2/zadania');
-    expect(tasks).toMatchObject({ moduleId: 'czlowiek', section: 'gramatyka', item: 'gram-2', tasks: true });
-    expect(toHash(tasks)).toBe('czlowiek/gramatyka/gram-2/zadania');
-    // The public site has a page for the rule, not for its tasks.
-    expect(siteUrl(tasks)).toBe('/tematy/czlowiek/gramatyka/gram-2');
-    // The tasks are a part of the test, so homework for the test shows here.
-    expect(pageTargets(tasks)).toEqual(['czlowiek/gramatyka/test', 'czlowiek/gramatyka']);
+  it('gives every task of the grammar test its own address', () => {
+    const task = parseHash('#czlowiek/gramatyka/test/test-4');
+    expect(task).toMatchObject({ moduleId: 'czlowiek', section: 'gramatyka', item: 'test', task: 'test-4' });
+    expect(toHash(task)).toBe('czlowiek/gramatyka/test/test-4');
+    // The public site has a page for the test, not for one task; homework for the test shows on the task too.
+    expect(siteUrl(task)).toBe('/tematy/czlowiek/gramatyka/test');
+    expect(pageTargets(task)).toEqual(['czlowiek/gramatyka/test', 'czlowiek/gramatyka']);
 
-    expect(parseHash('#czlowiek/gramatyka/gram-2').tasks).toBeUndefined();
-    expect(parseHash('#czlowiek/gramatyka/test/zadania').tasks).toBeUndefined();
-    expect(parseHash('#czlowiek/gramatyka/no-such-rule/zadania')).toMatchObject({ section: 'gramatyka', item: undefined });
-    expect(parseHash('#czlowiek/slownictwo/czl-txt-1/zadania').tasks).toBeUndefined();
+    expect(parseHash('#czlowiek/gramatyka/test').task).toBeUndefined();
+    expect(parseHash('#czlowiek/gramatyka/test/no-such-task').task).toBeUndefined();
+    // A task of another topic, and a task id after something that is not the test.
+    expect(parseHash('#czlowiek/gramatyka/test/edu-t1').task).toBeUndefined();
+    expect(parseHash('#czlowiek/gramatyka/gram-2/test-4').task).toBeUndefined();
+    expect(parseHash('#czlowiek/slownictwo/czl-txt-1/test-4').task).toBeUndefined();
   });
 
   it('still parses the old addresses', () => {
