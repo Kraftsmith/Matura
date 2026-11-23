@@ -5,7 +5,6 @@ const pl = {
   // Navigation
   'nav.progress': 'Postępy',
   'nav.handbook': 'Repetytorium gramatyczne',
-  'nav.handbookShort': 'Gramatyka',
   'nav.openModules': 'Otwórz listę modułów',
   'nav.home': 'Matura Angielski, strona główna',
   'nav.signedIn': 'Zalogowany',
@@ -676,7 +675,6 @@ export type I18nKey = keyof typeof pl;
 const en: Record<I18nKey, string> = {
   'nav.progress': 'Progress',
   'nav.handbook': 'Grammar handbook',
-  'nav.handbookShort': 'Grammar',
   'nav.openModules': 'Open module list',
   'nav.home': 'Matura English, home page',
   'nav.signedIn': 'Signed in',

@@ -19,6 +19,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ activeSection, onOpenHandbook, onOpenSidebar, onSectionChange }) => {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const userMenuButtonRef = useRef<HTMLButtonElement>(null);
   const { t } = useSettings();
   const { user, signOut } = useUser();
   const { flush } = useProgress();
@@ -61,7 +62,6 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onOpenHandbook, o
           <a href={`#${user.id}/dashboard`} className="text-lg leading-none font-semibold tracking-tight text-ink sm:text-[22px]" aria-label={t('nav.home')}>
             matura<span className="text-primary">english</span>
           </a>
-          <span className="ml-2 hidden text-sm text-ink-2 sm:inline">{t('dash.subtitle')}</span>
         </div>
 
         <div className="flex items-center gap-2">
@@ -78,16 +78,11 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onOpenHandbook, o
             </Button>
           )}
 
-          <Button variant="secondary" size="sm" onClick={onOpenHandbook} title={t('nav.handbook')}>
-            <BookOpen className="h-4 w-4" />
-            <span className="hidden sm:inline">{t('nav.handbook')}</span>
-            <span className="sr-only sm:hidden">{t('nav.handbookShort')}</span>
-          </Button>
-
           <NotificationBell />
 
           <div className="relative" ref={userMenuRef}>
             <button
+              ref={userMenuButtonRef}
               type="button"
               onClick={() => setUserMenuOpen((o) => !o)}
               aria-haspopup="menu"
@@ -104,7 +99,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onOpenHandbook, o
             </button>
 
             {userMenuOpen && (
-              <div role="menu" className="absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-lg border border-line bg-surface py-1">
+              <div role="menu" className="absolute right-0 top-full z-50 mt-2 w-72 overflow-hidden rounded-lg border border-line bg-surface py-1">
                 <div className="px-4 pt-2 pb-2">
                   <p className="truncate text-base leading-6 font-semibold text-ink">{user.name}</p>
                   <p className="truncate text-xs leading-4 text-ink-2">{user.email}</p>
@@ -140,6 +135,20 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onOpenHandbook, o
                     {t('cal.title')}
                   </button>
                 )}
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setUserMenuOpen(false);
+                    // The menu item is gone once the menu closes: the drawer returns focus to the menu button instead.
+                    userMenuButtonRef.current?.focus();
+                    onOpenHandbook();
+                  }}
+                  className="flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left text-base leading-6 text-ink hover:bg-hero focus-visible:bg-hero focus-visible:outline-none"
+                >
+                  <BookOpen className="h-5 w-5 text-ink-2" />
+                  {t('nav.handbook')}
+                </button>
                 <a
                   href="#profile"
                   role="menuitem"
