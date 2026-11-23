@@ -9,3 +9,4 @@ export * from './Callout';
 export * from './Meter';
 export * from './Toast';
 export * from './Dialog';
+export * from './Drawer';

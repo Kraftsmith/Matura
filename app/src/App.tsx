@@ -15,7 +15,7 @@ import { GrammarSectionView } from './components/GrammarSectionView';
 import { VocabularyView } from './components/VocabularyView';
 import { LanguageUseView } from './components/language-use/LanguageUseView';
 import { WritingTrainerView } from './components/WritingTrainerView';
-import { GrammarHandbookModal } from './components/GrammarHandbookModal';
+import { GrammarHandbook } from './components/GrammarHandbook';
 import { DesignSystemShowcase } from './components/DesignSystemShowcase';
 import { ProfilePage } from './components/ProfilePage';
 import { SettingsPage } from './components/SettingsPage';
@@ -301,6 +301,7 @@ export function App() {
               key={currentModule.id}
               moduleId={currentModule.id}
               focusId={route.item}
+              focusTasks={route.tasks}
               rules={currentModule.grammarRules}
               questions={currentModule.testQuestions}
               moduleTitle={currentModule.titlePl}
@@ -347,7 +348,7 @@ export function App() {
         </main>
       </div>
 
-      <GrammarHandbookModal isOpen={handbookOpen} onClose={() => setHandbookOpen(false)} />
+      {handbookOpen && <GrammarHandbook onClose={() => setHandbookOpen(false)} />}
     </div>
     </FlashcardDialogProvider>
   );

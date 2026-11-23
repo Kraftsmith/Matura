@@ -46,6 +46,12 @@
   --radius-2xl: 16px; /* cards, tiles, panels */
 
   --shadow-card: 0 1px 2px rgba(30, 34, 40, 0.04), 0 4px 16px rgba(30, 34, 40, 0.06);
+
+  /* A drawer comes in from the right edge (class `animate-drawer-in`, used behind `motion-safe:`). */
+  --animate-drawer-in: drawer-in 200ms ease-out;
+  @keyframes drawer-in {
+    from { transform: translateX(100%); }
+  }
 }
 
 /* A white panel on the grey page of the app: the one way to draw a card. */

@@ -9,6 +9,7 @@ import { useProgress } from '../useProgress';
 import type { TestWork } from '../progress-context';
 import { isTestAnswerCorrect } from '../progressSummary';
 import { pluralForm } from '../i18n';
+import { ruleAnchor, tasksAnchor } from '../grammarAnchors';
 
 interface InteractiveTestViewProps {
   moduleId: string;
@@ -152,7 +153,7 @@ export const InteractiveTestView: React.FC<InteractiveTestViewProps> = ({ module
         const shown = g.questions.filter(visible);
         if (shown.length === 0) return null;
         return (
-          <section key={g.id} id={g.ruleId ? `task-group-${g.ruleId}` : undefined} className="grid gap-4 scroll-mt-24">
+          <section key={g.id} id={g.ruleId ? tasksAnchor(g.ruleId) : undefined} className="grid gap-4 scroll-mt-24">
             {g.title && (
               <div className="flex flex-wrap items-center gap-3 border-b border-line pb-2">
                 <h3 className="text-lg leading-7 font-semibold text-ink">{g.title}</h3>
@@ -160,7 +161,7 @@ export const InteractiveTestView: React.FC<InteractiveTestViewProps> = ({ module
                   {g.questions.length} {t(`plural.task${pluralForm(g.questions.length)}`)}
                 </span>
                 {g.ruleId && (
-                  <a href={`#rule-${g.ruleId}`} onClick={(e) => { e.preventDefault(); document.getElementById(`rule-${g.ruleId}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }} className="ml-auto inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline">
+                  <a href={`#${ruleAnchor(g.ruleId)}`} onClick={(e) => { e.preventDefault(); document.getElementById(ruleAnchor(g.ruleId!))?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }} className="ml-auto inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline">
                     <BookOpen className="h-4 w-4" />
                     {t('test.seeRule')}
                   </a>
@@ -287,7 +288,7 @@ export const InteractiveTestView: React.FC<InteractiveTestViewProps> = ({ module
                             {q.grammarRef.ruleId && (
                               <button
                                 type="button"
-                                onClick={() => document.getElementById(`rule-${q.grammarRef!.ruleId}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                                onClick={() => document.getElementById(ruleAnchor(q.grammarRef!.ruleId!))?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                                 className="cursor-pointer font-semibold text-primary hover:underline"
                               >
                                 {t('test.seeRule')}

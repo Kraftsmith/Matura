@@ -235,6 +235,14 @@ const pl = {
   'gram.backToRules': 'Wróć do reguł',
   'gram.otherGroup': 'Słownictwo i słowotwórstwo',
 
+  // Grammar handbook (the drawer)
+  'hb.desc': 'Reguły ze wszystkich tematów w skrócie. Przy każdej są zadania, na których ją przećwiczysz.',
+  'hb.search': 'Szukaj reguły',
+  'hb.searchPlaceholder': 'np. used to, inwersja, passive',
+  'hb.practice': 'Ćwicz',
+  'hb.fullRule': 'Cała reguła',
+  'hb.empty': 'Nie ma takiej reguły. Spróbuj innego słowa.',
+
   // Test
   'test.header': 'Test sprawdzający',
   'test.count': '{n} zadań (słowotwórstwo, transformacje ze słowem kluczem i tłumaczenie fragmentów).',
@@ -894,6 +902,13 @@ const en: Record<I18nKey, string> = {
   'gram.testDesc': 'Tasks are grouped by the rules above. Your score is saved once every task has been checked.',
   'gram.backToRules': 'Back to the rules',
   'gram.otherGroup': 'Vocabulary and word formation',
+
+  'hb.desc': 'The rules of every topic in brief. Each one comes with tasks to practise it on.',
+  'hb.search': 'Search the rules',
+  'hb.searchPlaceholder': 'e.g. used to, inversion, passive',
+  'hb.practice': 'Practise',
+  'hb.fullRule': 'Full rule',
+  'hb.empty': 'No such rule. Try another word.',
 
   'test.header': 'Progress test',
   'test.count': '{n} tasks (word formation, key word transformations and translation of fragments).',

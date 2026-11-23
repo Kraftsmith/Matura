@@ -31,6 +31,21 @@ describe('routes for the calendar and the lessons page', () => {
     }
   });
 
+  it('gives the tasks of one grammar rule their own address', () => {
+    const tasks = parseHash('#czlowiek/gramatyka/gram-2/zadania');
+    expect(tasks).toMatchObject({ moduleId: 'czlowiek', section: 'gramatyka', item: 'gram-2', tasks: true });
+    expect(toHash(tasks)).toBe('czlowiek/gramatyka/gram-2/zadania');
+    // The public site has a page for the rule, not for its tasks.
+    expect(siteUrl(tasks)).toBe('/tematy/czlowiek/gramatyka/gram-2');
+    // The tasks are a part of the test, so homework for the test shows here.
+    expect(pageTargets(tasks)).toEqual(['czlowiek/gramatyka/test', 'czlowiek/gramatyka']);
+
+    expect(parseHash('#czlowiek/gramatyka/gram-2').tasks).toBeUndefined();
+    expect(parseHash('#czlowiek/gramatyka/test/zadania').tasks).toBeUndefined();
+    expect(parseHash('#czlowiek/gramatyka/no-such-rule/zadania')).toMatchObject({ section: 'gramatyka', item: undefined });
+    expect(parseHash('#czlowiek/slownictwo/czl-txt-1/zadania').tasks).toBeUndefined();
+  });
+
   it('still parses the old addresses', () => {
     expect(parseHash('')).toMatchObject({ section: 'dashboard' });
     expect(parseHash('#czlowiek/slownictwo/czl-txt-2')).toMatchObject({ moduleId: 'czlowiek', section: 'slownictwo', item: 'czl-txt-2' });

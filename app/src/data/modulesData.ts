@@ -161,7 +161,8 @@ const baseModules: MaturaModule[] = [
         options: ['where', 'which', 'that', 'whose'],
         correctAnswers: ['where'],
         explanation: 'Określamy miejsce, w którym ktoś spędził czas -> zaimek "where".',
-        level: 'Podstawowy'
+        level: 'Podstawowy',
+        grammarRef: { topic: 'Zaimki względne: where', ruleId: 'dom-g1' }
       }
     ],
     grammarRules: [
@@ -296,7 +297,8 @@ const baseModules: MaturaModule[] = [
         targetWord: 'SHOULD',
         correctAnswers: ['should not have stayed', "shouldn't have stayed"],
         explanation: 'Modal w przeszłości do wyrażenia ubolewania lub krytyki: should not have + 3. forma (should not have stayed).',
-        level: 'Rozszerzony'
+        level: 'Rozszerzony',
+        grammarRef: { topic: 'Modals in the Past: should have + V3', ruleId: 'edu-g1' }
       }
     ],
     grammarRules: [
@@ -410,7 +412,8 @@ const baseModules: MaturaModule[] = [
         targetWord: 'INSISTED',
         correctAnswers: ['insisted on submitting the report', 'insisted on our submitting the report', 'insisted that we submit the report'],
         explanation: 'Konstrukcja: insist on + gerund (-ing) lub insist that + podmiot + bezokolicznik.',
-        level: 'Rozszerzony'
+        level: 'Rozszerzony',
+        grammarRef: { topic: 'Reporting verbs: insist on + -ing', ruleId: 'praca-g1' }
       }
     ],
     grammarRules: [
@@ -514,7 +517,8 @@ const baseModules: MaturaModule[] = [
         options: ['had already prepared', 'already prepared', 'have already prepared', 'were preparing'],
         correctAnswers: ['had already prepared'],
         explanation: 'Czynność wcześniejsza od innej czynności w przeszłości (Past Perfect: had + 3. forma).',
-        level: 'Podstawowy'
+        level: 'Podstawowy',
+        grammarRef: { topic: 'Past Perfect: uprzedniość czasowa', ruleId: 'zp-g1' }
       }
     ],
     grammarRules: [
@@ -618,7 +622,8 @@ const baseModules: MaturaModule[] = [
         options: ['little', 'few', 'many', 'lot'],
         correctAnswers: ['little'],
         explanation: 'Rzeczownik niepoliczalny "milk" łączy się z "a little" (trochę). "A few" stosujemy do policzalnych.',
-        level: 'Podstawowy'
+        level: 'Podstawowy',
+        grammarRef: { topic: 'Quantifiers: a little vs a few', ruleId: 'zyw-g1' }
       }
     ],
     grammarRules: [
@@ -722,7 +727,8 @@ const baseModules: MaturaModule[] = [
         targetWord: 'WISH',
         correctAnswers: ['wish I had not bought', "wish I hadn't bought"],
         explanation: 'Żal dotyczący przeszłości wyrażamy konstrukcją: wish + Past Perfect (had not bought).',
-        level: 'Rozszerzony'
+        level: 'Rozszerzony',
+        grammarRef: { topic: 'wish + Past Perfect', ruleId: 'zak-g1' }
       }
     ],
     grammarRules: [
@@ -826,7 +832,8 @@ const baseModules: MaturaModule[] = [
         targetWord: 'SOONER',
         correctAnswers: ['sooner had we arrived'],
         explanation: 'Inwersja ze zwrotem No sooner: No sooner had + podmiot + past participle ... than.',
-        level: 'Rozszerzony'
+        level: 'Rozszerzony',
+        grammarRef: { topic: 'Inwersja: No sooner... than', ruleId: 'pod-g1' }
       }
     ],
     grammarRules: [
@@ -930,7 +937,8 @@ const baseModules: MaturaModule[] = [
         targetWord: 'IS',
         correctAnswers: ['is believed to have created'],
         explanation: 'Konstrukcja Personal Passive: Subject + is believed to have + V3 dla czynności przeszłej.',
-        level: 'Rozszerzony'
+        level: 'Rozszerzony',
+        grammarRef: { topic: 'Personal Passive: is believed to have + V3', ruleId: 'kul-g1' }
       }
     ],
     grammarRules: [
@@ -1034,7 +1042,8 @@ const baseModules: MaturaModule[] = [
         options: ['the stronger', 'the more strong', 'stronger', 'more strong'],
         correctAnswers: ['the stronger'],
         explanation: 'Konstrukcja: The + comparative..., the + comparative... (The harder..., the stronger...).',
-        level: 'Podstawowy'
+        level: 'Podstawowy',
+        grammarRef: { topic: 'The + comparative..., the + comparative', ruleId: 'sp-g1' }
       }
     ],
     grammarRules: [
@@ -1138,7 +1147,8 @@ const baseModules: MaturaModule[] = [
         targetWord: 'TIME',
         correctAnswers: ['high time you consulted', 'time you consulted'],
         explanation: 'Po konstrukcji It is high time stosujemy czas Past Simple dla teraźniejszości (you consulted).',
-        level: 'Rozszerzony'
+        level: 'Rozszerzony',
+        grammarRef: { topic: 'It is high time + Past Simple', ruleId: 'zd-g1' }
       }
     ],
     grammarRules: [
@@ -1242,7 +1252,8 @@ const baseModules: MaturaModule[] = [
         targetWord: 'HAVE',
         correctAnswers: ['will have discovered'],
         explanation: 'Future Perfect: will have + past participle dla czynności, która zakończy się przed określonym momentem w przyszłości.',
-        level: 'Rozszerzony'
+        level: 'Rozszerzony',
+        grammarRef: { topic: 'Future Perfect: will have + V3', ruleId: 'nt-g1' }
       }
     ],
     grammarRules: [
@@ -1346,7 +1357,8 @@ const baseModules: MaturaModule[] = [
         targetWord: 'HAD',
         correctAnswers: ['Had we protected'],
         explanation: 'Inwersja warunkowa (Third Conditional Inversion): Had + podmiot + past participle zamiast If + podmiot + had.',
-        level: 'Rozszerzony'
+        level: 'Rozszerzony',
+        grammarRef: { topic: 'Mixed conditional z inwersją: Had + podmiot + V3', ruleId: 'prz-g1' }
       }
     ],
     grammarRules: [
@@ -1450,7 +1462,8 @@ const baseModules: MaturaModule[] = [
         targetWord: 'SELDOM',
         correctAnswers: ['Seldom do citizens participate'],
         explanation: 'Inwersja ze słowem Seldom: Seldom + operator do/does/did + podmiot + czasownik.',
-        level: 'Rozszerzony'
+        level: 'Rozszerzony',
+        grammarRef: { topic: 'Inwersja przecząca: Seldom', ruleId: 'pan-g1' }
       }
     ],
     grammarRules: [

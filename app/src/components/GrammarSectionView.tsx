@@ -6,19 +6,19 @@ import { InteractiveTestView } from './InteractiveTestView';
 import { useSettings } from '../useSettings';
 import { pluralForm } from '../i18n';
 import { CopyLinkButton } from './CopyLinkButton';
+import { ruleAnchor, tasksAnchor, TEST_ANCHOR } from '../grammarAnchors';
 
 interface GrammarSectionViewProps {
   moduleId: string;
   /** A rule id or "test" from the address: the page opens scrolled to it. */
   focusId?: string;
+  /** With a rule id: scroll to the tasks that check the rule instead of the rule. */
+  focusTasks?: boolean;
   rules: GrammarRule[];
   questions: TestQuestion[];
   moduleTitle: string;
   onScoreSave?: (score: number) => void;
 }
-
-const ruleAnchor = (ruleId: string) => `rule-${ruleId}`;
-const TEST_ANCHOR = 'grammar-test';
 
 const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
@@ -26,14 +26,17 @@ const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ b
  * One section for grammar: the rules of the module first, then the test that checks them.
  * Rules and tasks are linked both ways through grammarRef.ruleId.
  */
-export const GrammarSectionView: React.FC<GrammarSectionViewProps> = ({ moduleId, focusId, rules, questions, moduleTitle, onScoreSave }) => {
+export const GrammarSectionView: React.FC<GrammarSectionViewProps> = ({ moduleId, focusId, focusTasks, rules, questions, moduleTitle, onScoreSave }) => {
   const { tr, t } = useSettings();
   const sectionRoute = `${moduleId}/gramatyka`;
 
-  // Every rule and the test have their own address (…/gramatyka/gram-2, …/gramatyka/test).
+  // Every rule, its tasks and the test have their own address (…/gramatyka/gram-2, …/gramatyka/gram-2/zadania, …/gramatyka/test).
   useEffect(() => {
-    if (focusId) document.getElementById(focusId === 'test' ? TEST_ANCHOR : ruleAnchor(focusId))?.scrollIntoView({ block: 'start' });
-  }, [focusId]);
+    if (!focusId) return;
+    // A rule without tasks, or tasks hidden by the "only wrong" filter: the rule itself.
+    const target = focusId === 'test' ? document.getElementById(TEST_ANCHOR) : (focusTasks && document.getElementById(tasksAnchor(focusId))) || document.getElementById(ruleAnchor(focusId));
+    target?.scrollIntoView({ block: 'start' });
+  }, [focusId, focusTasks]);
 
   const tasksPerRule = rules.reduce<Record<string, number>>((acc, r) => {
     acc[r.id] = questions.filter((q) => q.grammarRef?.ruleId === r.id).length;
@@ -83,7 +86,7 @@ export const GrammarSectionView: React.FC<GrammarSectionViewProps> = ({ moduleId
                     {n > 0 ? (
                       <button
                         type="button"
-                        onClick={() => scrollTo(`task-group-${rule.id}`)}
+                        onClick={() => scrollTo(tasksAnchor(rule.id))}
                         className="cursor-pointer"
                         title={t('gram.showTasks')}
                       >
